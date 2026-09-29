@@ -1,0 +1,283 @@
+/* Shop / payphone panel — early-90s storefront look: Memphis confetti, chunky black outlines,
+   offset drop shadows, a skewed title slab and yellow price stickers. */
+
+.shop-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  background: radial-gradient(ellipse at 50% 60%, rgba(10, 8, 20, 0.35), rgba(5, 4, 10, 0.72));
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: auto;
+  font-family: var(--font-body, 'Trebuchet MS', sans-serif);
+}
+
+.shop-backdrop.open { opacity: 1; }
+
+.shop-panel {
+  --ink: #111018;
+  --paper: #fff7e6;
+  --teal: #19c3b3;
+  --pink: #ff4fa3;
+  --yellow: #ffd21f;
+  position: relative;
+  width: min(560px, 100%);
+  max-height: min(86vh, 720px);
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+  background-color: var(--paper);
+  /* Memphis confetti: dots, triangles and squiggles in the corners */
+  background-image:
+    radial-gradient(circle at 12% 18%, var(--teal) 0 5px, transparent 6px),
+    radial-gradient(circle at 92% 82%, var(--pink) 0 6px, transparent 7px),
+    radial-gradient(circle at 86% 12%, var(--yellow) 0 4px, transparent 5px),
+    linear-gradient(135deg, transparent 0 46%, rgba(25, 195, 179, 0.18) 46% 54%, transparent 54%),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.035) 0 2px, transparent 2px 9px);
+  border: 4px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 8px 8px 0 var(--ink), 8px 8px 0 4px var(--shop-accent, #f2b632);
+  transform: translateY(14px) rotate(-0.6deg);
+  transition: transform 0.2s cubic-bezier(0.2, 1.4, 0.4, 1);
+  overflow: hidden;
+}
+
+.shop-backdrop.open .shop-panel { transform: translateY(0) rotate(-0.6deg); }
+
+.shop-panel.shake { animation: shop-shake 0.3s ease; }
+
+@keyframes shop-shake {
+  25% { transform: translateX(-7px) rotate(-0.6deg); }
+  50% { transform: translateX(6px) rotate(-0.6deg); }
+  75% { transform: translateX(-3px) rotate(-0.6deg); }
+}
+
+.shop-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px 12px 12px;
+  background:
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.12) 0 8px, transparent 8px 16px),
+    var(--shop-accent, #f2b632);
+  border-bottom: 4px solid var(--ink);
+  transform: skewY(-1.5deg);
+  margin-top: -6px;
+  padding-top: 18px;
+}
+
+.shop-icon {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  background: var(--yellow);
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: skewY(1.5deg) rotate(-8deg);
+}
+
+.shop-icon.word {
+  font-family: var(--font-display, Impact, sans-serif);
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.shop-titles { min-width: 0; transform: skewY(1.5deg); }
+
+.shop-title {
+  font-family: var(--font-display, Impact, sans-serif);
+  font-size: clamp(24px, 6vw, 34px);
+  line-height: 1;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+  -webkit-text-stroke: 1.5px var(--ink);
+  text-shadow: 3px 3px 0 var(--ink), 5px 5px 0 var(--pink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shop-sub {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  opacity: 0.85;
+}
+
+.shop-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 14px 6px;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.shop-section + .shop-section { margin-top: 10px; }
+
+.shop-section-title {
+  display: inline-block;
+  margin: 2px 0 6px;
+  padding: 2px 10px;
+  font-family: var(--font-display, Impact, sans-serif);
+  font-size: 15px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--ink);
+  transform: rotate(-1.5deg);
+  box-shadow: 3px 3px 0 var(--teal);
+}
+
+.shop-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.shop-actions .shop-options { grid-template-columns: 1fr; }
+
+.shop-opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 10px;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+  border: 3px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.shop-opt:hover, .shop-opt.focus { background: #fffbe0; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+.shop-opt:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.shop-opt:focus { outline: none; }
+.shop-opt.focus { outline: 3px dashed var(--pink); outline-offset: 2px; }
+.shop-backdrop.touch .shop-opt.focus, .shop-backdrop.touch .shop-btn.focus { outline: none; }
+
+.shop-opt.selected {
+  background: var(--shop-accent, #f2b632);
+  color: #fff;
+  text-shadow: 1px 1px 0 var(--ink);
+}
+
+.shop-opt.selected .shop-opt-desc { color: #fff; opacity: 0.95; }
+
+.shop-opt.selected::after {
+  content: '✓';
+  position: absolute;
+  top: -10px;
+  left: -8px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--ink);
+  text-shadow: none;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+
+.shop-opt:disabled { opacity: 0.45; cursor: default; box-shadow: 2px 2px 0 var(--ink); }
+
+.shop-opt-main { display: flex; flex-direction: column; min-width: 0; }
+.shop-opt-label { font-weight: 800; font-size: 15px; line-height: 1.15; }
+.shop-opt-desc { font-size: 12px; line-height: 1.25; color: #4a4656; margin-top: 2px; }
+
+.shop-opt-tag {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  font-family: var(--font-display, Impact, sans-serif);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: var(--ink);
+  text-shadow: none;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  transform: rotate(4deg);
+}
+
+.shop-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 12px;
+  border-top: 4px solid var(--ink);
+  background: repeating-linear-gradient(90deg, #fff 0 14px, #fdf1d4 14px 28px);
+}
+
+.shop-cash {
+  margin-right: auto;
+  font-family: var(--font-display, Impact, sans-serif);
+  font-size: 24px;
+  color: #1c8a3c;
+  -webkit-text-stroke: 1px var(--ink);
+  text-shadow: 2px 2px 0 var(--ink);
+}
+
+.shop-btn {
+  min-height: 46px;
+  padding: 8px 16px;
+  font-family: var(--font-display, Impact, sans-serif);
+  font-size: 18px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: #fff;
+  border: 3px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer;
+}
+
+.shop-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.shop-btn:focus { outline: none; }
+.shop-btn.focus { outline: 3px dashed var(--pink); outline-offset: 2px; }
+
+.shop-confirm { background: var(--teal); color: #fff; text-shadow: 1px 1px 0 var(--ink); }
+.shop-confirm.disabled { background: #b9b4a8; color: #eee; }
+
+.shop-hint {
+  padding: 0 14px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #6b6676;
+  background: repeating-linear-gradient(90deg, #fff 0 14px, #fdf1d4 14px 28px);
+}
+
+@media (max-width: 480px) {
+  .shop-options { grid-template-columns: 1fr 1fr; }
+  .shop-actions .shop-options { grid-template-columns: 1fr; }
+  .shop-opt-desc { display: none; }
+  .shop-actions .shop-opt-desc { display: block; }
+  .shop-btn { font-size: 16px; padding: 8px 12px; }
+  .shop-cash { font-size: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-backdrop, .shop-panel, .shop-opt { transition: none; }
+  .shop-panel.shake { animation: none; }
+}
