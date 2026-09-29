@@ -111,6 +111,7 @@ export const COMMERCIAL_STRIPS = [
 // rect = footprint (the LANDMARKS agent builds these; the CITY agent leaves them empty).
 // h = approx roof height in meters after the game's vertical compression (~0.75).
 // Rects may cross streets (e.g. a housing project on both sides of 30th) — streets stay.
+// Positions were cross-checked against real address data (see docs/research/verify-notes.md).
 export const LANDMARKS = [
   // --- Downtown skyline
   { id: 'woodmen', name: 'Woodmen Tower', rect: { x0: 338, x1: 368, z0: 82, z1: 104 }, h: 110, district: 'downtown',
@@ -127,8 +128,8 @@ export const LANDMARKS = [
     desc: '1948 newspaper plant and offices at 14th & Dodge with a rounded-corner main entrance; wide 5-story block.' },
   { id: 'brandeis', name: 'Brandeis Building', rect: { x0: 342, x1: 372, z0: 12, z1: 48 }, h: 34, district: 'downtown',
     desc: '10-story 1906 former department store at 16th & Douglas; offices and food court in 1993.' },
-  { id: 'landmarkcenter', name: '1200 Landmark Center', rect: { x0: 478, x1: 504, z0: 12, z1: 48 }, h: 58, district: 'downtown',
-    desc: '15-story postmodern tower completed 1990 with a crown of four gabled peaks, by the mall.' },
+  { id: 'landmarkcenter', name: '1200 Landmark Center', rect: { x0: 478, x1: 506, z0: 132, z1: 166 }, h: 58, district: 'downtown',
+    desc: '15-story postmodern tower completed 1990 with a crown of four gabled peaks, on the south side of Farnam facing the mall.' },
   { id: 'centralparkplaza', name: 'Central Park Plaza', rect: { x0: 388, x1: 422, z0: 70, z1: 108 }, h: 50, district: 'downtown',
     desc: 'Two 15-story red-brick office towers in a V joined by a 2-story connector, facing the west end of the mall.' },
   { id: 'library', name: 'W. Dale Clark Library', rect: { x0: 426, x1: 462, z0: 72, z1: 106 }, h: 16, district: 'downtown',
@@ -163,7 +164,7 @@ export const LANDMARKS = [
     desc: '1931 Art Deco temple-like block clad in Georgia pink marble with a marble retaining wall. (No 1994 Scott Pavilion yet.)' },
   { id: 'centralhigh', name: 'Omaha Central High School', rect: { x0: 208, x1: 252, z0: -72, z1: -10 }, h: 18, district: 'midtown',
     desc: 'Hollow-square French Renaissance Revival school on Capitol Hill: rusticated stone base, 3 stories, courtyard dome.' },
-  { id: 'creighton', name: 'Creighton University', rect: { x0: 57, x1: 193, z0: -144, z1: -90 }, h: 30, district: 'midtown',
+  { id: 'creighton', name: 'Creighton University', rect: { x0: 57, x1: 193, z0: -198, z1: -159 }, h: 30, district: 'midtown',
     desc: "Campus around St. John's Church (1888 English Gothic, sandstone) plus 1960s modernist halls; 9-story Kiewit Hall dorm." },
   { id: 'mutual', name: 'Mutual of Omaha', rect: { x0: -172, x1: -138, z0: 10, z1: 50 }, h: 62, district: 'midtown',
     desc: '14-story midtown HQ at 33rd & Dodge with a big glass dome skylight at ground level on the corner.' },
@@ -172,17 +173,17 @@ export const LANDMARKS = [
   { id: 'blackstone', name: 'Blackstone Center', rect: { x0: -254, x1: -228, z0: 130, z1: 162 }, h: 30, district: 'midtown',
     desc: '8-story 1916 former Blackstone Hotel (offices in 1993): brick with a terracotta cornice.' },
   // --- North Omaha
-  { id: 'omahastar', name: 'Omaha Star', rect: { x0: 116, x1: 131, z0: -526, z1: -508 }, h: 5, district: 'north',
+  { id: 'omahastar', name: 'Omaha Star', rect: { x0: 114, x1: 128, z0: -486, z1: -470 }, h: 5, district: 'north',
     desc: 'One-story brown-brick newspaper building (since 1938) with crenellated parapet, brick piers, red-and-white scalloped awnings.' },
-  { id: 'jewell', name: 'Jewell Building (Dreamland Ballroom)', rect: { x0: 149, x1: 166, z0: -536, z1: -514 }, h: 9, district: 'north',
+  { id: 'jewell', name: 'Jewell Building (Dreamland Ballroom)', rect: { x0: 151, x1: 168, z0: -486, z1: -466 }, h: 9, district: 'north',
     desc: '1923 two-story brick building, shops below and the (closed) Dreamland Ballroom upstairs; exterior restored 1985.' },
-  { id: 'skeets', name: "Skeet's Ribs & Chicken", rect: { x0: 149, x1: 162, z0: -511, z1: -501 }, h: 4.5, district: 'north',
+  { id: 'skeets', name: "Skeet's Ribs & Chicken", rect: { x0: 151, x1: 164, z0: -460, z1: -450 }, h: 4.5, district: 'north',
     desc: 'Small 1950s single-story barbecue joint.' },
-  { id: 'gpbhm', name: 'Great Plains Black History Museum', rect: { x0: 196, x1: 214, z0: -560, z1: -546 }, h: 9, district: 'north',
+  { id: 'gpbhm', name: 'Great Plains Black History Museum', rect: { x0: 196, x1: 214, z0: -558, z1: -544 }, h: 9, district: 'north',
     desc: '1906 brick Webster Telephone Exchange building on Lake St; museum since 1976.' },
   { id: 'osbn', name: 'Business Technology Center', rect: { x0: 148, x1: 184, z0: -620, z1: -584 }, h: 6, district: 'north',
     desc: 'Former 1963 Safeway supermarket box at 24th & Lake, reused as small-business offices since 1983.' },
-  { id: 'fairdeal', name: 'Fair Deal Cafe', rect: { x0: 149, x1: 160, z0: -486, z1: -476 }, h: 4.5, district: 'north',
+  { id: 'fairdeal', name: 'Fair Deal Cafe', rect: { x0: 117, x1: 128, z0: -464, z1: -454 }, h: 4.5, district: 'north',
     desc: "Small storefront diner (1954-2003), the 'Black City Hall' of North Omaha, with vacant lots around it." },
   { id: 'hilltop', name: 'Hilltop Homes', rect: { x0: -122, x1: -52, z0: -562, z1: -503 }, h: 7, district: 'north',
     desc: 'Early-1950s public housing on the hillside SW of 30th & Lake: two-story brick barracks-style rows.' },
@@ -209,7 +210,7 @@ export const LANDMARKS = [
 // Elevated freeways: decorative decks on pillars (LANDMARKS agent). The CITY agent keeps each
 // corridor rect free of buildings (streets still run underneath).
 export const FREEWAYS = [
-  { id: 'northfreeway', name: 'North Freeway (US-75)', corridor: { x0: -8, x1: 14, z0: -1110, z1: -86 }, deckY: 7.5, axis: 'z' },
+  { id: 'northfreeway', name: 'North Freeway (US-75)', corridor: { x0: -8, x1: 14, z0: -1050, z1: -86 }, deckY: 7.5, axis: 'z' },
   { id: 'i480', name: 'I-480', corridor: { x0: -8, x1: 575, z0: -114, z1: -92 }, deckY: 8, axis: 'x' },
   { id: 'i480-bridge', name: 'I-480 Missouri River Bridge', corridor: { x0: 575, x1: 1000, z0: 26, z1: 52 }, deckY: 12, axis: 'x' },
 ];
@@ -251,8 +252,8 @@ export const SPAWNS = {
 
 // Real businesses of the era used as set dressing (POI names). CITY agent may place these.
 export const NAMED_POIS = [
-  { type: 'food', name: "Skeet's Ribs & Chicken", near: at('24th', 'grant', 16, -8) },
-  { type: 'food', name: 'Fair Deal Cafe', near: at('24th', 'grant', 16, 12) },
+  { type: 'food', name: "Skeet's Ribs & Chicken", near: at('24th', 'grant', 8, 40) },
+  { type: 'food', name: 'Fair Deal Cafe', near: at('24th', 'grant', -8, 36) },
   { type: 'food', name: 'Time Out Foods', near: at('30th', 'pinkney', 12, -30) },
 ];
 
