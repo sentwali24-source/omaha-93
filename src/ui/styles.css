@@ -1,0 +1,90 @@
+/* Base styles shared by every UI module. Module-specific styles live in their own css files. */
+:root {
+  --bg: #0b0b12;
+  --ink: #f4efe3;
+  --muted: #a39d8f;
+  --gold: #f2b632;
+  --crip: #1f5fe0;
+  --blood: #d4202c;
+  --font-display: Impact, 'Haettenschweiler', 'Arial Narrow Bold', 'Arial Black', sans-serif;
+  --font-body: 'Trebuchet MS', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', ui-monospace, Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+#game-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: block;
+  outline: none;
+}
+
+#ui-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#ui-root > * { pointer-events: auto; }
+
+.loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: radial-gradient(ellipse at 50% 60%, #2a1a10 0%, #0b0b12 70%);
+  z-index: 100;
+  transition: opacity 0.6s ease;
+  padding: 16px;
+  text-align: center;
+}
+.loading.done { opacity: 0; pointer-events: none; }
+.loading-title {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 12vw, 120px);
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-shadow: 4px 4px 0 #000, 0 0 30px rgba(242, 182, 50, 0.35);
+  line-height: 1;
+}
+.loading-title span { color: var(--gold); }
+.loading-sub { color: var(--muted); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; }
+.loading-bar { width: min(420px, 80vw); height: 8px; background: #222; border: 2px solid #000; box-shadow: 0 0 0 1px #444; }
+.loading-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--crip), var(--gold), var(--blood)); transition: width 0.2s; }
+.loading-label { font-family: var(--font-mono); font-size: 13px; color: var(--muted); min-height: 1.2em; }
+
+.fatal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  background: var(--bg);
+}
+.fatal h1 { font-family: var(--font-display); font-size: 56px; margin: 0 0 12px; }
+.fatal p { max-width: 520px; color: var(--muted); }

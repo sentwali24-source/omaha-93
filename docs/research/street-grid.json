@@ -1,0 +1,552 @@
+{
+ "ewStreetsSouthToNorth": [
+  {
+   "name": "Leavenworth St",
+   "approxAddressNorthOfDodge": -800,
+   "major": true,
+   "confidence": "medium",
+   "notes": "The map's south edge. A busy east-west arterial with its own I-480 exit, where the freeway separates the Leavenworth neighborhood from the Old Market area. Omaha Union Station (Durham Museum, 801 S 10th St) sits just south of it. A dispatcher flashcard set puts Leavenworth at 900 S, but building addresses (see Howard and Douglas) point to about 800 S. Expect a 100-number uncertainty."
+  },
+  {
+   "name": "Jones St",
+   "approxAddressNorthOfDodge": -700,
+   "major": false,
+   "confidence": "medium",
+   "notes": "A minor downtown street between Jackson and Leavenworth. The flashcards say 800 S."
+  },
+  {
+   "name": "Jackson St",
+   "approxAddressNorthOfDodge": -600,
+   "major": false,
+   "confidence": "medium",
+   "notes": "Roughly the south edge of the Old Market warehouse district (about 10th to 13th St). The flashcards say 700 S."
+  },
+  {
+   "name": "Howard St",
+   "approxAddressNorthOfDodge": -500,
+   "major": false,
+   "confidence": "high",
+   "notes": "The Old Market's central brick street; 11th and Howard is its heart. Police Headquarters at 505 S 15th St is described as being 'at 15th and Howard', which anchors Howard at about 500 S. The flashcards say 600 S."
+  },
+  {
+   "name": "Harney St",
+   "approxAddressNorthOfDodge": -400,
+   "major": false,
+   "confidence": "medium",
+   "notes": "The Orpheum Theater (409 S 16th St) is at 16th and Harney. Eastbound I-480 has a Harney St exit that leads to US-6. It is a downtown through street, not a big arterial. The flashcards say 500 S."
+  },
+  {
+   "name": "Farnam St",
+   "approxAddressNorthOfDodge": -300,
+   "major": true,
+   "confidence": "high",
+   "notes": "Downtown's main commercial and office street. The Douglas County Courthouse is at 17th and Farnam and City Hall (Civic Center) at 18th and Farnam. It continues west through Midtown. The flashcards say 400 S."
+  },
+  {
+   "name": "Douglas St",
+   "approxAddressNorthOfDodge": -200,
+   "major": true,
+   "confidence": "high",
+   "notes": "Carries eastbound US-6, one-way, paired with westbound Dodge. It feeds the I-480 Missouri River bridge. The W. Dale Clark Main Library (open in 1993) was at 215 S 15th St on the block bounded by 14th, 15th, Douglas and Farnam. That puts the Douglas-to-Farnam block in the 200s. The Gene Leahy Mall runs between Douglas and Farnam from about 10th to 14th."
+  },
+  {
+   "name": "Dodge St",
+   "approxAddressNorthOfDodge": 0,
+   "major": true,
+   "confidence": "high",
+   "notes": "The dividing line between North and South addresses. US-6 westbound runs one-way downtown, then the street becomes Omaha's main east-west arterial west to 90th and beyond."
+  },
+  {
+   "name": "Capitol Ave",
+   "approxAddressNorthOfDodge": 200,
+   "major": false,
+   "confidence": "medium",
+   "notes": "The flashcards give 200 N, so the block between Dodge and Capitol is the 100s. The street ends at Central High School (124 N 20th St), which fills Dodge to Davenport between 20th and 22nd."
+  },
+  {
+   "name": "Davenport St",
+   "approxAddressNorthOfDodge": 300,
+   "major": false,
+   "confidence": "medium",
+   "notes": "From the flashcards."
+  },
+  {
+   "name": "Chicago St",
+   "approxAddressNorthOfDodge": 400,
+   "major": false,
+   "confidence": "medium",
+   "notes": "Florence Blvd begins at N 19th and Chicago."
+  },
+  {
+   "name": "Cass St",
+   "approxAddressNorthOfDodge": 500,
+   "major": false,
+   "confidence": "medium",
+   "notes": "Near the south edge of Creighton University; Creighton describes a visitor lot at 24th and Cass. The elevated east-west leg of I-480 runs through this band, between about Davenport and Cass."
+  },
+  {
+   "name": "California St",
+   "approxAddressNorthOfDodge": 600,
+   "major": false,
+   "confidence": "medium",
+   "notes": "Runs through the Creighton campus."
+  },
+  {
+   "name": "Webster St",
+   "approxAddressNorthOfDodge": 700,
+   "major": false,
+   "confidence": "medium",
+   "notes": "From the flashcards. Much later part of it east of 16th was renamed Mike Fahey St, which is irrelevant for 1993."
+  },
+  {
+   "name": "Burt St",
+   "approxAddressNorthOfDodge": 800,
+   "major": false,
+   "confidence": "medium",
+   "notes": "North edge of the Creighton campus area."
+  },
+  {
+   "name": "Cuming St",
+   "approxAddressNorthOfDodge": 900,
+   "major": true,
+   "confidence": "high",
+   "notes": "A major arterial and the traditional south edge of 'North Omaha'. Nebraska Highway 64 runs along Cuming east from the Northwest Radial Hwy to its end at the North Freeway (US-75) interchange near Creighton; that Cuming interchange dates from 1966. Where Cuming crosses 24th, addresses run about 2410 Cuming. The flashcards give 900 N."
+  },
+  {
+   "name": "Izard St",
+   "approxAddressNorthOfDodge": 1000,
+   "major": false,
+   "confidence": "medium",
+   "notes": "From the flashcards. The Izard School opened in 1871."
+  },
+  {
+   "name": "Nicholas St",
+   "approxAddressNorthOfDodge": 1100,
+   "major": false,
+   "confidence": "medium",
+   "notes": "From the flashcards. Paul St and Burdette St also exist in the Near North Side (the Paul Street School opened in 1876), but I could not confirm where they cross 24th. The flashcards list Myrtle Ave (1200 N) and Lafayette (1300 N), but those may only exist further west."
+  },
+  {
+   "name": "Hamilton St",
+   "approxAddressNorthOfDodge": 1400,
+   "major": true,
+   "confidence": "medium",
+   "notes": "A secondary arterial, not a big 4-lane road. Streetcars ran to 24th and Hamilton and west along Hamilton from 1874, and it was a commercial corner. The North Freeway crosses over it, and the freeway-to-I-480 split is just south of the Hamilton overpass. Saddle Creek Rd was originally opened 'from Hamilton to Leavenworth'. 1324 N 24th St lies between Cuming and Hamilton. The 1400 N figure comes from the flashcards."
+  },
+  {
+   "name": "Residential cross streets between Hamilton and Patrick (Charles, Seward, Clark, Franklin, Decatur, Parker, Blondo)",
+   "approxAddressNorthOfDodge": 1800,
+   "major": false,
+   "confidence": "low",
+   "notes": "These streets are named as part of the Long School neighborhood (24th to 30th, Hamilton to Lake), and the Long School area is described as '24th and Clark'. I could not confirm their exact order or house numbers, so treat roughly 1500 to 2100 N as a band of small residential streets. Blondo becomes a larger arterial further west."
+  },
+  {
+   "name": "Patrick Ave",
+   "approxAddressNorthOfDodge": 2100,
+   "major": false,
+   "confidence": "medium",
+   "notes": "South edge of the North 24th and Lake Streets Historic District. An ArcGIS StoryMap is titled 'North 24th Street Patrick to Grant', so Patrick and Grant are adjacent blocks. Could be 2100 or 2200."
+  },
+  {
+   "name": "Grant St",
+   "approxAddressNorthOfDodge": 2200,
+   "major": false,
+   "confidence": "medium",
+   "notes": "The Alamo Ice Cream Company stood at 24th and Grant. The Omaha Star Building (2216 N 24th St) and the Jewell Building/Dreamland Ballroom (2221 N 24th St) are in this 2200 block. Could be off by 100."
+  },
+  {
+   "name": "Erskine St (signed Lizzie Robinson Ave from 24th to 27th since 1992)",
+   "approxAddressNorthOfDodge": 2300,
+   "major": false,
+   "confidence": "medium",
+   "notes": "Renamed Lizzie Robinson Avenue between 24th and 27th in 1992, so a summer-1993 sign there would read Lizzie Robinson Ave. There is a 1943 photo of the 24th and Erskine intersection. The number is estimated between Grant and Lake. The F.J. Carey Block at 2401 N 24th St is just south of Lake."
+  },
+  {
+   "name": "Lake St",
+   "approxAddressNorthOfDodge": 2500,
+   "major": true,
+   "confidence": "high",
+   "notes": "24th and Lake is the heart of the Near North Side ('Street of Dreams'), and the North Freeway has a diamond interchange at Lake. A Safeway at the northeast corner of 24th and Lake had the address 2525 N 24th St, and 2510 N 24th St (later Love's Jazz and Arts Center) is just north of Lake. The Great Plains Black History Museum (2213 Lake St, near 22nd) opened in 1975, so it existed in 1993. N 20th and N 24th were paved north to Lake early on."
+  },
+  {
+   "name": "Ohio St",
+   "approxAddressNorthOfDodge": 2600,
+   "major": false,
+   "confidence": "medium",
+   "notes": "North edge of the 24th and Lake historic district. The east-side block of 24th between Lake and Ohio was cleared for the Safeway. Mt. Moriah Baptist Church moved to 24th and Ohio in 1927."
+  },
+  {
+   "name": "Miami St",
+   "approxAddressNorthOfDodge": 2700,
+   "major": false,
+   "confidence": "medium",
+   "notes": "The Carnation Ballroom was at 2701 N 24th St, at 24th and Miami."
+  },
+  {
+   "name": "Locust St",
+   "approxAddressNorthOfDodge": 2850,
+   "major": true,
+   "confidence": "medium",
+   "notes": "Major east of N 16th: it runs from 16th across the Locust Street viaduct toward the river, Carter Lake and Abbott Dr (the airport area). West of 16th it is a smaller street; it is the south boundary of Kountze Place (16th to 30th). 16th and Locust was a large streetcar-era commercial district. The southwest corner there was once 2828 Sherman Ave (N 16th St), so Locust is about 2850 to 2900."
+  },
+  {
+   "name": "Binney St",
+   "approxAddressNorthOfDodge": 3000,
+   "major": false,
+   "confidence": "high",
+   "notes": "2936 N 24th St is on the corner of 24th and Binney, and there are storefronts at 3006 to 3012 N 24th St. It is the south boundary of the Kountze Place neighborhood."
+  },
+  {
+   "name": "Pinkney St",
+   "approxAddressNorthOfDodge": 3100,
+   "major": false,
+   "confidence": "low",
+   "notes": "Immanuel Baptist Church stood at 24th and Pinkney. The number is estimated."
+  },
+  {
+   "name": "Wirt St",
+   "approxAddressNorthOfDodge": 3200,
+   "major": false,
+   "confidence": "low",
+   "notes": "The Binney-Wirt-Spencer neighborhood name suggests Binney, Wirt and Spencer sit close together. The number is estimated."
+  },
+  {
+   "name": "Spencer St",
+   "approxAddressNorthOfDodge": 3300,
+   "major": false,
+   "confidence": "low",
+   "notes": "Estimated."
+  },
+  {
+   "name": "Emmet St",
+   "approxAddressNorthOfDodge": 3400,
+   "major": false,
+   "confidence": "low",
+   "notes": "In Kountze Place (1618 Emmet St is near 16th). The number is estimated."
+  },
+  {
+   "name": "Evans St",
+   "approxAddressNorthOfDodge": 3600,
+   "major": false,
+   "confidence": "low",
+   "notes": "Inferred from Evans Tower, Omaha Housing Authority senior housing at 3600 N 24th St. A 12-story tower was built there in 1964 and a replacement is dated 2000 in listings, so a tower stood there in 1993."
+  },
+  {
+   "name": "Pratt St",
+   "approxAddressNorthOfDodge": 3700,
+   "major": false,
+   "confidence": "high",
+   "notes": "3701 N 24th St, a 1915 building with a storefront below and flats above, is on the corner of 24th and Pratt. It is the north boundary of Kountze Place."
+  },
+  {
+   "name": "Sprague St",
+   "approxAddressNorthOfDodge": 3800,
+   "major": false,
+   "confidence": "low",
+   "notes": "It crosses 24th: a present-day roundabout plan for 24th covers Binney, Sprague and Hamilton. Herman Kountze's land ran from Locust north to Sprague. It is also where Creighton Blvd merges into Paxton Blvd. The number is estimated, and the streets between Sprague and Ames were not confirmed."
+  },
+  {
+   "name": "Ames Ave",
+   "approxAddressNorthOfDodge": 4500,
+   "major": true,
+   "confidence": "medium",
+   "notes": "A major arterial. 24th and Ames was a major commercial district, with a streetcar barn at 2373 Ames Ave on the southeast corner. Addresses near the corner include the old A&P at 4515 N 24th St and, at 30th and Ames, the North Side Bank (4526 N 30th St) and businesses at 4502 and 4503 N 30th St. North High School (4410 N 36th St) is at 36th and Ames. The North Freeway has a half interchange here, with an on-ramp to US-75 southbound. Florence Blvd's 'Prettiest Mile' begins at Ames. Ames may be about 4400 rather than 4500."
+  },
+  {
+   "name": "Fort St",
+   "approxAddressNorthOfDodge": 5300,
+   "major": true,
+   "confidence": "high",
+   "notes": "The map's north edge. A major arterial named for Fort Omaha, whose south edge it forms at 30th. Metropolitan Community College's Fort Omaha campus (5300 N 30th St, opened 1984) is at 30th and Fort. The House of Shoes store at 5229 N 24th St was on the southeast corner of 24th and Fort, with more buildings at 5201 N 24th St, so 24th and Fort was a commercial node. The rename of 24th to 25th to John E. Mitchell Sr. St came in 2013, so it does not apply to 1993."
+  },
+  {
+   "name": "Sorensen Pkwy",
+   "approxAddressNorthOfDodge": 5600,
+   "major": true,
+   "confidence": "low",
+   "notes": "Just north of the map edge. It starts at N 30th on the north side of Fort Omaha (Miller Park lies between Sorensen and Redick Ave) and runs west. It does not cross 24th; east of 30th the Storz Expressway continues northeast. The number is estimated."
+  }
+ ],
+ "nsStreetsEastToWest": [
+  {
+   "name": "Missouri River / riverfront (rail yards, Heartland of America Park, ConAgra campus)",
+   "number": 5,
+   "major": false,
+   "confidence": "low",
+   "notes": "The river forms the east edge. In 1993 the downtown riverfront held rail yards, the ConAgra campus (late 1980s, bordered by S 10th St) and Heartland of America Park (about 8th and Douglas). Where exactly the riverbank sits against the numbered grid was not verified; 5 is a placeholder."
+  },
+  {
+   "name": "8th St",
+   "number": 8,
+   "major": false,
+   "confidence": "low",
+   "notes": "East edge of the downtown grid. Heartland of America Park's address is 800 Douglas St."
+  },
+  {
+   "name": "9th St",
+   "number": 9,
+   "major": false,
+   "confidence": "low",
+   "notes": "Minor downtown street."
+  },
+  {
+   "name": "10th St",
+   "number": 10,
+   "major": true,
+   "confidence": "high",
+   "notes": "South 10th St starts at Dodge, passes the Gene Leahy Mall, borders the ConAgra campus and the Old Market, crosses the rail yards by Union Station (801 S 10th St) and continues into Little Italy. To the north, Abbott Dr starts at Cuming and 10th, so 10th leads to the airport."
+  },
+  {
+   "name": "11th St",
+   "number": 11,
+   "major": false,
+   "confidence": "medium",
+   "notes": "The Old Market's central street (11th and Howard)."
+  },
+  {
+   "name": "12th St",
+   "number": 12,
+   "major": false,
+   "confidence": "medium",
+   "notes": "Old Market area."
+  },
+  {
+   "name": "13th St",
+   "number": 13,
+   "major": true,
+   "confidence": "high",
+   "notes": "A through street from East Omaha to downtown to South Omaha, and the old streetcar route to South Omaha. West edge of the Old Market."
+  },
+  {
+   "name": "14th St",
+   "number": 14,
+   "major": false,
+   "confidence": "medium",
+   "notes": "An I-480 exit (3A) drops onto N 14th St at Capitol Ave."
+  },
+  {
+   "name": "15th St",
+   "number": 15,
+   "major": false,
+   "confidence": "medium",
+   "notes": "Police Headquarters at 15th and Howard; the Main Library occupied the 14th-15th / Douglas-Farnam block."
+  },
+  {
+   "name": "16th St (N 16th, historically Sherman Ave)",
+   "number": 16,
+   "major": true,
+   "confidence": "high",
+   "notes": "Downtown's main retail street, with the Brandeis building and ParkFair (1985, with a skywalk). A pedestrian and transit mall with narrowed lanes and brick walks went in during the late 1970s-80s. North of downtown it becomes N 16th St, formerly Sherman Ave, a major arterial through North Omaha to the 16th and Locust district. It is the east boundary of Kountze Place."
+  },
+  {
+   "name": "17th St",
+   "number": 17,
+   "major": false,
+   "confidence": "medium",
+   "notes": "Douglas County Courthouse at 17th and Farnam. West boundary of North Downtown."
+  },
+  {
+   "name": "18th St",
+   "number": 18,
+   "major": false,
+   "confidence": "medium",
+   "notes": "City Hall (Omaha-Douglas Civic Center) at 1819 Farnam St."
+  },
+  {
+   "name": "19th St",
+   "number": 19,
+   "major": false,
+   "confidence": "high",
+   "notes": "Florence Blvd begins at N 19th and Chicago and follows 19th north before shifting to 20th."
+  },
+  {
+   "name": "20th St / Florence Blvd",
+   "number": 20,
+   "major": true,
+   "confidence": "medium",
+   "notes": "Central High fronts 20th between Dodge and Davenport. North of downtown, N 20th was an early brick street to Lake St (20th and Lake was a historic intersection), and Florence Blvd follows the N 20th line north past Ames toward Miller Park and J.J. Pershing Dr. It is a boulevard, not a big commercial arterial. I-480 has ramps at 19th and 20th."
+  },
+  {
+   "name": "22nd St",
+   "number": 22,
+   "major": false,
+   "confidence": "medium",
+   "notes": "East edge of the 24th and Lake Historic District; the Great Plains Black History Museum is at 2213 Lake St."
+  },
+  {
+   "name": "24th St (N 24th / S 24th)",
+   "number": 24,
+   "major": true,
+   "confidence": "high",
+   "notes": "The 'Main Street' of the Near North Side. North 24th runs from Dodge north to Read St. Its most important stretch runs from Cuming to Ames, with commercial nodes at Cuming, Hamilton, Lake, Ames and Fort; 24th was the main shopping street from Cuming to Fort. It was asphalt paved to Lake and brick from Lake to Ames. S 24th continues south."
+  },
+  {
+   "name": "26th / 27th Sts",
+   "number": 27,
+   "major": false,
+   "confidence": "medium",
+   "notes": "Minor residential streets. The 24th and Lake district reaches to just west of 26th, and Lizzie Robinson Ave (the former Erskine) runs from 24th to 27th. The North Freeway (US-75) runs through the 24th-30th corridor west of 24th; its exact alignment is not confirmed."
+  },
+  {
+   "name": "30th St (N 30th)",
+   "number": 30,
+   "major": true,
+   "confidence": "high",
+   "notes": "A major north-south arterial from Dodge north to Florence (once called Second Main Street in Florence). Key stretches are Dodge to Lake and Fort to Laurel Ave, with commercial nodes at 30th and Ames and 30th and Fort (Fort Omaha, MCC). I-480 has a 30th St ramp (1969). US-75 leaves the freeway onto N 30th by Fort Omaha, and Sorensen Pkwy begins at 30th. The North Freeway cleared over 1,000 homes, businesses and churches near this corridor."
+  },
+  {
+   "name": "John A. Creighton Blvd (approx. 31st Ave)",
+   "number": 31,
+   "major": false,
+   "confidence": "medium",
+   "notes": "A historic boulevard (formerly Northwest Blvd / Highland Blvd, renamed 1912). It runs through the Adams Park neighborhood from Hamilton to Bedford, and merges into Paxton Blvd at Sprague, which links to Fontenelle Blvd."
+  },
+  {
+   "name": "36th St",
+   "number": 36,
+   "major": false,
+   "confidence": "medium",
+   "notes": "North High School at 4410 N 36th St (36th and Ames). East boundary of the Orchard Hill neighborhood (Hamilton to Blondo)."
+  },
+  {
+   "name": "40th St",
+   "number": 40,
+   "major": false,
+   "confidence": "medium",
+   "notes": "Secondary. There were commercial nodes at 40th and Hamilton and at 40th and Ames. West of 40th between Cuming and Hamilton, the Northwest Radial Hwy and Saddle Creek Rd run diagonally."
+  },
+  {
+   "name": "42nd St",
+   "number": 42,
+   "major": true,
+   "confidence": "medium",
+   "notes": "An arterial. The 42nd and Redman commercial node sits by Sorensen Pkwy, and Sorensen was built from Fontenelle Blvd to 42nd in 1990. South of Dodge, 42nd is also an I-80 interchange."
+  },
+  {
+   "name": "48th St",
+   "number": 48,
+   "major": true,
+   "confidence": "medium",
+   "notes": "The map's west edge. 48th and Saddle Creek was a commercial node (gas station, supermarket, A&W in the 1950s-60s), and the city publishes traffic counts at 48th and Ames. That it was a major arterial is my inference, not confirmed."
+  }
+ ],
+ "diagonalOrSpecialRoads": [
+  {
+   "name": "North Freeway (US-75 / US-73)",
+   "description": "Conceived in 1954 and about 40 years from plan to completion. The southern section, from I-480 to Lake St, was briefly signed I-580 until 1980, and the Lake St off-ramp was I-580's northern end. Construction stalled in 1980. In 1981 work began extending it from Lake St north to Sorensen Pkwy (the 1977 plan had it reaching Ames), and that extension was completed on November 15, 1988. By summer 1993 it was fully open from I-480 near Creighton north to Sorensen Pkwy and the Storz Expressway by Fort Omaha. Interchanges going north: the I-480/US-75 split just south of the Hamilton St overpass, southwest of Creighton; a Cuming St interchange (from 1966); a Hamilton overpass; a diamond interchange at Lake St; a half interchange at Ames Ave with an on-ramp southbound; and the end at Sorensen/Storz, where US-75 continues north on N 30th St past the MCC Fort Omaha campus. It runs through the corridor between N 24th and N 30th, and its construction destroyed over 1,000 homes, businesses and churches. Its exact line within that corridor is not confirmed.",
+   "confidence": "high"
+  },
+  {
+   "name": "I-480 / Gerald R. Ford Expressway",
+   "description": "A 4.9-mile loop around downtown from I-80 and the Kennedy Freeway (US-75) to I-29 in Council Bluffs; US-75 shares its west leg and US-6 its bridge. The west leg runs north about 1.5 miles between Hanscom Park and Columbus Park (roughly the S 26th-30th corridor) to the Leavenworth St exit. Next come the Harney St exit (to US-6), a pass under Dodge and Douglas (the US-6 one-way pair) and a ramp to N 30th. It then turns east as an elevated freeway along the north side of downtown. That stretch is a noted barrier: Creighton is north of I-480 and south of Cuming, with the US-75 North Freeway interchange at the campus's southwest corner. There is a Cuming St flyover entrance ahead of 24th, ramps at 19th and 20th, and exit 3A to N 14th at Capitol Ave. It crosses the Missouri on the Grenville Dodge Memorial Bridge. Its east-west leg runs roughly between Davenport and Cass (about 300 to 500 N); that is my inference. The Nebraska-Iowa bridge section opened November 12, 1966, and the N 30th connection dates from 1969, so it was complete by 1993.",
+   "confidence": "high"
+  },
+  {
+   "name": "Grenville Dodge Memorial Bridge (I-480 Missouri River bridge)",
+   "description": "Opened November 12, 1966: 1,687 ft long, eight lanes, steel plate girder. It carries I-480 and US-6 from downtown Omaha to Council Bluffs and ties into the Dodge St (westbound) / Douglas St (eastbound) one-way pair. It is the only river crossing directly at downtown in 1993. Other crossings are all outside this map: the I-80 bridge south of downtown, the rail bridges, the South Omaha bridge further south, and the I-680 Mormon Bridge far north. I did not verify those in this session. The Bob Kerrey pedestrian bridge was built much later.",
+   "confidence": "medium"
+  },
+  {
+   "name": "Florence Blvd",
+   "description": "The first road in Horace Cleveland's Omaha boulevard system, begun in 1892 to link downtown with Miller Park. The south end is at N 19th and Chicago St; it follows N 19th, then N 20th, north through North Omaha (addresses near Ames run about 4400 Florence Blvd). From Ames Ave north to Miller Park and J.J. Pershing Dr it is 'Omaha's Prettiest Mile': tree-lined, with large houses and river views. In the game, it can be the N 20th St line from about Chicago St north past Lake, Locust and Ames to Fort St and beyond.",
+   "confidence": "high"
+  },
+  {
+   "name": "Sorensen Pkwy",
+   "description": "Named for Mayor A.V. Sorensen (1905-1982). It starts at N 30th on the north side of Fort Omaha, at the end of the North Freeway and start of the Storz Expressway, and runs west. Miller Park lies between Sorensen and Redick Ave. Construction phases: 30th to Fontenelle Blvd and Fontenelle to 42nd were completed in 1990, and 42nd to 52nd in 1991. So in summer 1993 it existed from 30th west past the map's 48th St edge. Sources conflict on the later phases: one source says the full parkway was declared open in 2001, eventually running to about 90th. It sits just north of the Fort St map edge.",
+   "confidence": "medium"
+  },
+  {
+   "name": "Arthur C. Storz Expressway",
+   "description": "Starts where Sorensen Pkwy ends and the North Freeway (US-75) meets N 30th. It branches northeast for 2.4 miles, wrapping around the Levi Carter Park / Sherman neighborhood area, to Abbott Dr, linking the freeway network with Eppley Airfield. Construction started in 1982, it was linked to Sorensen in October 1983, and it opened on July 26, 1989, so it existed in 1993. It lies just north of or at the map's north edge.",
+   "confidence": "high"
+  },
+  {
+   "name": "Abbott Drive",
+   "description": "A 4.7-mile boulevard ('Omaha's gateway', with 'string of pearls' lighting) opened in the 1950s. The south end is at Cuming St and N 10th St on the east edge of North Downtown. It runs north along the riverfront, briefly through Carter Lake, Iowa (that 0.4-mile piece is Iowa Highway 165), to Eppley Airfield and J.J. Pershing Dr. Named for rancher Chris Abbott. For the game it is the airport road along the east edge of North Omaha.",
+   "confidence": "high"
+  },
+  {
+   "name": "Northwest Radial Hwy (NE-64)",
+   "description": "A diagonal highway. Nebraska Highway 64 comes east as Maple St through Benson, turns southeast along the Northwest Radial Hwy, then runs east along Cuming St to its end at the US-75 interchange near Creighton. The Radial leaves Cuming around the Saddle Creek / 40th-plus area and heads northwest to Military Ave / 63rd St, so within a 48th St map edge it is a short diagonal heading northwest from Cuming.",
+   "confidence": "medium"
+  },
+  {
+   "name": "Saddle Creek Rd",
+   "description": "A diagonal, north-northwest road built over the old Saddle Creek. In 1902 the Belt Line Railway owners asked for a street along the creek from Hamilton to Leavenworth; work began in 1903. It was paved in the late 1920s and dips under rail trestles at Cuming and Leavenworth. The Saddle Creek Underpass under Dodge was built in 1934, and the road was widened to four lanes in 1964. It sits west of 40th between Leavenworth and Hamilton, meeting the Northwest Radial near Cuming, and 48th and Saddle Creek was a commercial node. It is on or near the map's west edge.",
+   "confidence": "medium"
+  },
+  {
+   "name": "Dodge / Douglas one-way pair (US-6)",
+   "description": "Downtown, US-6 runs westbound on Dodge St and eastbound on Douglas St. The pair connects to the I-480 river bridge.",
+   "confidence": "high"
+  },
+  {
+   "name": "Locust Street viaduct",
+   "description": "Locust St runs from N 16th east over the Locust Street viaduct to the East Omaha factory district and Carter Lake, Iowa, then on to Abbott Dr (a nightclub stood at Abbott and Locust). It is the east-west connector across North Omaha's northeast rail and industrial area.",
+   "confidence": "medium"
+  },
+  {
+   "name": "Paxton Blvd / Fontenelle Blvd",
+   "description": "Paxton Blvd runs east-west from John A. Creighton Blvd (at about N 31st Ave, near Sprague) to Fontenelle Blvd at Fontenelle Park. Sorensen's first phase ended at Fontenelle Blvd. These boulevards make good curved park roads in the 30th-48th, Sprague-Fort zone.",
+   "confidence": "medium"
+  }
+ ],
+ "addressSystemNotes": "How Omaha addresses work, as far as I could confirm:\n\n1. North/south line: Dodge St is the dividing line. Every numbered north-south street has an N or S prefix (N 24th St vs S 24th St). Named east-west streets are numbered by distance north or south of Dodge.\n\n2. East/west: numbered streets start at the Missouri River and count up westward (8th, 10th, 13th, 16th, 24th, 30th, 42nd, 48th ...). East-west streets carry no E/W prefix. A house number on an east-west street is roughly 100 times the nearest numbered street. Examples: 2410 Cuming is near 24th, 2213 Lake near 22nd, 2373 Ames at the southeast corner of 24th and Ames, 3030 Ames near 30th.\n\n3. North/south numbering near downtown: roughly one hundred-number per named street, and the first block on either side of Dodge is the 100s. Dispatcher flashcards give North as Capitol 200, Davenport 300, Chicago 400, Cass 500, California 600, Webster 700, Burt 800, Cuming 900, Izard 1000, Nicholas 1100, and about 1400 for Hamilton.\n\n4. South of Dodge, building addresses put Douglas at about 200 S, Farnam 300, Harney 400, Howard 500, Jackson 600, Jones 700 and Leavenworth 800. The evidence: the Main Library at 215 S 15th was on the Douglas-Farnam block, the Orpheum at 409 S 16th is at 16th and Harney, and Police HQ at 505 S 15th is at 15th and Howard. The same flashcard sets list each south street 100 higher (Douglas 300 ... Leavenworth 900). For south numbers I trusted the buildings.\n\n5. Past Hamilton, the numbers are irregular. Anchors from building addresses on 24th and 30th: Lake about 2500, Miami about 2700, Binney about 3000, Pratt about 3700, Ames about 4500 (possibly 4400), Fort about 5300.\n\n6. Rough scale for the game, from my own general knowledge, not checked this session: Omaha's mile-apart section-line arterials are 12 numbered streets apart (60th, 72nd, 84th ...), so about 12 numbered blocks per mile east to west. Downtown, each named east-west street is one block. On that basis the map is roughly 3.5 to 4 miles east-west (river to 48th) and about 3.5 miles north-south (Leavenworth to Fort), assuming Fort is about 3 miles north of Dodge. That distance is also unverified.\n\n7. 1993-specific name notes: Erskine St between 24th and 27th had been renamed Lizzie Robinson Ave in 1992. The John E. Mitchell Sr. St rename on Fort (2013) and the Mike Fahey St rename on Webster are later, so don't use them.\n\n8. Research caveat: fetching web pages was blocked in this session, so every fact here comes from search-result summaries rather than the pages themselves. Treat the exact house numbers as estimates to within about 100.",
+ "sources": [
+  "https://en.wikipedia.org/wiki/North_24th_Street",
+  "https://en.wikipedia.org/wiki/North_30th_Street",
+  "https://en.wikipedia.org/wiki/List_of_streets_in_Omaha,_Nebraska",
+  "https://en.wikipedia.org/wiki/Dodge_Street",
+  "https://en.wikipedia.org/wiki/Interstate_480_(Nebraska%E2%80%93Iowa)",
+  "https://en.wikipedia.org/wiki/Florence_Boulevard",
+  "https://en.wikipedia.org/wiki/Abbott_Drive",
+  "https://en.wikipedia.org/wiki/John_A._Creighton_Boulevard",
+  "https://en.wikipedia.org/wiki/Nebraska_Highway_64",
+  "https://en.wikipedia.org/wiki/13th_Street_(Omaha)",
+  "https://en.wikipedia.org/wiki/South_10th_Street",
+  "https://en.wikipedia.org/wiki/24th_and_Lake_Historic_District",
+  "https://en.wikipedia.org/wiki/Kountze_Place",
+  "https://en.wikipedia.org/wiki/Omaha_North_High_School",
+  "https://en.wikipedia.org/wiki/Omaha_Union_Station",
+  "https://en.wikipedia.org/wiki/16th_Street_Mall",
+  "https://www.aaroads.com/guides/us-075-north-omaha-ne",
+  "https://www.aaroads.com/guides/i-480-northeast-omaha",
+  "https://www.aaroads.com/guides/i-480-ne",
+  "https://www.aaroads.com/interstate-guide/i-480-omaha/",
+  "https://www.aaroads.com/interstate-guide/i-580-ne/",
+  "https://northomahahistory.com/2020/10/28/history-of-the-north-freeway-in-omaha/",
+  "https://northomahahistory.com/2022/10/28/a-history-of-the-sorensen-parkway/",
+  "https://northomahahistory.com/2016/09/24/streets-in-north-omaha/",
+  "https://northomahahistory.com/2013/09/23/a-history-of-omahas-florence-boulevard/",
+  "https://northomahahistory.com/2022/07/07/a-history-of-saddle-creek-road/",
+  "https://northomahahistory.com/2024/01/16/a-history-of-the-locust-street-viaduct/",
+  "https://northomahahistory.com/2017/04/26/24th-and-fort-historic-commercial-district/",
+  "https://northomahahistory.com/2024/01/24/a-history-of-the-intersection-of-north-24th-and-pratt-streets/",
+  "https://northomahahistory.com/2017/07/29/a-history-of-2936-north-24th-street/",
+  "https://northomahahistory.com/2022/02/09/a-history-of-the-3006-building-in-north-omaha/",
+  "https://northomahahistory.com/2022/10/10/a-history-of-safeway-at-24th-and-lake-streets/",
+  "https://northomahahistory.com/2016/05/07/a-short-history-of-the-carnation-ballroom/",
+  "https://northomahahistory.com/2023/12/13/a-history-of-4515-north-24th-street/",
+  "https://northomahahistory.com/2016/08/23/a-history-of-the-30th-and-ames-historic-commercial-district-in-north-omaha-nebraska/",
+  "https://northomahahistory.com/2015/12/23/a-short-history-of-the-intersection-of-north-16th-and-locust-streets-in-north-omaha/",
+  "https://northomahahistory.com/2016/05/16/the-long-school-neighborhood/",
+  "https://northomahahistory.com/2020/01/13/a-history-of-1324-north-24th-street/",
+  "https://www.nps.gov/places/north-24th-and-lake-streets-historic-district.htm",
+  "https://storymaps.arcgis.com/stories/28cc254d7b0d49d88bc25d1da00020da",
+  "https://quizlet.com/87497223/omaha-north-100-blocks-flash-cards/",
+  "https://quizlet.com/87497243/omaha-south-100-blocks-flash-cards/",
+  "https://quizlet.com/24644203/major-hundred-blocks-flash-cards/",
+  "https://knowt.com/flashcards/ff2d5e3d-5088-4092-a07f-0f8ca227a133",
+  "https://publicworks.cityofomaha.org/military-avenue-northwest-radial-highway-cuming-street-corridor-study/",
+  "https://www.keepomahamoving.com/projects/north-24th-st-streetscape-improvements",
+  "https://www.creighton.edu/about/maps",
+  "https://omaha.com/lifestyles/abbott-drive-downtown-omaha-s-link-to-eppley-airfield-owes/article_f2765808-312f-11e8-87a2-8f62f096198c.html",
+  "https://www.yelp.com/biz/omaha-public-library-w-dale-clark-library-omaha",
+  "https://police.cityofomaha.org/",
+  "https://www.yelp.com/biz/orpheum-theater-omaha-2",
+  "https://www.yelp.com/biz/the-durham-museum-omaha-2",
+  "https://www.aacc.nche.edu/college/metropolitan-community-college-fort-omaha-campus/",
+  "https://www.apartments.com/evans-tower-omaha-ne/3p73skf/"
+ ]
+}
