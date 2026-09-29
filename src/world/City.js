@@ -1,11 +1,15 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { SETS } from '../data/sets.js';
+import { buildLandmarks } from './Landmarks.js';
 
 // STUB — replaced by the CITY agent. Keeps the public API from ARCHITECTURE.md §9:
 // flat ground, gray roads, one plain box per block (with collision), water, map bounds.
 
 export class City {
+  // attract: city updaters (water, fountains) also run behind the title menu
+  attract = true;
+
   constructor(game) {
     this.game = game;
     this.group = new THREE.Group();
@@ -15,6 +19,17 @@ export class City {
     this.pois = [];
     this.parkingSpots = [];
     this.nightMaterials = [];
+    this.updaters = [];
+  }
+
+  /** Register a per-frame callback (animated water, fountains, blinking lights...). */
+  addUpdater(fn) {
+    this.updaters.push(fn);
+  }
+
+  /** Traffic signal state at an intersection node, or null if it has no signal. */
+  signalAt(nodeId) {
+    return null;
   }
 
   async build(onProgress = () => {}) {
@@ -46,7 +61,7 @@ export class City {
 
     const boxGeos = [];
     for (const blk of L.blocks) {
-      if (blk.water || blk.park) continue;
+      if (blk.water || blk.park || blk.landmark) continue;
       const pad = 3;
       const w = blk.x1 - blk.x0 - pad * 2;
       const d = blk.z1 - blk.z0 - pad * 2;
@@ -63,13 +78,7 @@ export class City {
     this.group.add(boxes);
     onProgress(0.8, 'Buildings');
 
-    for (const w of L.water) {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(w.x1 - w.x0, w.z1 - w.z0), new THREE.MeshLambertMaterial({ color: '#3d5a6b' }));
-      m.rotation.x = -Math.PI / 2;
-      m.position.set((w.x0 + w.x1) / 2, 0.05, (w.z0 + w.z1) / 2);
-      this.group.add(m);
-      col.addBox(w.x0, w.z0, w.x1, w.z1, 3, -2, 'water');
-    }
+    await buildLandmarks(game, this, (p, label) => onProgress(0.8 + p * 0.19, label));
 
     const t = 5;
     col.addBox(B.minX - t, B.minZ - t, B.maxX + t, B.minZ, 50, -5, 'bounds');
@@ -84,5 +93,7 @@ export class City {
 
   setNight() {}
 
-  update() {}
+  update(dt) {
+    for (const fn of this.updaters) fn(dt);
+  }
 }

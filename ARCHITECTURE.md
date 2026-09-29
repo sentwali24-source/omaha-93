@@ -262,10 +262,38 @@ city.pois      [{ id, type, name, x, z, heading, zoneId, district }]
                stores in every turf zone, ≥ 3 clothes stores, ≥ 4 garages, food spots on 24th/30th.
 city.parkingSpots [{ x, z, heading }]  curbside/lot spots for parked cars (≥ 150 across the map)
 city.setNight(amount 0..1)      Environment calls this; city turns on window lights, streetlights,
-                                neon, headlight-ish glows
-city.update(dt)                 optional (water, flicker, flags)
-city.nightMaterials             optional array of materials with emissive the env may drive
+                                neon, sign glow (and every material in city.nightMaterials)
+city.update(dt)                 runs city.updaters (attract = true, so also behind the title menu)
+city.addUpdater(fn(dt))         per-frame callbacks (LANDMARKS uses this for water, fountain, planes)
+city.nightMaterials             materials whose emissiveIntensity should follow night (0..1)
+city.group                      THREE.Group all static city meshes live under
+city.signalAt(nodeId) → null | { green: 'x'|'z'|null, phase: 'green'|'yellow'|'allred', t }
+                                traffic lights at intersections where a major street is involved:
+                                ~14 s green + 3 s yellow + 1 s all-red per axis, offset per node;
+                                'x' = the east-west street has green. Visible signal heads match it.
 ```
+
+City.build() order: ground → roads/sidewalks → generic buildings (skipping landmark, park, water
+blocks and FREEWAYS corridors) → street furniture → `await buildLandmarks(game, city, onProgress)`
+(from `src/world/Landmarks.js`) → horizon dressing → bounds colliders.
+
+## 9a. Landmarks (`src/world/Landmarks.js`, LANDMARKS agent)
+
+```
+export async function buildLandmarks(game, city, onProgress(p, label))
+```
+Builds, under `city.group`, with its own colliders:
+* every `LANDMARKS` entry (downtown skyline, Old Market-adjacent civic buildings, Joslyn, Central High,
+  Creighton, Mutual, North 24th St buildings, housing projects, parks, Fort Omaha, Eppley, rail yards…)
+* every `WATER` entry (Missouri River surface + banks/levee + sandbags, lakes, the mall lagoon) and
+  their `water` colliders — the CITY agent draws no water
+* `FREEWAYS` (elevated decks on pillars; pillar colliders only; decks are not drivable)
+* the Iowa shore across the river: Council Bluffs low skyline, Loess Hills bluffs, the I-480 bridge,
+  the UP truss bridge (all scenery)
+It may push into `city.tagSpots`, `city.pois`, `city.parkingSpots`, `city.nightMaterials`, and use
+`city.addUpdater(fn)` for animation (fountain, water shimmer, planes landing/taking off at Eppley).
+Park landmarks need benches, trees, paths, courts; the parks are where sets hang out (add 'hood' /
+hangout POIs if useful).
 Rendering budget: merge static geometry per material (BufferGeometryUtils.mergeGeometries) or use
 InstancedMesh; target < 250 draw calls for the whole city on `low` with fog culling, < 1.2M triangles.
 Use `game.quality.detail` (0/1/2) to scale props. Shadows: static city meshes `receiveShadow = true`,
@@ -315,8 +343,11 @@ new Character(look)  look = { skin, shirt, shirt2 (accent), pants, shoes, hat: '
 .setVisible(bool)
 .dispose()
 ```
-Cheap: one merged/skinned-free mesh group per character, ≤ ~20 meshes, shared geometries/materials
-cache keyed by color. 60 characters on screen must be fine on `low`.
+Must be cheap: ONE draw call per character. Build each character as a single `THREE.SkinnedMesh`
+(rigid skinning: every body-part box/cylinder is merged into one BufferGeometry and weighted 100 % to
+its bone), vertex colors for outfit colors, one shared `MeshLambertMaterial({ vertexColors: true })`,
+geometry cache keyed by look. Animate by rotating bones procedurally. 60 characters on screen must
+be fine on `low`.
 
 `src/entities/Actor.js` (core) — see file. `actor.takeDamage(amount, attacker, dir, knockback)`,
 `knockOut`, `revive`, `heal`, `remove`, `faceHeading`, `alive`, `state`, `kind`, `faction`, `side`,
@@ -453,6 +484,22 @@ game.shops   Interactions on city.pois:
    car (clears heat 1–2 stars, $100), payphone: missions, record store: buy tapes (unlocks radio songs).
 ```
 
+### Progression rewards (GAMEPLAY agent, `src/systems/progression.js`)
+
+A small listener module (instantiated by Shops or Missions, the GAMEPLAY agent decides) that awards
+rep/cash for world events so the NPC/PLAYER agents never touch money directly:
+
+| event | reward |
+|---|---|
+| fight:won vs rival gang member | +10 rep (x1.5 in rival turf) |
+| actor:ko of a civilian by the player | −5 rep, crime |
+| tag:complete | +15 rep, +$5 |
+| turf:change to the player's set | +100 rep, +$50, big message "TURF TAKEN" |
+| turf:change away from the player's set | big message "LOST <zone>" |
+| player:sign in rival turf while wearing colors | +2 rep (and trouble) |
+| mission:complete | mission.reward |
+| rank:up | big message + pager from the OG |
+
 ## 20. UI (MENU + HUD agents)
 
 `game.menu` (MENU agent, `always = true`)
@@ -552,3 +599,7 @@ settings.touchScale. Hidden in menus.
   browsers in /opt/pw-browsers), opens the game, runs an optional scenario, writes screenshots and
   prints console errors + perf. Exit code 1 on page errors.
 * Before you finish: `npx vite build` must succeed and a smoke run must show no console errors.
+* Headless Chromium renders WebGL with SwiftShader (software): ~15–25 fps there is normal. Judge
+  performance by `perf.calls` (draw calls) and `perf.triangles`, not fps.
+* Research notes for authenticity: `docs/research/landmarks-1993.json`, `street-grid.json`,
+  `period-1993.json` (events, prices, slang, cars, police look, radio of 1993).
