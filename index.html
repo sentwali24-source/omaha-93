@@ -3,18 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
-    <meta name="theme-color" content="#0b0b12" />
+    <meta name="theme-color" content="#07050d" />
+    <meta name="color-scheme" content="dark" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Omaha '93" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="description" content="Omaha '93 — a 3D open-world game set in Omaha, Nebraska, summer 1993." />
+    <meta name="application-name" content="Omaha '93" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="description" content="Omaha '93 — a 3D open-world game set in Omaha, Nebraska, summer 1993. Pick a side, claim a set, and roam North O, downtown and the Old Market." />
+    <meta property="og:title" content="Omaha '93" />
+    <meta property="og:description" content="A 3D open-world browser game set in Omaha, Nebraska, summer 1993." />
+    <meta property="og:type" content="website" />
     <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <!-- self-hosted fonts (public/fonts); the loading screen uses these two first -->
+    <link rel="preload" href="./fonts/anton.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./fonts/vt323.woff2" as="font" type="font/woff2" crossorigin />
     <title>Omaha '93</title>
   </head>
   <body>
     <canvas id="game-canvas"></canvas>
     <div id="ui-root"></div>
-    <noscript>Omaha '93 needs JavaScript and WebGL.</noscript>
+    <noscript>
+      <div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;background:#07050d;color:#f4efe3;font-family:Impact,'Arial Black',sans-serif">
+        <div style="font-size:64px;letter-spacing:2px;color:#ffb13b">OMAHA '93</div>
+        <p style="font-family:'Trebuchet MS',Arial,sans-serif;font-size:16px;color:#a39d8f;max-width:420px">This game needs JavaScript and WebGL. Turn JavaScript on, or try a recent Chrome, Safari, Firefox or Edge.</p>
+      </div>
+    </noscript>
     <script type="module" src="./src/main.js"></script>
   </body>
 </html>
