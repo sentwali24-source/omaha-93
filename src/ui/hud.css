@@ -1039,13 +1039,14 @@
   font-size: 20px;
 }
 .hud-root.touch .hud-zone {
-  left: 50%;
-  right: auto;
+  /* full-width box with centered text (left: 50% + translate would cap it at half the screen) */
+  left: 4vw;
+  right: 4vw;
   top: 30%;
   bottom: auto;
   text-align: center;
-  transform: translateX(-50%);
-  max-width: 92vw;
+  transform: none;
+  max-width: none;
 }
 .hud-root.touch .zone-title {
   font-size: clamp(30px, 8vw, 44px);
@@ -1252,11 +1253,11 @@
   animation-name: hud-zone-touch;
 }
 @keyframes hud-zone-touch {
-  0% { opacity: 0; transform: translate(-50%, 0) scale(1.5); }
-  8% { opacity: 1; transform: translate(-50%, 0) scale(0.96); }
-  12% { transform: translate(-50%, 0) scale(1); }
-  84% { opacity: 1; transform: translate(-50%, 0); }
-  100% { opacity: 0; transform: translate(-50%, 0); }
+  0% { opacity: 0; transform: scale(1.5); }
+  8% { opacity: 1; transform: scale(0.96); }
+  12% { transform: scale(1); }
+  84% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: none; }
 }
 @keyframes hud-obj-in {
   0% { opacity: 0; transform: translateX(-30px); }
