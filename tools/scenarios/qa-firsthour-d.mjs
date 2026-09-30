@@ -69,13 +69,16 @@ export default async function (page, h) {
   await h.game((g) => { if (!g.missions.available().some((m) => m.id === 'story6')) g.debugApi.give(0, 300 - g.state.rep); });
   await h.game((g) => { if (/solo/.test(location.search)) for (const a of [...g.gangs.homies]) g.gangs.dismiss(a, true); });
   const ok6 = await h.game((g) => g.debugApi.startMission('story6'));
-  const beef = await until(h, (g) => { const m = g.missions.active; return m?.data?.pt && { x: m.data.pt.x, z: m.data.pt.z, zone: m.tokens.zone, rival: m.data.rival.id, need: m.data.need }; }, null, 3);
+  const beef = await until(h, (g) => { const m = g.missions.active; const hood = m?.data?.rival && g.shops.pois.find((q) => q.id === 'hood-' + m.data.rival.id); return m?.data?.pt && { x: m.data.pt.x, z: m.data.pt.z, name: m.data.pt.name, fromTheirHood: hood && Math.round(Math.hypot(hood.x - m.data.pt.x, hood.z - m.data.pt.z)), zone: m.tokens.zone, rival: m.data.rival.id, need: m.data.need }; }, null, 3);
   h.log('story6', ok6, JSON.stringify(beef), 'homies', await h.game((g) => g.gangs.homies.length));
   await h.game((g, b) => { g.debugApi.teleport(b.x + 55, b.z + 45); for (const [i, a] of g.gangs.homies.entries()) a.position.set(b.x + 56 + i, 0, b.z + 47); }, beef);
   await walkTo(h, beef.x, beef.z, 20, 10, true);
   const st1 = await until(h, (g) => g.missions.active?.stage === 1 && g.missions.active.data.spawned.length, null, 4);
   h.log('crew spawned', st1, JSON.stringify(await snap(h)));
   await h.shot('d-beef-crew');
+  // the bot can't path around blocks: step onto the sidewalk in front of the corner they hold
+  await h.game((g) => { const pt = g.missions.active?.data?.pt; if (!pt) return; const hd = pt.heading || 0; g.debugApi.teleport(pt.x + Math.sin(hd) * 4, pt.z + Math.cos(hd) * 4); for (const [i, a] of g.gangs.homies.entries()) a.position.set(pt.x + Math.sin(hd) * 5 + i, 0, pt.z + Math.cos(hd) * 5); });
+  await waitGame(h, 0.3);
   // fight: go at the nearest standing foe and swing with J
   const t0 = Date.now();
   let lastHp = 100;
