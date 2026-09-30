@@ -25,7 +25,8 @@ const SET_STYLE = {
   wbb: 'sharp',
 };
 
-const TAGLINES = ['NORTH SIDE', 'NORTH O', "SUMMER '93", 'OMAHA', 'THE BLOCK', 'LOCC 4 LIFE', 'THE SET', 'ON THE HILL'];
+// side-neutral taglines, one per set in SETS order (the last one fits the set on the hill)
+const TAGLINES = ['NORTH SIDE', 'NORTH O', "SUMMER '93", 'OMAHA', 'THE BLOCK', 'ON THE HILL'];
 
 const FONT_FAT = '"Arial Black", "Arial Bold", Gadget, "Helvetica Neue", Helvetica, Arial, sans-serif';
 const FONT_TALL = 'Impact, Haettenschweiler, "Arial Narrow Bold", "Franklin Gothic Bold", "Arial Black", sans-serif';
@@ -380,7 +381,9 @@ function paintCloud(ctx, glyphs, rng, u) {
   const blobs = [];
   for (let x = cx0; x <= cx1; x += f * 0.32) {
     const r = Math.min(glyphs.H * 0.4, f * rng.range(0.42, 0.62));
-    blobs.push([x + rng.range(-4, 4) * u, Math.max(r + 6 * u, Math.min(glyphs.H - r - 6 * u, cy + rng.range(-0.2, 0.2) * f)), r]);
+    // keep every blob (plus its outline) inside the cell so nothing gets cut off square
+    const bx = Math.max(r + 7 * u, Math.min(glyphs.W - r - 7 * u, x + rng.range(-4, 4) * u));
+    blobs.push([bx, Math.max(r + 7 * u, Math.min(glyphs.H - r - 7 * u, cy + rng.range(-0.2, 0.2) * f)), r]);
   }
   const pass = (fill, grow) => {
     ctx.fillStyle = fill;

@@ -199,7 +199,8 @@ export class Missions {
   pois(types) {
     const list = this.game.shops?.pois?.length ? this.game.shops.pois : this.game.city?.pois || [];
     const want = Array.isArray(types) ? types : [types];
-    return list.filter((p) => want.includes(p.type));
+    const kind = (p) => this.game.shops?.kindOf?.(p) ?? p.type;
+    return list.filter((p) => want.includes(kind(p)));
   }
 
   /** Nearest (or random within range) POI of the given type(s). */
@@ -280,18 +281,29 @@ export class Missions {
     });
     let spot = spots[Math.floor(Math.random() * spots.length)];
     if (!spot) {
-      // curbside on a nearby street
+      // curbside on a nearby street: every road segment whose middle is in range, in random order
       const L = game.layout;
-      for (let i = 0; i < 40 && !spot; i++) {
-        const r = L.randomRoadPoint(Math.random);
-        const d = Math.hypot(r.x - from.x, r.z - from.z);
-        if (d < minDist || d > maxDist) continue;
-        const e = r.edge;
+      const edges = L.edges.filter((e) => {
+        const a = L.nodes[e.a];
+        const b = L.nodes[e.b];
+        const d = Math.hypot((a.x + b.x) / 2 - from.x, (a.z + b.z) / 2 - from.z);
+        return d >= minDist && d <= maxDist * 1.5;
+      });
+      for (let i = edges.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [edges[i], edges[j]] = [edges[j], edges[i]];
+      }
+      for (const e of edges) {
+        const a = L.nodes[e.a];
+        const b = L.nodes[e.b];
+        const t = 0.3 + Math.random() * 0.4;
         const off = e.width / 2 - 1.4;
-        const x = r.x + (e.axis === 'z' ? off : 0);
-        const z = r.z + (e.axis === 'x' ? off : 0);
-        if (!game.collision.isFree(x, z, 1.2)) continue;
-        spot = { x, z, heading: e.axis === 'z' ? Math.PI : Math.PI / 2 };
+        const x = a.x + (b.x - a.x) * t + (e.axis === 'z' ? off : 0);
+        const z = a.z + (b.z - a.z) * t + (e.axis === 'x' ? off : 0);
+        if (!game.collision.isFree(x, z, 1.2) || game.vehiclesNear(x, z, 5).length) continue;
+        // right-hand traffic: the east curb faces north, the south curb faces east
+        spot = { x, z, heading: e.axis === 'z' ? 0 : -Math.PI / 2 };
+        break;
       }
     }
     if (!spot) return null;
@@ -448,7 +460,8 @@ export class Missions {
       return false;
     }
     m.title = this._fill(def.title, m.tokens);
-    if (this.offer && this.offer.id === def.id) this._dropOffer();
+    // taking any job silences the pager offer (the OG pages again later if it was a different one)
+    if (this.offer) this._dropOffer();
     this._jobs = this._jobs.filter((j) => j.id !== def.id);
     this.active = m;
     m.status = 'active';
@@ -575,6 +588,8 @@ export class Missions {
   }
 
   objective(m, text) {
+    if (text === m._objRaw) return;
+    m._objRaw = text;
     const t = this._fill(text, m.tokens);
     if (m.objective === t) return;
     m.objective = t;
@@ -584,7 +599,9 @@ export class Missions {
 
   _showObjective(m, force = false) {
     const secs = m.timer != null ? Math.max(0, Math.ceil(m.timer)) : null;
-    const text = secs != null ? `${m.objective}  ⏱ ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}` : m.objective;
+    if (!force && secs === this._lastSecs) return;
+    this._lastSecs = secs;
+    const text = secs != null ? `${m.objective}  ·  ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}` : m.objective;
     if (!force && text === this._lastObjective) return;
     this._lastObjective = text;
     this.game.hud?.setObjective?.(text);

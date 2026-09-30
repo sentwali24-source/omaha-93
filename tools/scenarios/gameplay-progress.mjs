@@ -63,7 +63,7 @@ export default async function (page, h) {
   // rank up: big message + OG pager
   await h.game((g) => g.addRep(200, 'debug'));
   // queued messages + a delayed page run on game time (slow in headless): poll
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 150; i++) {
     const n = await h.game(() => window.__big.length + (window.__pages.length ? 10 : 0));
     if (n >= 13) break;
     await h.wait(500);

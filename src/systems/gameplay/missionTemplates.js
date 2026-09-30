@@ -357,7 +357,11 @@ export const TEMPLATES = {
       } else if (m.stage === 3) {
         const inZone = game.layout.zoneAt(pos.x, pos.z)?.id === m.data.zoneId;
         if (inZone) m.data.hold += dt;
-        M.objective(m, `Hold it down in ${m.tokens.zone} (${Math.max(0, Math.ceil(30 - m.data.hold))}s)`);
+        const left = Math.max(0, Math.ceil(30 - m.data.hold));
+        if (left !== m.data.holdShown) {
+          m.data.holdShown = left;
+          M.objective(m, `Hold it down in ${m.tokens.zone} (${left}s)`);
+        }
         if (m.data.hold >= 30) this.leave(M, m);
       } else if (m.stage === 2) {
         const out = game.layout.zoneAt(pos.x, pos.z)?.id !== m.data.zoneId && d2(pos, m.data.pt) > 60;
@@ -468,44 +472,58 @@ export const TEMPLATES = {
   // ---------------------------------------------------------------- recruit homies, bring them home
   recruit: {
     setup(M, m, p) {
-      m.data.hood = M.hoodPoi();
-      if (!m.data.hood || !M.game.gangs) return false;
+      const game = M.game;
+      const hood = M.hoodPoi();
+      if (!hood || !game.gangs) return false;
+      // the homies are kicking it somewhere on our side of town, not at the hood itself
+      const friendly = (q) => {
+        const o = q.zoneId ? game.gangs.getZoneOwner?.(q.zoneId) ?? null : null;
+        return !o || !areRivals(o, M.setId);
+      };
+      const spot =
+        M.poi(['store', 'food', 'barber', 'record', 'payphone'], { near: hood, minDist: 80, maxDist: 320, filter: friendly, random: true }) ||
+        M.poi(['store', 'food', 'payphone'], { near: hood, minDist: 40, filter: friendly });
+      if (!spot) return false;
+      m.data.hood = hood;
+      m.data.spot = spot;
       m.data.need = p.count || 2;
       m.tokens.count = m.data.need;
+      m.tokens.place = M.placeName(spot);
       m.data.spawned = [];
       return true;
     },
     begin(M, m) {
       const game = M.game;
-      const hood = m.data.hood;
+      const spot = m.data.spot;
       m.stage = 0;
-      m.data.t = 0;
-      // a couple of homies hanging at the hood, ready to roll
-      const have = (game.gangs.members || []).filter((a) => a.alive && a.faction === M.setId && d2(a.position, hood) < 60 && !game.gangs.homies?.includes(a));
-      const crew = have.length >= m.data.need ? [] : spawnCrew(M, m, M.setId, hood, m.data.need - have.length, 'hang');
+      const have = (game.gangs.members || []).filter((a) => a.alive && a.faction === M.setId && d2(a.position, spot) < 40 && !game.gangs.homies?.includes(a));
+      const crew = have.length >= m.data.need ? [] : spawnCrew(M, m, M.setId, spot, m.data.need - have.length, 'hang');
       const recruitable = [...have.slice(0, m.data.need), ...crew];
-      for (const a of recruitable) M.mark(m, `foe:${a.id}`, { follow: a, kind: 'arrow', type: 'target', color: SIDES[M.side].light, yOffset: 2.3 });
       m.data.recruitable = recruitable;
-      if (!recruitable.length || !game.gangs.recruit) {
-        this.fallback(M, m);
-        return;
-      }
-      M.mark(m, 'hood', { x: hood.x, z: hood.z, type: 'hood', label: 'The hood', radius: 3 });
+      m.data.fallback = !recruitable.length || !game.gangs.recruit;
+      for (const a of recruitable) M.mark(m, `foe:${a.id}`, { follow: a, kind: 'arrow', type: 'target', color: SIDES[M.side].light, yOffset: 2.3 });
+      M.mark(m, 'spot', { x: spot.x, z: spot.z, type: 'mission', label: m.tokens.place, radius: 3 });
       this.refresh(M, m);
     },
     homies(M) {
-      return (M.game.gangs?.homies || []).filter((a) => a.alive).length;
+      const list = M.game.gangs?.homies || [];
+      let n = 0;
+      for (let i = 0; i < list.length; i++) if (list[i].alive) n++;
+      return n;
     },
     refresh(M, m) {
-      if (m.stage === 0) M.objective(m, `Recruit homies: "Roll with me" (${Math.min(this.homies(M), m.data.need)}/${m.data.need})`);
-      else M.objective(m, m.data.fallback ? 'Round up the homies at the hood' : 'Bring your homies to the hood');
+      if (m.stage === 0) {
+        if (m.data.fallback) M.objective(m, `Round up the homies at ${m.tokens.place}`);
+        else M.objective(m, `Recruit homies at ${m.tokens.place}: "Roll with me" (${Math.min(this.homies(M), m.data.need)}/${m.data.need})`);
+      } else M.objective(m, 'Bring your homies back to the hood');
       m.data.last = this.homies(M);
     },
-    fallback(M, m) {
-      m.data.fallback = true;
+    toHood(M, m) {
       m.stage = 1;
+      M.unmark(m, 'spot');
       const hood = m.data.hood;
       M.mark(m, 'hood', { x: hood.x, z: hood.z, type: 'hood', label: 'The hood', radius: 3 });
+      if (m.data.fallback) M.say('homie', "Aight, we rolling. Lead the way.");
       this.refresh(M, m);
     },
     update(M, m) {
@@ -514,12 +532,14 @@ export const TEMPLATES = {
         for (const a of M.game.gangs?.homies || []) M.unmark(m, `foe:${a.id}`);
         this.refresh(M, m);
       }
-      if (m.stage === 0 && n >= m.data.need) {
-        m.stage = 1;
-        this.refresh(M, m);
+      if (m.stage === 0) {
+        if (m.data.fallback ? arrived(M, m.data.spot, 4, 9) : n >= m.data.need) this.toHood(M, m);
       } else if (m.stage === 1) {
         if (!m.data.fallback && n < m.data.need) {
           m.stage = 0;
+          M.unmark(m, 'hood');
+          const spot = m.data.spot;
+          M.mark(m, 'spot', { x: spot.x, z: spot.z, type: 'mission', label: m.tokens.place, radius: 3 });
           this.refresh(M, m);
           return;
         }
@@ -527,8 +547,10 @@ export const TEMPLATES = {
       }
     },
     skip(M, m) {
-      if (m.stage === 0) this.fallback(M, m);
-      else M.pass(m);
+      if (m.stage === 0) {
+        m.data.fallback = true;
+        this.toHood(M, m);
+      } else M.pass(m);
     },
   },
 

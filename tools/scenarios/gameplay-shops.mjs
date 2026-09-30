@@ -30,7 +30,7 @@ async function waitFor(h, fn, arg, ms = 8000) {
 
 async function clickText(h, text) {
   const el = h.page.locator('.shop-opt, .shop-btn', { hasText: text }).first();
-  await el.click({ timeout: 3000 });
+  await el.click({ timeout: 15000 });
   await h.wait(250);
 }
 

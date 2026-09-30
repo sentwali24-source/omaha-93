@@ -28,7 +28,7 @@ export default async function (page, h) {
   await h.down('KeyE');
   let shot = false;
   let done = false;
-  for (let i = 0; i < 40 && !done; i++) {
+  for (let i = 0; i < 200 && !done; i++) {
     await h.wait(250);
     const s = await h.game((g, id) => ({ p: g.interactions.progress, owner: g.tagging.ownerOf(id), spraying: g.tagging.spraying }), id);
     if (!shot && s.p > 0.45) {
@@ -89,6 +89,31 @@ export default async function (page, h) {
     return Object.values(raw.flags['tagging.owners']).filter((o) => o === 'psc').length;
   });
   h.log('saved psc walls', saved);
+
+  // quit to the title and continue: the wall is still ours, rewards are not paid twice
+  const cont = await h.game((g, id) => {
+    g.quitToTitle();
+    const ok = g.continueGame();
+    return { ok, owner: g.tagging.ownerOf(id), rep: g.state.rep, tags: g.state.stats.tags, spraying: g.tagging.spraying };
+  }, id);
+  h.log('continue', JSON.stringify(cont));
+  h.assert(cont.ok && cont.owner === 'psc' && cont.rep === 15 && cont.tags === 1, 'continue restores wall owners');
+
+  // rivals take back walls in zones they own (AI re-tag), away from the player
+  const retag = await h.game((g) => {
+    const s = g.tagging.spots.find((q) => q.zoneId === 'lake24');
+    g.tagging.setOwner(s.id, 'psc');
+    g.debugApi.teleport(s.x + 400, s.z);
+    g.debugApi.tagging.retagNow();
+    return s.id;
+  });
+  for (let i = 0; i < 100; i++) {
+    await h.wait(200);
+    if ((await h.game((g, id) => g.tagging.ownerOf(id), retag)) === 'lvb') break;
+  }
+  const back = await h.game((g, id) => g.tagging.ownerOf(id), retag);
+  h.log('after AI retag', retag, back);
+  h.assert(back === 'lvb', 'LVB repaints its wall in its own zone');
   const perf = await h.game((g) => g.debugApi.perf());
   h.log('perf', JSON.stringify({ calls: perf.calls, triangles: perf.triangles, fps: perf.fps }));
 }

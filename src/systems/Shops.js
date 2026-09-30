@@ -23,7 +23,7 @@ import { headingTo, money } from '../core/math.js';
 // Emits 'shop:purchase' { shop, item, cost }. Owns the Progression listener (progression.js).
 
 const SHOP_TYPES = ['store', 'food', 'clothes', 'barber', 'garage', 'record', 'payphone'];
-const RADIUS = { payphone: 1.7, hood: 3.2, garage: 3.5 };
+const RADIUS = { payphone: 1.7, hood: 2.4, garage: 3.5 };
 const LABEL_TYPES = { store: 'Corner store', food: 'Food', clothes: 'Clothes', barber: 'Barber', garage: 'Body shop', record: 'Record store', payphone: 'Payphone', hood: 'The hood' };
 
 export class Shops {
@@ -37,6 +37,7 @@ export class Shops {
     this.panel = getShopPanel(game);
     this._handles = [];
     this._later = [];
+    this._labels = new WeakMap();
   }
 
   // ------------------------------------------------------------------ setup
@@ -54,7 +55,7 @@ export class Shops {
       }
     }
     // fallback storefronts ONLY for types the city has none of (stub city)
-    const missing = SHOP_TYPES.filter((t) => !pois.some((p) => p.type === t));
+    const missing = SHOP_TYPES.filter((t) => !pois.some((p) => this.kindOf(p) === t));
     if (missing.length) {
       const extra = generateFallbackPois(game, missing, pois);
       pois.push(...extra);
@@ -75,16 +76,23 @@ export class Shops {
     });
   }
 
+  /** POI type with aliases folded in ('phone booth' is a payphone). */
+  kindOf(poi) {
+    const t = poi?.type;
+    return t === 'phone booth' || t === 'phonebooth' || t === 'phone' ? 'payphone' : t;
+  }
+
   _register(poi) {
     const game = this.game;
-    const type = poi.type;
+    const type = this.kindOf(poi);
     if (!LABEL_TYPES[type]) return;
     const own = () => poi.id === `hood-${game.state?.player?.setId}`;
+    // priority 0: the nearest prompt wins, so homies' "Roll with me" at a hood / store still shows
     const h = game.interactions.add({
       id: `shop:${poi.id}`,
       position: poi,
       radius: RADIUS[type] || 2.2,
-      priority: 1,
+      priority: 0,
       label: () => this._label(poi),
       enabled: () => !!game.state && !this.panel.isOpen && (type !== 'hood' || own()),
       onInteract: () => this.use(poi),
@@ -92,28 +100,26 @@ export class Shops {
     this._handles.push(h);
   }
 
+  // prompt labels are built once per POI (Interactions asks every frame)
   _label(poi) {
-    const game = this.game;
-    switch (poi.type) {
-      case 'store':
-        return `Pop & chips (${money(PRICES.snack)})`;
-      case 'food':
-        return `Chicken dinner (${money(PRICES.dinner)})`;
-      case 'clothes':
-        return `Shop ${poi.name || 'clothes'}`;
-      case 'barber':
-        return `Haircut (${money(PRICES.haircut)})`;
-      case 'garage':
-        return this._carAt(poi) ? `Respray your ride (${money(PRICES.respray)})` : `${poi.name || 'Body shop'}: bring a car`;
-      case 'record':
-        return 'Browse tapes';
-      case 'payphone':
-        return game.missions?.payphoneLabel?.(poi) || 'Use payphone ($0.25)';
-      case 'hood':
-        return 'Chill with the homies (save)';
-      default:
-        return poi.name || 'Use';
+    const type = this.kindOf(poi);
+    if (type === 'payphone') return this.game.missions?.payphoneLabel?.(poi) || 'Use payphone ($0.25)';
+    let l = this._labels.get(poi);
+    if (!l) {
+      l = {
+        store: `Pop & chips (${money(PRICES.snack)})`,
+        food: `Chicken dinner (${money(PRICES.dinner)})`,
+        clothes: `Shop ${poi.name || 'clothes'}`,
+        barber: `Haircut (${money(PRICES.haircut)})`,
+        respray: `Respray your ride (${money(PRICES.respray)})`,
+        garage: `${poi.name || 'Body shop'}: bring a car`,
+        record: 'Browse tapes',
+        hood: 'Chill with the homies (save)',
+      };
+      this._labels.set(poi, l);
     }
+    if (type === 'garage') return this._carAt(poi) ? l.respray : l.garage;
+    return l[type] || poi.name || 'Use';
   }
 
   onGameStart() {
@@ -173,7 +179,7 @@ export class Shops {
   use(poi) {
     const game = this.game;
     if (!game.state || !game.player) return;
-    switch (poi.type) {
+    switch (this.kindOf(poi)) {
       case 'store':
         return this._eat(poi, 'pop & chips', PRICES.snack, HEAL.snack);
       case 'food':

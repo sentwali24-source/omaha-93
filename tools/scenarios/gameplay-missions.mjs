@@ -3,6 +3,17 @@
 //   node tools/smoke.mjs --port 5207 --no-server --out tools/out/gameplay-missions --script tools/scenarios/gameplay-missions.mjs
 const TEMPLATES = ['tag_run', 'wheels', 'beef', 'escort', 'recruit', 'lose_heat', 'delivery'];
 
+async function waitFor(h, fn, arg, ms = 12000) {
+  const t0 = Date.now();
+  let v;
+  while (Date.now() - t0 < ms) {
+    v = await h.game(fn, arg);
+    if (v) return v;
+    await h.wait(200);
+  }
+  return v;
+}
+
 async function lookAtMarker(h) {
   await h.game((g) => {
     const m = g.missions.active;
@@ -31,9 +42,12 @@ async function run(h, id, maxSkips = 8) {
     await h.wait(450);
     const still = await h.game((g, id) => !!g.missions.active && g.missions.active.id.includes(id), id);
     if (!still) break;
+    const stage = await h.game((g) => g.missions.active.stage);
     await h.game((g) => g.debugApi.completeObjective());
+    // let the mission's update() see the new state (headless frames can be slow)
+    await waitFor(h, (g, stage) => !g.missions.active || g.missions.active.stage !== stage, stage, 2500);
   }
-  await h.wait(500);
+  await waitFor(h, (g, id) => window.__mlog.some((e) => e.id.includes(id) && e.type !== 'start'), id, 5000);
   const res = await h.game((g, id) => window.__mlog.filter((e) => e.id.includes(id)).map((e) => e.type), id);
   const passed = res.includes('complete');
   h.assert(passed, `${id} should complete (events: ${res.join(',')})`);
@@ -50,14 +64,18 @@ export default async function (page, h) {
     }
     window.__pages = [];
     g.events.on('pager', (p) => window.__pages.push(p));
+    // the first page normally comes ~7 s into a new game; headless can be very slow
+    g.missions._pageIn = Math.min(g.missions._pageIn, 1.5);
   });
 
   // 1. the pager goes off shortly after a new game and the nearest payphone rings
   let offer = null;
-  for (let i = 0; i < 40 && !offer; i++) {
+  for (let i = 0; i < 90 && !offer; i++) {
     await h.wait(500);
     offer = await h.game((g) => g.debugApi.missions.offer());
   }
+  const gt = await h.game((g) => g.time.elapsed.toFixed(1));
+  h.log('game time at first page', gt);
   const pages = await h.game(() => window.__pages);
   h.log('offer', JSON.stringify(offer), 'pages', JSON.stringify(pages));
   h.assert(offer && offer.id === 'story1', 'first page should offer story1');
@@ -117,11 +135,11 @@ export default async function (page, h) {
   await h.shot('22-delivery-marker');
   // fail by timer
   await h.game((g) => g.debugApi.completeObjective());
-  await h.wait(700);
+  await waitFor(h, (g) => g.missions.active?.stage === 1);
   await h.game((g) => {
     if (g.missions.active) g.missions.active.timer = 0.2;
   });
-  await h.wait(900);
+  await waitFor(h, () => window.__mlog.some((e) => e.type === 'fail'));
   const failed = await h.game(() => window.__mlog.filter((e) => e.type === 'fail').map((e) => e.reason));
   h.log('fail reasons', JSON.stringify(failed));
   h.assert(failed.includes('Out of time'), 'delivery fails when the timer runs out');
@@ -130,10 +148,10 @@ export default async function (page, h) {
   await h.game((g) => g.debugApi.startMission('beef'));
   await h.wait(300);
   await h.game((g) => g.player.knockOut());
-  await h.wait(600);
+  await waitFor(h, () => window.__mlog.some((e) => e.reason === 'You got knocked out'));
   const koFail = await h.game(() => window.__mlog.filter((e) => e.type === 'fail').map((e) => e.reason));
   h.assert(koFail.includes('You got knocked out'), 'KO fails the mission');
-  await h.wait(4500);
+  await waitFor(h, (g) => g.player.alive && !g._respawnTimer, null, 20000);
 
   // 3. the story chain in order (debug bypasses the rank locks)
   for (let n = 2; n <= 10; n++) await run(h, `story${n}`, 10);

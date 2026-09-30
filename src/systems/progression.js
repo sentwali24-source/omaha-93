@@ -150,7 +150,7 @@ export class Progression {
     this._big('RANK UP', `You're a ${rank.name} now${next ? ` · next: ${next.name}` : ''}`, { color: side?.color, duration: 3.5 });
     const og = OGS[this.playerSet] || { name: 'OG', number: '555-0100' };
     // the OG notices a little later — like a real page would
-    game.missions?.later?.(3.5, () => {
+    game.missions?.later?.(2.5, () => {
       game.events.emit('pager', { from: og.name, text: `${og.number} 411` });
       game.hud?.pager?.(og.name, `${og.number} 411`);
       game.hud?.toast?.(`${og.name}: "Heard you moving up, ${side?.greet || 'homie'}. ${rank.name}. Keep it up."`, { duration: 5 });

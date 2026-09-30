@@ -34,6 +34,7 @@ export class Tagging {
     this.progress = 0;
     this._iaPos = { x: 0, z: 0 };
     this._label = 'Tag wall';
+    this._labelOwner = null;
     this._sprayLoop = null;
     this._retagIn = 40;
     this._enemyHitIn = 240;
@@ -308,7 +309,8 @@ export class Tagging {
         }
       }
     }
-    if (this.near) {
+    if (this.near && this.near.owner !== this._labelOwner) {
+      this._labelOwner = this.near.owner;
       const o = this.near.owner ? setById(this.near.owner) : null;
       this._label = o ? `Tag over ${o.short}` : 'Tag wall';
     }
@@ -342,6 +344,8 @@ export class Tagging {
     const nx = spot.nx ?? 0;
     const nz = spot.nz ?? 1;
     player.faceHeading?.(headingTo(-nx, -nz));
+    // animOverride: Player keeps this anim instead of its locomotion anim while set
+    player.animOverride = 'spray';
     player.character?.setAnim?.('spray');
 
     // mist from the nozzle to the wet edge of the piece
@@ -378,7 +382,11 @@ export class Tagging {
     }
     if (this.spraying) {
       this.spraying = false;
-      this.game.player?.character?.setAnim?.('idle');
+      const p = this.game.player;
+      if (p) {
+        if (p.animOverride === 'spray') p.animOverride = null;
+        p.character?.setAnim?.('idle');
+      }
     }
     if (this.mesh && this._overlaySpot) this._hideOverlay();
   }
@@ -420,7 +428,12 @@ export class Tagging {
         const [s, zo] = cands[Math.floor(Math.random() * cands.length)];
         const wasPlayer = s.owner === playerSet;
         this.setOwner(s.id, zo, { silent: false });
-        if (wasPlayer) game.gangs?.addInfluence?.(s.zoneId, zo, 8);
+        if (wasPlayer) {
+          game.gangs?.addInfluence?.(s.zoneId, zo, 8);
+          const by = setById(zo);
+          const where = game.layout.describe(s.x, s.z).street || 'the block';
+          game.hud?.toast?.(`${by?.short || 'Somebody'} painted over your piece on ${where}`, { color: SIDES[by?.side]?.color, duration: 4 });
+        }
       }
     }
 
