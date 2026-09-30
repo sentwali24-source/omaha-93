@@ -24,8 +24,18 @@ export default async function (page, h) {
   let worstOverlap = 0;
   let worstOffRoad = 0;
   const stuckSeen = {};
+  // game time runs far slower than real time under software GL: sample on game time
+  const gwait = async (sec, maxMs = 120000) => {
+    const t0 = await h.game((g) => g.time.elapsed);
+    const start = Date.now();
+    while (Date.now() - start < maxMs) {
+      await h.wait(250);
+      if ((await h.game((g) => g.time.elapsed)) - t0 >= sec) return;
+    }
+  };
+  const waitMax = {};
   for (let i = 0; i < 5; i++) {
-    await h.wait(10000);
+    await gwait(7);
     r = await h.game((g) => g.debugApi.trafficReport());
     h.log(`t${i}`, JSON.stringify(r));
     worstOverlap = Math.max(worstOverlap, r.overlaps);
@@ -64,12 +74,16 @@ export default async function (page, h) {
       prev,
     );
     if (still.length) h.log('not moving', JSON.stringify(still));
-    for (const s of still) stuckSeen[s.uid] = (stuckSeen[s.uid] || 0) + 1;
+    for (const s of still) {
+      stuckSeen[s.uid] = (stuckSeen[s.uid] || 0) + 1;
+      waitMax[s.uid] = Math.max(waitMax[s.uid] || 0, s.waitT);
+    }
     prev = cur;
   }
-  const chronic = Object.entries(stuckSeen).filter(([, n]) => n >= 3);
-  h.log('chronic', JSON.stringify(chronic));
-  h.assert(chronic.length === 0, `no car stuck for 30 s+ (${chronic.length})`);
+  // a red light holds a car ≤ ~22 s; stuck = never moved across the samples and waited > 25 s
+  const chronic = Object.entries(stuckSeen).filter(([uid, n]) => n >= 4 && (waitMax[uid] || 0) > 25);
+  h.log('chronic', JSON.stringify(chronic), JSON.stringify(waitMax));
+  h.assert(chronic.length === 0, `no car stuck for 25 s+ of game time (${chronic.length})`);
   h.assert(worstOverlap === 0, `no overlapping cars (worst ${worstOverlap})`);
   h.assert(worstOffRoad <= 1, `cars stay on the road (worst ${worstOffRoad})`);
   const perf = await h.game((g) => g.debugApi.perf());

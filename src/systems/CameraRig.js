@@ -262,8 +262,18 @@ export class CameraRig {
         best = off;
       }
     }
-    if (!best) return;
-    this.yaw += snap ? best : best * (1 - Math.exp(-dt * 2.2));
+    if (best) {
+      this.yaw += snap ? best : best * (1 - Math.exp(-dt * 2.2));
+      return;
+    }
+    // boxed in on every side (narrow gap between buildings): crane up over the shoulder instead
+    for (const pitch of [0.7, 1.05]) {
+      if (pitch <= this.pitch + 0.05) continue;
+      if (this._rayDist(this.yaw, pitch, dist) > here + 0.8) {
+        this.pitch = snap ? pitch : damp(this.pitch, pitch, 2.5, dt);
+        return;
+      }
+    }
   }
 
   /** Orbit position around the target with wall pull-in. */
@@ -362,8 +372,8 @@ export class CameraRig {
       [x30, 9, -380, x30, 6, n30.z - 50, 7],
       [x30, 8, -470, x30, 6, zl - 10, 6.5],
       [x30, 8.5, zl + 30, x30 + 60, 6, zl - 5, 6.5],
-      [x30 + 35, 9, zl, x24 - 40, 6, zl, 7],
-      [80, 8, zl, x24, 6, zl - 5, 6.5],
+      [x30 + 35, 9, zl, x24 - 20, 12, zl, 7],
+      [80, 8, zl, x24, 8, zl - 5, 6.5],
       [125, 7.5, zl - 1, x24 + 10, 6, zl + 30, 6],
     ];
     const pts = K.map((k) => new THREE.Vector3(k[0], k[1], k[2]));
