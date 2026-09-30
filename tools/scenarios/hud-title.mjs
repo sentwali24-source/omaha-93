@@ -1,5 +1,7 @@
 // Title screen (attract): HUD, touch controls and map must be hidden; then start and check they show.
 export default async function (page, h) {
+  // screenshots can time out on a heavily loaded machine: log and carry on
+  const snap = (n) => h.shot(n).catch((e) => h.log('shot skipped', n, String(e.message).split('\n')[0]));
   // frame rates in headless tests can be tiny: wait for real frames, not milliseconds
   const frames = async (n) => {
     const f0 = await h.game((g) => g.time.frame);
@@ -13,7 +15,7 @@ export default async function (page, h) {
   await h.press('KeyM');
   await h.wait(300);
   h.assert(await h.game((g) => !g.mapScreen.open), 'map stays closed in attract');
-  await h.shot('90-title');
+  await snap('90-title');
   await h.game((g) => g.menu.quickStart({ side: 'bloods', setId: 'nfp' }));
   await frames(4);
   h.log('banner', JSON.stringify(await h.game((g) => ({ cls: g.hud.bannerEl.className, op: getComputedStyle(g.hud.bannerEl).opacity, t: g.hud._banner, anim: g.hud.bannerEl.getAnimations().map((a) => [a.animationName, a.playState, a.currentTime]), rootCls: g.hud.root.className, ps: getComputedStyle(g.hud.bannerEl).animationPlayState }))));
@@ -22,7 +24,7 @@ export default async function (page, h) {
   const b = await h.game((g) => ({ mode: g.mode, hud: g.hud.visible, banner: g.hud.bannerTitle.textContent }));
   h.log('play', JSON.stringify(b));
   h.assert(b.hud, 'HUD visible in play');
-  await h.shot('91-start-nfp');
+  await snap('91-start-nfp');
   // hide()/show()
   await h.game((g) => g.hud.hide());
   await frames(3);

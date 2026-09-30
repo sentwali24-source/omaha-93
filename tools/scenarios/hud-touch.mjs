@@ -1,6 +1,8 @@
 // Touch controls (run with --mobile, or on desktop with touch=1 in --params).
 // Uses CDP touch events so multi-touch (stick + look + buttons) is exercised for real.
 export default async function (page, h) {
+  // screenshots can time out on a heavily loaded machine: log and carry on
+  const snap = (n) => h.shot(n).catch((e) => h.log('shot skipped', n, String(e.message).split('\n')[0]));
   const cdp = await page.context().newCDPSession(page);
   const touch = (type, points) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points.map((p, i) => ({ x: p[0], y: p[1], id: p[2] ?? i + 1 })) });
   const vp = page.viewportSize();
@@ -10,7 +12,7 @@ export default async function (page, h) {
   const vis = await h.game((g) => ({ active: g.touch.active, visible: g.touch.visible, isTouch: g.input.isTouch }));
   h.log('touch state', JSON.stringify(vis));
   h.assert(vis.visible, 'touch controls visible in play');
-  await h.shot('40-touch-idle');
+  await snap('40-touch-idle');
 
   // joystick (finger 1) + look drag (finger 2) at the same time
   const p0 = await h.game((g) => ({ x: g.player.position.x, z: g.player.position.z, yaw: g.cameraRig.yaw }));
@@ -27,7 +29,7 @@ export default async function (page, h) {
   h.log('virtual move', JSON.stringify(mv));
   h.assert(mv.y > 0.6, 'stick pushes forward');
   await h.wait(1200);
-  await h.shot('41-touch-stick');
+  await snap('41-touch-stick');
   await touch('touchEnd', [[sx, sy - 70, 1]]);
   await touch('touchEnd', []);
   await h.wait(300);
@@ -49,14 +51,14 @@ export default async function (page, h) {
   const prog = await h.game((g) => ({ p: g.interactions.progress, label: g.touch.promptText.textContent }));
   h.log('hold', JSON.stringify(prog));
   h.assert(prog.p > 0.05, 'holding ACTION advances the hold interaction');
-  await h.shot('42-touch-hold');
+  await snap('42-touch-hold');
   await touch('touchEnd', []);
   await h.game(() => window.__ia.remove());
 
   // pager on mobile
   await h.game((g) => g.events.emit('pager', { from: 'OG Mack', text: '411 - Payphone on 24th & Lake. Come solo.' }));
   await h.wait(1500);
-  await h.shot('43-touch-pager');
+  await snap('43-touch-pager');
 
   // MAP button opens the map; tap sets a waypoint; close button closes it
   const mapBtn = await center('.tb-map');
@@ -74,7 +76,7 @@ export default async function (page, h) {
   for (let i = 1; i <= 5; i++) await touch('touchMove', [[cx - 40 - i * 15, cy, 6], [cx + 40 + i * 15, cy, 7]]);
   await touch('touchEnd', []);
   await h.wait(600);
-  await h.shot('44-touch-map');
+  await snap('44-touch-map');
   const closeBtn = await center('.map-close');
   await touch('touchStart', [[closeBtn[0], closeBtn[1], 8]]);
   await touch('touchEnd', []);
@@ -102,7 +104,7 @@ export default async function (page, h) {
   await touch('touchStart', [[sx, sy, 10]]);
   await touch('touchMove', [[sx + 20, sy - 70, 10]]);
   await h.wait(2500);
-  await h.shot('45-touch-car');
+  await snap('45-touch-car');
   await touch('touchEnd', []);
 
   // PAUSE hides the controls (and the HUD); resume brings them back
@@ -126,7 +128,7 @@ export default async function (page, h) {
     g.hud.setObjective('Bring 2 homies back to Kountze Park');
   });
   await h.wait(900);
-  await h.shot('46-touch-landscape');
+  await snap('46-touch-landscape');
   await h.game(() => window.__ia.remove());
 }
 

@@ -2,6 +2,8 @@
 //   node tools/smoke.mjs --port 5208 --no-server --out tools/out/menu-keys \
 //     --params "debug=1&quality=low" --script tools/scenarios/menu-keys.mjs
 export default async function (page, h) {
+  // screenshots can time out on a heavily loaded machine: log and carry on
+  const snap = (n) => h.shot(n).catch((e) => h.log('shot skipped', n, String(e.message).split('\n')[0]));
   const screen = () => h.game((g) => g.debugApi?.menu?.screen?.() ?? null);
   const focused = () => page.evaluate(() => document.activeElement?.dataset?.key || document.activeElement?.className || null);
   const key = async (k, n = 1) => {
@@ -35,7 +37,7 @@ export default async function (page, h) {
   await h.wait(600);
   // walk up into the options, change the hat with the keyboard
   await key('ArrowUp');
-  await h.shot('50-keys-creator');
+  await snap('50-keys-creator');
   await key('Space');
   await key('Escape');
   await key('Enter');

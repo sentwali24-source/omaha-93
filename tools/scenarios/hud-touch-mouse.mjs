@@ -1,5 +1,7 @@
 // Desktop with ?touch=1: the mouse acts as a finger on the touch controls.
 export default async function (page, h) {
+  // screenshots can time out on a heavily loaded machine: log and carry on
+  const snap = (n) => h.shot(n).catch((e) => h.log('shot skipped', n, String(e.message).split('\n')[0]));
   await h.wait(2000);
   const st = await h.game((g) => ({ active: g.touch.active, visible: g.touch.visible }));
   h.assert(st.visible, 'touch UI visible with touch=1');
@@ -8,7 +10,7 @@ export default async function (page, h) {
   await page.mouse.down();
   await page.mouse.move(120, 480, { steps: 5 });
   await h.wait(1500);
-  await h.shot('80-touch-mouse');
+  await snap('80-touch-mouse');
   await page.mouse.up();
   const p1 = await h.game((g) => ({ x: g.player.position.x, z: g.player.position.z }));
   h.assert(Math.hypot(p1.x - p0.x, p1.z - p0.z) > 0.5, 'mouse-driven stick moves the player');
@@ -23,6 +25,6 @@ export default async function (page, h) {
   // settings.touchScale
   await h.game((g) => g.applySettings({ touchScale: 1.3 }));
   await h.wait(500);
-  await h.shot('81-touch-scale');
+  await snap('81-touch-scale');
   await h.game((g) => g.applySettings({ touchScale: 1 }));
 }

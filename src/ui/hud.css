@@ -310,6 +310,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  padding-right: 5px; /* room for the italic overhang at the screen edge */
   font-size: 24px;
   font-style: italic;
   color: var(--tc);
