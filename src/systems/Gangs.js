@@ -1184,7 +1184,14 @@ export class Gangs {
     const tx = pp.x + r.x * sx - f.x * sb;
     const tz = pp.z + r.z * sx - f.z * sb;
     const d = Math.hypot(tx - a.position.x, tz - a.position.z);
-    if (dp > 55 && !ctx.inView(a.position.x, a.position.z) && this._teleportNear(a, player)) return;
+    if (player.vehicle) {
+      // left behind while the player drives off: hold the spot, catch up once they're on foot
+      if (dp > 20) {
+        stand(game, ctx, a, dt, headingTo(pp.x - a.position.x, pp.z - a.position.z), 3);
+        setAnim(a, 'idle');
+        return;
+      }
+    } else if (dp > 55 && !ctx.inView(a.position.x, a.position.z) && this._teleportNear(a, player)) return;
     let speed;
     if (d < 0.5) speed = 0;
     else if (d < 3) speed = Math.max(WALK, Math.min(4.2, (player.speed || 0) + 0.6));
@@ -1195,7 +1202,7 @@ export class Gangs {
     setAnim(a, a.speed > 3.6 ? 'run' : a.speed > 0.25 ? 'walk' : 'idle');
     if (b.stuck > 2.5 && dp > 12) {
       b.stuck = 0;
-      if (!ctx.inView(a.position.x, a.position.z)) this._teleportNear(a, player);
+      if (!player.vehicle && !ctx.inView(a.position.x, a.position.z)) this._teleportNear(a, player);
     }
   }
 

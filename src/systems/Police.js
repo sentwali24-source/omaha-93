@@ -1238,7 +1238,9 @@ export class Police {
         break;
       }
     }
-    if (near && stopped) this.bustT += dt;
+    // a suspect sprinting away can still break the grab; standing still / KO'd = cuffed in 1.5 s
+    const slip = !pv && player.state === 'active' && (player.speed || 0) > 4.5 ? 0.35 : 1;
+    if (near && stopped) this.bustT += dt * slip;
     else this.bustT = Math.max(0, this.bustT - dt * 0.8);
     if (this.bustT >= BUST_TIME) {
       this.busted = true;

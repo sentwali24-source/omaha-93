@@ -24,7 +24,7 @@ async function holdE(h, gameSecs) {
   await h.up('KeyE');
 }
 
-const done = (id) => (g) => g.state.missions.completed.includes(id);
+const DONE = (g, id) => g.state.missions.completed.includes(id);
 
 export default async function (page, h) {
   const lines = collectDialog(page);
@@ -73,7 +73,7 @@ export default async function (page, h) {
   h.log('prompt at OG:', await h.game((g) => g.hud.prompt));
   await h.shot('02-og');
   await holdE(h, 0.4);
-  h.assert(await until(h, done('story1'), null, 4), 'story1 complete after talking to the OG');
+  h.assert(await until(h, DONE, 'story1', 4), 'story1 complete after talking to the OG');
 
   // ---- story2: tag the block
   await h.game((g) => g.debugApi.startMission('story2'));
@@ -95,7 +95,7 @@ export default async function (page, h) {
     await h.up('KeyE');
     await waitGame(h, 0.3);
   }
-  h.assert(await until(h, done('story2'), null, 3), 'story2 complete after tagging the walls');
+  h.assert(await until(h, DONE, 'story2', 3), 'story2 complete after tagging the walls');
   await h.shot('04-tagged');
 
   // ---- story3: boost the car to the body shop
@@ -117,7 +117,7 @@ export default async function (page, h) {
     c.velocity?.set?.(0, 0, 0);
     g.cameraRig.snap();
   });
-  h.assert(await until(h, done('story3'), null, 5), 'story3 complete after parking at the body shop');
+  h.assert(await until(h, DONE, 'story3', 5), 'story3 complete after parking at the body shop');
 
   // ---- story4: recruit two homies, bring them to the hood (needs rank 1)
   await h.game((g) => {
@@ -146,7 +146,7 @@ export default async function (page, h) {
     g.debugApi.teleport(hood.x + 2, hood.z + 2);
     for (const [i, a] of g.gangs.homies.entries()) a.position.set(hood.x + 3 + i, 0, hood.z + 3);
   });
-  h.assert(await until(h, done('story4'), null, 5), 'story4 complete with two homies at the hood');
+  h.assert(await until(h, DONE, 'story4', 5), 'story4 complete with two homies at the hood');
   await h.shot('05-homies-home');
 
   // ---- story5: run the message to the Old Market
@@ -165,7 +165,7 @@ export default async function (page, h) {
     const d = g.missions.active.data.dest;
     g.debugApi.teleport(d.x, d.z);
   });
-  h.assert(await until(h, done('story5'), null, 5), 'story5 complete at the Old Market');
+  h.assert(await until(h, DONE, 'story5', 5), 'story5 complete at the Old Market');
   await waitGame(h, 1);
   await h.shot('06-oldmarket');
 
