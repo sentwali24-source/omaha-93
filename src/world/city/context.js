@@ -58,6 +58,8 @@ export class CityContext {
     this.propSpots = [];
     this.wireSegs = new Map(); // chunk index → [x0,y0,z0,x1,y1,z1,...]
     this.billboardSites = [];
+    // debug builds keep the city's own colliders for the placement audit (debugApi.cityAudit)
+    this.boxLog = game.debug ? [] : null;
   }
 
   // ---------------------------------------------------------------- styles
@@ -152,7 +154,9 @@ export class CityContext {
   // ---------------------------------------------------------------- collision / outputs
   box(minX, minZ, maxX, maxZ, maxY, minY = 0, tag = 'building') {
     this.stats.boxes++;
-    return this.col.addBox(minX, minZ, maxX, maxZ, maxY, minY, tag);
+    const b = this.col.addBox(minX, minZ, maxX, maxZ, maxY, minY, tag);
+    if (this.boxLog) this.boxLog.push(b);
+    return b;
   }
 
   zoneId(x, z) {

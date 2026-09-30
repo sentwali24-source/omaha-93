@@ -281,6 +281,41 @@ export class City {
     }
   }
 
+  /** Debug: city colliders inside reserved areas (landmarks, parks, water, freeways) or on streets. */
+  _audit() {
+    const C = this._ctx;
+    const L = this.game.layout;
+    const out = { reserved: [], road: [], sidewalk: [], boxes: C?.boxLog?.length || 0 };
+    if (!C?.boxLog) return out;
+    for (const b of C.boxLog) {
+      if (b.tag === 'bounds') continue;
+      const sx = b.maxX - b.minX;
+      const sz = b.maxZ - b.minZ;
+      const m = b.tag === 'prop' ? 0.45 : 0.05; // thin poles may touch a footprint edge
+      const r = C.isReserved(b.minX + m, b.minZ + m, b.maxX - m, b.maxZ - m, ['landmark', 'park', 'water', 'freeway'], 0);
+      const big = sx > 1.2 || sz > 1.2;
+      // low street furniture (signals, signs, hydrants) may stand under a freeway deck
+      const underDeck = r?.kind === 'freeway' && b.maxY < 7;
+      if (r && !underDeck && (big || r.kind !== 'park')) out.reserved.push({ kind: r.kind, id: r.id, tag: b.tag, maxY: b.maxY, x: +((b.minX + b.maxX) / 2).toFixed(1), z: +((b.minZ + b.maxZ) / 2).toFixed(1), sx: +sx.toFixed(1), sz: +sz.toFixed(1) });
+      if (!big) continue;
+      // sample the footprint: solid structures should stay off the roadway and the sidewalk
+      let road = 0;
+      let walk = 0;
+      let n = 0;
+      for (let i = 0; i <= 4; i++) for (let j = 0; j <= 4; j++) {
+        const x = b.minX + 0.1 + ((sx - 0.2) * i) / 4;
+        const z = b.minZ + 0.1 + ((sz - 0.2) * j) / 4;
+        n++;
+        if (L.isRoad(x, z)) road++;
+        else if (L.isSidewalk(x, z)) walk++;
+      }
+      const e = { tag: b.tag, x: +((b.minX + b.maxX) / 2).toFixed(1), z: +((b.minZ + b.maxZ) / 2).toFixed(1), sx: +sx.toFixed(1), sz: +sz.toFixed(1), maxY: b.maxY };
+      if (road > 2) out.road.push(e);
+      else if (walk > n * 0.3) out.sidewalk.push(e);
+    }
+    return out;
+  }
+
   setNight(n) {
     n = Math.max(0, Math.min(1, n || 0));
     if (Math.abs(n - this._night) < 0.003) return;
@@ -308,6 +343,7 @@ export class City {
       api.city = () => ({ ...this.stats, poiTypes: this.pois.reduce((m, p) => ((m[p.type] = (m[p.type] || 0) + 1), m), {}) });
       api.setNight = (v) => this.setNight(v);
       api.signal = (id) => this.signalAt(id);
+      api.cityAudit = () => this._audit();
     }
     this.signals?.update(dt);
     this._updateLod(dt);

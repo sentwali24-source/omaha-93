@@ -69,7 +69,8 @@ export function buildProps(C) {
         const x = run.axis === 'z' ? run.c + side * run.off : along;
         const z = run.axis === 'z' ? along : run.c + side * run.off;
         // curb-side: only the landmark footprints themselves (no pad), parks and hoods block it
-        if (C.pointReserved(x, z, ['landmark', 'water', 'park'], 0.25, 0) || C.pointReserved(x, z, ['hood'], 0.3)) continue;
+        // (and nothing tall under the elevated freeway decks)
+        if (C.pointReserved(x, z, ['landmark', 'water', 'park', 'freeway'], 0.25, 0) || C.pointReserved(x, z, ['hood'], 0.3)) continue;
         if (!C.isSidewalkPaved(x, z)) continue;
         const utilHere = side === util.side && utilityDistrict(x, z) && !run.street.major;
         if (utilHere) {

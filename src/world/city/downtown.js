@@ -452,13 +452,15 @@ export function buildIndustrialBlock(C, blk, style) {
   const W = lot.w;
   const D = lot.d;
   const ww = Math.min(W - 2, 28 + r() * 30);
-  const wd = Math.min(D - 8, 18 + r() * 16);
+  // set back 3 m from the block edge so the loading-dock apron stays off the sidewalk
+  const SET = 3;
+  const wd = Math.min(D - 8 - SET, 18 + r() * 16);
   const uc = (r() - 0.5) * (W - ww - 2);
-  const wlot = { ...lot, w: ww, d: wd, F: new Frame(lot.F.x(uc, 0), lot.F.z(uc, 0), lot.F.fx, lot.F.fz) };
-  wlot.rect = wlot.F.rect(-ww / 2, 0, ww / 2, wd);
+  const wlot = { ...lot, w: ww, d: wd, F: new Frame(lot.F.x(uc, SET), lot.F.z(uc, SET), lot.F.fx, lot.F.fz) };
+  wlot.rect = wlot.F.rect(-ww / 2, -SET, ww / 2, wd);
   if (!C.isReserved(...wlot.rect, ['landmark', 'water', 'park', 'freeway', 'hood'])) warehouse(C, wlot, style);
   // yard behind: tanks, trailers, fence
-  const yv0 = wd + 1;
+  const yv0 = wd + SET + 1;
   const F = lot.F;
   if (D - yv0 > 8) {
     const n = 1 + Math.floor(r() * 3);

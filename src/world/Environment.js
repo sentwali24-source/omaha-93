@@ -326,7 +326,8 @@ export class Environment {
     if (mats) {
       for (let i = 0; i < count; i++) {
         const m = mats[i];
-        if (m && 'emissiveIntensity' in m) m.emissiveIntensity = n * (m.userData?.nightIntensity ?? 1);
+        // materials the city grades itself (windows / lamps curves) are left to city.setNight
+        if (m && 'emissiveIntensity' in m && !m.userData?.cityNight) m.emissiveIntensity = n * (m.userData?.nightIntensity ?? 1);
       }
     }
     // city last, so it may refine what we set on its materials
