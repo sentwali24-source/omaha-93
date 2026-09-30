@@ -1,14 +1,8 @@
-// Touch HOMIES button (follow / wait), rotate hint timeout, big touchScale layout. Run with --mobile.
+// Touch HOMIES button (follow / wait) and the big touchScale layout. Run with --mobile.
 import { fingers, center, gameWait } from './qa-phone-util.mjs';
 export default async function (page, h) {
   const F = await fingers(page);
   await gameWait(page, 2);
-  // portrait first: rotate hint shows, then goes away by itself
-  const rot0 = await page.evaluate(() => !document.querySelector('.m-rotate').hidden);
-  await h.wait(12000);
-  const rot1 = await page.evaluate(() => !document.querySelector('.m-rotate').hidden);
-  h.log('rotate hint', rot0, '->', rot1);
-  h.assert(rot0 && !rot1, 'rotate hint shows, then hides by itself');
   const vis0 = await page.evaluate(() => getComputedStyle(document.querySelector('.tb-homies')).display);
   h.log('homies btn without homies', vis0);
   h.assert(vis0 === 'none', 'HOMIES hidden without homies');

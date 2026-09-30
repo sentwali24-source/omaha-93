@@ -233,7 +233,11 @@ export class Touch {
   _layout() {
     const s = Number(this.game.settings?.touchScale) || 1;
     const short = Math.min(window.innerWidth, window.innerHeight);
-    const ts = clamp(s, 0.6, 1.6) * clamp(short / 400, 0.78, 1.3);
+    let ts = clamp(s, 0.6, 1.6) * clamp(short / 400, 0.78, 1.3);
+    // short landscape phones: a big touch size must not push the cluster up over the HUD stats and
+    // the PAUSE / MAP / HOMIES column (touch.css at scale 1: CAR top 207 px from the bottom, HOMIES
+    // bottom 26 + 132 px from the top)
+    if (window.innerWidth > window.innerHeight && window.innerHeight <= 520) ts = Math.min(ts, Math.max(0.78, (window.innerHeight - 30) / 339));
     this._ts = ts;
     this.el.style.setProperty('--ts', ts.toFixed(3));
     this.game.hud?.root?.style.setProperty('--ts', ts.toFixed(3));
