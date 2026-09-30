@@ -597,6 +597,9 @@ export class Gangs {
       const lim = g.external ? 260 : g.kind === 'beef' ? 300 : DEACTIVATE_R;
       if (d2 > lim * lim || (d2 > (lim - 40) ** 2 && !ctx.inView(g.cx, g.cz, 4) && g.mode !== 'fight')) {
         if (g.kind === 'beef' && this.beef && this.beef.group === g) continue;
+        // a running job still needs its crew (recruits, raiders, the OG) even when the player is far
+        const job = g.external && game.missions?.active?.id;
+        if (job && g.members.some((a) => a.userData?.mission === job)) continue;
         this._removeGroup(g);
         continue;
       }
