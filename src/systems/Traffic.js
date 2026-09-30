@@ -506,7 +506,7 @@ export class Traffic {
     }
     for (let i = this.parked.length - 1; i >= 0; i--) {
       const v = this.parked[i];
-      if (v.driver) continue;
+      if (v.driver || this._kept(v)) continue;
       const d2 = (v.position.x - f.x) ** 2 + (v.position.z - f.z) ** 2;
       if (d2 > 215 * 215 || (d2 > 180 * 180 && hidden(v)) || (force && d2 > 180 * 180)) kill(v, this.parked, i);
     }
@@ -517,9 +517,22 @@ export class Traffic {
         continue;
       }
       const d2 = (v.position.x - f.x) ** 2 + (v.position.z - f.z) ** 2;
+      if (this._kept(v)) continue;
       const tooMany = this.abandoned.length > 6 && i === 0;
       if ((d2 > 260 * 260 || tooMany) && hidden(v)) kill(v, this.abandoned, i);
     }
+  }
+
+  /** Cars someone else still cares about (a mission target, userData.keep) are never recycled. */
+  _kept(v) {
+    if (v.userData.keep) return true;
+    const data = this.game.missions?.active?.data;
+    if (!data) return false;
+    for (const k in data) {
+      const x = data[k];
+      if (x === v || (Array.isArray(x) && x.includes(v))) return true;
+    }
+    return false;
   }
 
   _clearOwn() {
@@ -727,7 +740,7 @@ export class Traffic {
     if (jumped && !initial) {
       for (let i = this.parked.length - 1; i >= 0; i--) {
         const v = this.parked[i];
-        if (v.driver || (v.position.x - f.x) ** 2 + (v.position.z - f.z) ** 2 < 150 * 150) continue;
+        if (v.driver || this._kept(v) || (v.position.x - f.x) ** 2 + (v.position.z - f.z) ** 2 < 150 * 150) continue;
         this.parked.splice(i, 1);
         this.release(v);
         game.removeVehicle(v);
@@ -740,7 +753,7 @@ export class Traffic {
       let far = null;
       let fd = 120 * 120;
       for (const v of this.parked) {
-        if (v.driver) continue;
+        if (v.driver || this._kept(v)) continue;
         const d2 = (v.position.x - f.x) ** 2 + (v.position.z - f.z) ** 2;
         if (d2 > fd && !this._visible(v.position.x, v.position.z, v.radius + 2)) {
           fd = d2;
