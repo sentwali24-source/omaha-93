@@ -329,7 +329,7 @@ export class City {
       m.emissiveIntensity = v * (m.userData?.nightScale ?? 1);
     }
     if (this.poolMat) {
-      this.poolMat.opacity = lamps * 0.85;
+      this.poolMat.opacity = lamps * 0.95;
       this.poolMat.visible = lamps > 0.01;
     }
     this.signals?.setNight(n);

@@ -274,7 +274,7 @@ export class Environment {
 
     // ---- rain + fireflies
     const rc = this._rainColor;
-    for (let i = 0; i < 3; i++) rc[i] = clamp(g.fog[i] * 0.55 + g.hemiSky[i] * 0.25 + 0.16 + this.flash * 0.5, 0, 1);
+    for (let i = 0; i < 3; i++) rc[i] = clamp(g.fog[i] * 0.5 + g.hemiSky[i] * 0.3 + 0.24 + this.flash * 0.5, 0, 1);
     this.rainFx.update(dt, cam, P.rain, rc, this.wind, this._time);
     this.fireflies.update(dt, this);
 

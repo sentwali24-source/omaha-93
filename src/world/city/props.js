@@ -79,7 +79,8 @@ export function buildProps(C) {
         } else {
           const dist = districtOf(x, z);
           const dense = dist === 'downtown' || dist === 'oldmarket';
-          const want = run.street.major || dense ? side === 1 || dense : side === (Math.round(along / spacing) % 2 ? 1 : -1);
+          // downtown / Old Market and the major streets are lit from both curbs, side streets staggered
+          const want = run.street.major || dense ? true : side === (Math.round(along / spacing) % 2 ? 1 : -1);
           if (want && !(utilityDistrict(x, z) && side === util.side)) lights.push({ x, z, axis: run.axis, side, pole: 'steel', street: run.street });
         }
       }
@@ -297,7 +298,7 @@ function streetLight(C, l, r) {
     // downward-facing lens
     B.quadUV('signs', cx - ex * 0.85, h - 0.06, cz - ez * 0.85, cx + ex * 0.85, h - 0.06, cz - ez * 0.85, cx + ex * 0.85, h - 0.06, cz + ez * 0.85, cx - ex * 0.85, h - 0.06, cz + ez * 0.85, lamp[0], lamp[1], lamp[2], lamp[1], lamp[2], lamp[3], lamp[0], lamp[3]);
   }
-  C.pool(cx + dx * 0.8, cz + dz * 0.8, 9.5, '#ffa048', 1);
+  C.pool(cx + dx * 0.8, cz + dz * 0.8, 11, '#ffa048', 1);
 }
 
 function streetNameSign(C, x, z, nsLabel, ewLabel, signal) {

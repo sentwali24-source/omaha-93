@@ -134,6 +134,7 @@ export class Rain {
       uniforms: this.uniforms,
       vertexShader: streakVS,
       fragmentShader: streakFS,
+      side: THREE.DoubleSide, // the camera-facing quad's winding flips with the view: never cull it
       transparent: true,
       depthWrite: false,
       fog: false,

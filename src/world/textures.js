@@ -436,7 +436,7 @@ function glassPane(ctx, x, y, w, h, r, base = '#243240', refl = 0.25) {
 
 /** Emissive fill for a lit window (warm / cool / tv). */
 function litPane(ctx, x, y, w, h, r, kind = 'warm', level = 1) {
-  const c = kind === 'cool' ? ['#d8e6ff', '#9fb6e0'] : kind === 'tv' ? ['#7aa4ff', '#3a58c8'] : kind === 'fluor' ? ['#f4fbff', '#c8dcec'] : ['#ffd58a', '#e08a3a'];
+  const c = kind === 'cool' ? ['#d8e6ff', '#9fb6e0'] : kind === 'tv' ? ['#7aa4ff', '#3a58c8'] : kind === 'fluor' ? ['#e4f2ee', '#a4c0c8'] : ['#ffd58a', '#e08a3a'];
   vgrad(ctx, x, y, w, h, [[0, mix('#000000', c[0], level)], [1, mix('#000000', c[1], level)]]);
 }
 
@@ -466,7 +466,7 @@ function houseWindow(ctx, w, h, r, variant, emissive, litKind) {
   } else if (litKind) {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, w, h);
-    litPane(ctx, t, t, w - t * 2, h - t * 2, r, litKind, 0.95);
+    litPane(ctx, t, t, w - t * 2, h - t * 2, r, litKind, 0.8);
     if (variant === 'blinds') {
       ctx.fillStyle = 'rgba(0,0,0,0.45)';
       for (let y = t; y < h * 0.62; y += 4) ctx.fillRect(t, y + 2.6, w - t * 2, 1.4);
@@ -902,8 +902,8 @@ function storefront(ctx, w, h, r, emissive, closed) {
       const dx = doorLeft ? fx + 4 : fx + fw - dw - 4;
       const gx = doorLeft ? fx + dw + 10 : fx + 4;
       const gw = fw - dw - 14;
-      litPane(ctx, gx, h * 0.26, gw, h * 0.52, r, 'fluor', 0.9);
-      litPane(ctx, dx, h * 0.26, dw, h * 0.72, r, 'fluor', 0.8);
+      litPane(ctx, gx, h * 0.26, gw, h * 0.52, r, 'fluor', 0.62);
+      litPane(ctx, dx, h * 0.26, dw, h * 0.72, r, 'fluor', 0.55);
       litPane(ctx, fx + 4, h * 0.1, fw - 8, h * 0.13, r, 'warm', 0.5);
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       for (let k = 0; k < 4; k++) ctx.fillRect(gx + 6 + r() * (gw - 40), h * (0.32 + r() * 0.3), 16 + r() * 22, 12 + r() * 18);
@@ -1088,7 +1088,7 @@ function buildFacadeAtlas(size, rng) {
   }, (c, w, h) => {
     c.fillStyle = '#000';
     c.fillRect(0, 0, w, h);
-    litPane(c, 12, 10, w - 24, h - 30, r, 'fluor', 0.8);
+    litPane(c, 12, 10, w - 24, h - 30, r, 'fluor', 0.58);
   });
   tile('door', (c, w, h) => {
     c.fillStyle = '#e8e2d4';
@@ -2194,8 +2194,9 @@ function buildPoolTexture() {
   const ctx = c.getContext('2d');
   const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
   g.addColorStop(0, 'rgba(255,255,255,1)');
-  g.addColorStop(0.35, 'rgba(255,255,255,0.55)');
-  g.addColorStop(0.7, 'rgba(255,255,255,0.15)');
+  g.addColorStop(0.3, 'rgba(255,255,255,0.72)');
+  g.addColorStop(0.62, 'rgba(255,255,255,0.28)');
+  g.addColorStop(0.85, 'rgba(255,255,255,0.07)');
   g.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 128, 128);

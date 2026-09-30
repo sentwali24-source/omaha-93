@@ -11,8 +11,9 @@ const STOPS = [
   ['downtown-noon', 370, 115, 12.5, 0, 0.15],
   ['oldmarket', 515, 232, 16, Math.PI / 2, 0.12],
   ['kountze-house', 200, -690, 18.8, Math.PI * 0.6, 0.1],
-  ['rain', 150, -520, 15, 0, 0.1, 'rain'],
-  ['storm-night', 150, -520, 23, Math.PI, 0.1, 'thunderstorm'],
+  ['24th-south-night', 146, -600, 22.5, Math.PI, 0.08],
+  ['rain', 146, -600, 15, Math.PI, 0.08, 'rain'],
+  ['storm-night', 146, -600, 23, Math.PI, 0.08, 'thunderstorm'],
 ];
 
 export default async function (page, h) {

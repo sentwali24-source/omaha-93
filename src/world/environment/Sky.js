@@ -196,7 +196,7 @@ export class Sky {
       uMoonRight: { value: new THREE.Vector3(1, 0, 0) },
       uMoonUp: { value: new THREE.Vector3(0, 1, 0) },
       uMoonLight: { value: new THREE.Vector3(0, 0, 1) },
-      uMoonSize: { value: 0.03 },
+      uMoonSize: { value: 0.024 },
       uMoonVis: { value: 0 },
       uStars: { value: 0 },
       uTime: { value: 0 },
