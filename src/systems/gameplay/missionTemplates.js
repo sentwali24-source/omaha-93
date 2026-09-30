@@ -348,7 +348,9 @@ export const TEMPLATES = {
       const game = M.game;
       const pos = playerPos(M);
       if (m.stage === 0 && d2(pos, m.data.pt) < 70) {
-        const crew = spawnCrew(M, m, m.data.rival.id, m.data.pt, m.data.need + 1);
+        // as many as the OG said; the story's first beef is a corner crew, not hand-picked fighters
+        // (four fighters on one player swarm him before he can land a combo)
+        const crew = spawnCrew(M, m, m.data.rival.id, m.data.pt, m.data.need, m.story ? 'hang' : 'fighter');
         const local = (game.gangs?.members || []).filter((a) => a.alive && a.faction === m.data.rival.id && d2(a.position, m.data.pt) < 80);
         if (!crew.length && !local.length) {
           // no one to fight (NPC system could not spawn): hold the corner instead
