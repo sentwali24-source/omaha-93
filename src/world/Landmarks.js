@@ -200,6 +200,16 @@ function finish(ctx) {
       blink.visible = on;
       blinkMat.opacity = 0.3 + 0.7 * Math.min(1, night * 1.5);
     }
+    // office towers: people work late, so the skyline windows come on through the evening
+    // twilight (and go off at dawn) a little ahead of the general night lighting
+    if (ctx.forceNight == null) {
+      const h = game.clock?.hour ?? 12;
+      const dusk = h > 12 ? smooth(18.9, 20.5, h) : 1 - smooth(5.6, 6.9, h);
+      const v = Math.max(night, dusk * 0.42);
+      M.office.emissiveIntensity = v;
+      M.slab.emissiveIntensity = v;
+      M.glass.emissiveIntensity = v;
+    }
     // water: the Missouri runs south (+z) fast in flood, still water shimmers, falls pour
     M.water.map.offset.y += dt * 0.022;
     M.water.map.offset.x = Math.sin(state.t * 0.07) * 0.05;
@@ -243,4 +253,9 @@ function installDebug(ctx) {
       return { t: +j.t.toFixed(1), phase: j.phase, x: +j.x.toFixed(1), y: +j.y.toFixed(1), z: +j.z.toFixed(1) };
     },
   };
+}
+
+function smooth(a, b, x) {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
 }

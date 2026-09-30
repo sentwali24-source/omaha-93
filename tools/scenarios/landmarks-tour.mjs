@@ -3,8 +3,16 @@
 //   view: [name, playerX, playerZ, hour, camPos[x,y,z], lookAt[x,y,z]]
 //   or    [name, playerX, playerZ, hour, null, null, yaw, pitch]  (normal game camera)
 const GROUPS = {
+  check: [
+    ['kountze', 290, -800, 14, [300, 22, -795], [290, 0, -840]],
+    ['kountze-sw', 275, -815, 14, [262, 12, -800], [295, 0, -845]],
+    ['miller', 50, -1110, 12, [60, 35, -1100], [50, 0, -1200]],
+    ['fairdeal', 140, -440, 12, [150, 9, -445], [122, 3, -462]],
+  ],
   skyline: [
     ['skyline-dusk', 200, -300, 20.2, null, null, 2.7, 0.12],
+    ['skyline-north-dusk', 200, -300, 20.2, [196, 11, -318], [380, 42, 60]],
+    ['skyline-north-night', 200, -300, 22.5, [196, 11, -318], [380, 42, 60]],
     ['skyline-24lake-dusk', 150, -560, 20.2, [150, 14, -575], [380, 40, 60]],
   ],
   downtown: [
