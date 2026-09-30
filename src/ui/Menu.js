@@ -295,11 +295,13 @@ export class Menu {
   launch(start) {
     if (this._launching) return;
     this._launching = true;
+    this.root.style.pointerEvents = 'none';
     this.sfx('ui_select');
     this.cut.classList.remove('m-cut-out');
     this.cut.classList.add('m-cut-on');
     setTimeout(() => {
       this._launching = false;
+      this.root.style.pointerEvents = '';
       this._close();
       this.pauseOpen = false;
       this._inputOn();
@@ -574,6 +576,12 @@ export class Menu {
 
   _onKey(e) {
     if (!this.context) return;
+    if (this._launching) {
+      // the tape is already rolling into gameplay
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     this._setTouchMode(false);
     const t = e.target;
     const tag = t?.tagName;

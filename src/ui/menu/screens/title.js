@@ -75,7 +75,7 @@ export function aboutScreen(menu) {
       }),
       el('p', { text: 'Conflict here is fists, spray paint, fast cars and police heat. No firearms, no drugs.' }),
       el('div', { class: 'm-about-label', text: '■ Credits' }),
-      el('p', { class: 'm-about-built' }, 'Built with ', el('b', { text: 'Three.js' }), '. Every model, texture and sound is generated in code — nothing downloaded.'),
+      el('p', { class: 'm-about-built' }, 'Built with ', el('b', { text: 'Three.js' }), '. Every model, texture and sound is generated in code.'),
       el('p', { class: 'm-about-fine', text: 'Fonts: Anton, Bebas Neue, VT323 (SIL Open Font License) and Permanent Marker (Apache License 2.0).' }),
     ),
     el('footer', { class: 'm-foot' }, back),

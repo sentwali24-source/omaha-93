@@ -31,9 +31,9 @@ export function settingsScreen(menu) {
     return el('div', { class: 'm-segs', role: 'group' }, buttons);
   };
 
-  const slider = (key, { min, max, step, fmt, sound = false }) => {
+  const slider = (key, { min, max, step, fmt, sound = false, label = key }) => {
     const out = el('output', { class: 'm-range-val' });
-    const input = el('input', { type: 'range', class: 'm-range', min, max, step, 'aria-label': key, 'data-key': key });
+    const input = el('input', { type: 'range', class: 'm-range', min, max, step, 'aria-label': label, 'data-key': key });
     const sync = () => {
       const v = Number(s()[key] ?? min);
       input.value = String(v);
@@ -52,17 +52,17 @@ export function settingsScreen(menu) {
     return el('div', { class: 'm-range-row' }, input, out);
   };
 
-  const toggle = (key) => {
+  const toggle = (key, label = key) => {
     const b = menu.button(el('span', { class: 'm-toggle-knob', 'aria-hidden': 'true' }), () => {
       apply({ [key]: !s()[key] });
       sync();
-    }, { cls: 'm-toggle', key, sound: 'ui_click', attrs: { role: 'switch', 'aria-checked': 'false', 'aria-label': key } });
-    const label = el('span', { class: 'm-toggle-text' });
-    b.append(label);
+    }, { cls: 'm-toggle', key, sound: 'ui_click', attrs: { role: 'switch', 'aria-checked': 'false', 'aria-label': label } });
+    const state = el('span', { class: 'm-toggle-text' });
+    b.append(state);
     const sync = () => {
       const on = !!s()[key];
       b.setAttribute('aria-checked', on ? 'true' : 'false');
-      label.textContent = on ? 'On' : 'Off';
+      state.textContent = on ? 'On' : 'Off';
     };
     sync();
     syncers.push(sync);
@@ -93,20 +93,20 @@ export function settingsScreen(menu) {
       section(
         'Video',
         row('Quality', segmented('quality', [{ id: 'low', label: 'Low' }, { id: 'medium', label: 'Medium' }, { id: 'high', label: 'High' }]), 'Low for phones. World detail updates on the next load.'),
-        row('Show FPS', toggle('showFps')),
+        row('Show FPS', toggle('showFps', 'Show FPS')),
       ),
       section(
         'Sound',
-        row('Master volume', slider('masterVolume', { min: 0, max: 1, step: 0.05, fmt: pct, sound: true })),
-        row('Music & radio', slider('musicVolume', { min: 0, max: 1, step: 0.05, fmt: pct, sound: true })),
-        row('Sound effects', slider('sfxVolume', { min: 0, max: 1, step: 0.05, fmt: pct, sound: true })),
-        row('Subtitles', toggle('subtitles')),
+        row('Master volume', slider('masterVolume', { min: 0, max: 1, step: 0.05, fmt: pct, sound: true, label: 'Master volume' })),
+        row('Music & radio', slider('musicVolume', { min: 0, max: 1, step: 0.05, fmt: pct, sound: true, label: 'Music and radio volume' })),
+        row('Sound effects', slider('sfxVolume', { min: 0, max: 1, step: 0.05, fmt: pct, sound: true, label: 'Sound effects volume' })),
+        row('Subtitles', toggle('subtitles', 'Subtitles')),
       ),
       section(
         'Controls',
-        row('Look sensitivity', slider('sensitivity', { min: 0.3, max: 2.5, step: 0.05, fmt: (v) => `${v.toFixed(2)}×` })),
-        row('Invert look Y', toggle('invertY')),
-        row('Touch controls size', slider('touchScale', { min: 0.7, max: 1.5, step: 0.05, fmt: pct }), 'On-screen buttons on phones and tablets'),
+        row('Look sensitivity', slider('sensitivity', { min: 0.3, max: 2.5, step: 0.05, fmt: (v) => `${v.toFixed(2)}×`, label: 'Look sensitivity' })),
+        row('Invert look Y', toggle('invertY', 'Invert look Y')),
+        row('Touch controls size', slider('touchScale', { min: 0.7, max: 1.5, step: 0.05, fmt: pct, label: 'Touch controls size' }), 'On-screen buttons on phones and tablets'),
       ),
     ),
     el('footer', { class: 'm-foot' }, done, reset),
