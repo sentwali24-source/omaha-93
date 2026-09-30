@@ -37,11 +37,11 @@ const FIGHT = {
 };
 
 // homie formation around the player: (meters right, meters behind)
-// (kept off the line straight behind the player so the chase camera stays clear)
+// (flanking, nearly abreast: the chase camera behind the player stays clear)
 const FORMATION = [
-  [-1.5, 1.4],
-  [1.5, 1.4],
-  [2.7, 2.5],
+  [-1.9, 0.6],
+  [1.9, 0.6],
+  [-3.3, 1.5],
 ];
 
 let groupIds = 1;
@@ -369,9 +369,27 @@ export class Gangs {
     let cx = spot.x;
     let cz = spot.z;
     if (spot.type === 'hood') {
-      // keep the spawn point itself clear: the player respawns at the hood
-      cx += r.x * 5.6;
-      cz += r.z * 5.6;
+      // keep the spawn point itself clear (the player respawns at the hood), but stay on the
+      // sidewalk: try either side along the storefront before settling closer in
+      const L = game.layout;
+      for (const k of [5.6, -5.6, 4, -4, 2.6]) {
+        const x = spot.x + r.x * k;
+        const z = spot.z + r.z * k;
+        let ok = !L.isRoad(x, z) && col.isFree(x, z, 0.5, 0.3, 1.8);
+        for (let q = 0; ok && q < 4; q++) {
+          const a = (q / 4) * Math.PI * 2;
+          ok = !L.isRoad(x + Math.cos(a) * 1.0, z + Math.sin(a) * 1.0);
+        }
+        if (ok) {
+          cx = x;
+          cz = z;
+          break;
+        }
+        if (k === 2.6) {
+          cx = x;
+          cz = z;
+        }
+      }
     }
     const g = this._newGroup(set, spot, cx, cz, face, 'hang');
     spot.group = g;

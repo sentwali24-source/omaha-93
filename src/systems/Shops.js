@@ -108,7 +108,7 @@ export class Shops {
     if (!l) {
       l = {
         store: `Pop & chips (${money(PRICES.snack)})`,
-        food: `Chicken dinner (${money(PRICES.dinner)})`,
+        food: `${cap(foodItem(poi))} (${money(PRICES.dinner)})`,
         clothes: `Shop ${poi.name || 'clothes'}`,
         barber: `Haircut (${money(PRICES.haircut)})`,
         respray: `Respray your ride (${money(PRICES.respray)})`,
@@ -183,7 +183,7 @@ export class Shops {
       case 'store':
         return this._eat(poi, 'pop & chips', PRICES.snack, HEAL.snack);
       case 'food':
-        return this._eat(poi, 'chicken dinner', PRICES.dinner, HEAL.dinner);
+        return this._eat(poi, foodItem(poi), PRICES.dinner, HEAL.dinner);
       case 'clothes':
         return this._clothes(poi);
       case 'barber':
@@ -476,6 +476,20 @@ export class Shops {
     };
   }
 }
+
+/** What a food spot sells (same price / heal everywhere; the name sets the plate). */
+function foodItem(poi) {
+  const n = String(poi?.name || '').toLowerCase();
+  if (/bbq|bar-b|barbecue|rib/.test(n)) return 'rib plate';
+  if (/pasta|italian|pizza/.test(n)) return /pizza/.test(n) ? 'pizza & a pop' : 'plate of spaghetti';
+  if (/burger|drive|grill/.test(n)) return 'burger & fries';
+  if (/fish|catfish/.test(n)) return 'catfish dinner';
+  if (/soul|kitchen|cafe|diner/.test(n)) return 'soul food plate';
+  if (/taco|mexican/.test(n)) return 'taco plate';
+  return 'chicken dinner';
+}
+
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 
 /** Repaint a car: Vehicle.respray(color) (real vehicles), else setColor / a material fallback. */
 function applyVehicleColor(v, hex) {
