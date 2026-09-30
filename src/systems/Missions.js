@@ -26,6 +26,32 @@ const COOLDOWN_PASS = 60;
 const COOLDOWN_FAIL = 40;
 const OFFER_TIME = 150;
 
+// One-time control tips for a new player, shown as a subtitle the first time a job needs the move
+// (remembered in state.flags). Worded per device: keyboard / touch / gamepad.
+const TIPS = {
+  move: {
+    kb: 'WASD to walk, Shift to sprint. Click the screen, then move the mouse to look around. M opens the map.',
+    touch: 'Left thumb to walk, drag on the right side to look around. MAP shows the whole city.',
+    pad: 'Left stick to walk, right stick to look around, RT to sprint. Back opens the map.',
+  },
+  car: {
+    kb: 'Walk up to a car and press F to get in. F again gets you out.',
+    touch: 'Walk up to a car and tap CAR to get in. CAR again gets you out.',
+    pad: 'Walk up to a car and press Y to get in. Y again gets you out.',
+  },
+  fight: {
+    kb: 'Click or press J to punch. Keep swinging for a combo.',
+    touch: 'Tap PUNCH to swing. Keep tapping for a combo.',
+    pad: 'Press X to punch. Keep swinging for a combo.',
+  },
+  homies: {
+    kb: 'Homies follow you and ride in your car. G tells them to wait or follow.',
+    touch: 'Homies follow you and ride in your car.',
+    pad: 'Homies follow you and ride in your car. R3 tells them to wait or follow.',
+  },
+};
+const TIP_FOR_TEMPLATE = { wheels: 'car', escort: 'car', beef: 'fight', defend: 'fight', recruit: 'homies' };
+
 export class Missions {
   constructor(game) {
     this.game = game;
@@ -68,6 +94,20 @@ export class Missions {
     this._reset();
     this._pageIn = isNew ? 7 : 25;
     this._attachDebug();
+    if (isNew) this.later(1.5, () => this.tip('move'));
+  }
+
+  /** Queue a one-time control tip (see TIPS) as a subtitle; no-op once shown in this save. */
+  tip(id) {
+    const game = this.game;
+    const st = game.state;
+    if (!st || !TIPS[id]) return;
+    st.flags = st.flags || {};
+    if (st.flags[`tip.${id}`]) return;
+    const input = game.input;
+    const dev = input?.lastDevice === 'gamepad' ? 'pad' : game.touch?.visible || input?.lastDevice === 'touch' ? 'touch' : 'kb';
+    st.flags[`tip.${id}`] = true;
+    this._dialog.push({ speaker: 'TIP', text: TIPS[id][dev], color: '#9ad3ff' });
   }
 
   onGameEnd() {
@@ -266,7 +306,10 @@ export class Missions {
   spawn(setId, x, z, role = 'hang') {
     try {
       const a = this.game.gangs?.spawnMember?.({ setId, x, z, role });
-      return a && a.position ? a : null;
+      if (!a || !a.position) return null;
+      // Gangs keeps a running job's crew around even when the player is far from it
+      if (this.active?.status === 'active') (a.userData || (a.userData = {})).mission = this.active.id;
+      return a;
     } catch (err) {
       console.warn('[missions] spawnMember failed', err);
       return null;
@@ -477,6 +520,8 @@ export class Missions {
     }
     if (this.active !== m) return true; // passed / failed immediately
     if (def.brief) for (const [who, text] of def.brief) this.say(who, text, m);
+    const tip = TIP_FOR_TEMPLATE[m.template];
+    if (tip && !(tip === 'car' && game.player.vehicle)) this.tip(tip); // already driving: they know
     game.events.emit('mission:start', { mission: m }); // the HUD shows the title card
     return true;
   }
