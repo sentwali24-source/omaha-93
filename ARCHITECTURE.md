@@ -541,7 +541,8 @@ waypoint by click/tap (adds a 'waypoint' marker). Pauses the game while open (`g
 
 `game.touch` (HUD agent): on touch devices only (`input.isTouch`): left virtual joystick →
 `input.setVirtualMove`, right-half drag → `input.addLook`, buttons (attack, jump, sprint, vehicle,
-interact — shows the current prompt label —, sign, map, pause, horn/radio when driving). Scales with
+interact — shows the current prompt label —, sign, map, pause, horn/radio when driving,
+homies follow/wait while homies roll with you). Scales with
 settings.touchScale. Hidden in menus.
 
 ## 21. Events
