@@ -1,7 +1,7 @@
 // Shared helpers for the npc-* scenarios (not a scenario itself).
 
 /** Wait until `seconds` of GAME time have passed (headless fps is low, dt is clamped). */
-export async function waitGame(h, seconds, capMs = 60000) {
+export async function waitGame(h, seconds, capMs = 120000) {
   const t0 = await h.game((g) => g.time.elapsed);
   const start = Date.now();
   for (;;) {
