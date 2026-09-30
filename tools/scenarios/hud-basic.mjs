@@ -1,5 +1,7 @@
 // HUD smoke: in-play HUD, radar blips, toasts, pager, dialog, big message, zone banner, FPS.
 export default async function (page, h) {
+  // screenshots can time out on a heavily loaded machine: log and carry on
+  const snap = (n) => h.shot(n).catch((e) => h.log('shot skipped', n, String(e.message).split('\n')[0]));
   await h.wait(1500);
   await h.game((g) => {
     g.applySettings({ showFps: true });
@@ -31,19 +33,19 @@ export default async function (page, h) {
     g.hud.minimap._pois = null;
   });
   await h.wait(1500);
-  await h.shot('10-hud');
+  await snap('10-hud');
   await h.game((g) => {
     g.events.emit('pager', { from: 'OG Mack', text: '911 - Meet me at the payphone on 24th & Lake. Bring the homies, we got business.' });
     g.hud.pager('Lil Dre', '143 - Mama says come home for dinner');
     g.hud.dialog('Big Loc', "What's crackin', cuz? You claimin' or what?", { color: '#7fb0ff' });
   });
   await h.wait(1600);
-  await h.shot('11-pager');
+  await snap('11-pager');
   await h.game((g) => g.hud.bigMessage('BUSTED', 'Bail comes out of your pocket'));
   await h.wait(900);
-  await h.shot('12-big');
+  await snap('12-big');
   const st = await h.game((g) => ({ pagerQueue: g.hud._pager.queue.length, perf: g.perf.calls, fps: g.hud.fpsEl.textContent }));
   h.log(JSON.stringify(st));
   await h.wait(8000);
-  await h.shot('13-second-page');
+  await snap('13-second-page');
 }

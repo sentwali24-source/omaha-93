@@ -18,7 +18,7 @@
   --side-light: #7fb0ff;
   --side-dark: #0c2a74;
   /* Impact on desktop; condensed heavy system faces on iOS / Android; bold sans elsewhere */
-  --hud-font: Impact, Haettenschweiler, 'HelveticaNeue-CondensedBlack', 'AvenirNextCondensed-Heavy', 'Futura-CondensedExtraBold', 'Arial Narrow Bold',
+  --hud-font: 'Anton', Impact, Haettenschweiler, 'HelveticaNeue-CondensedBlack', 'AvenirNextCondensed-Heavy', 'Futura-CondensedExtraBold', 'Arial Narrow Bold',
     'sans-serif-condensed', 'Franklin Gothic Heavy', 'Arial Black', Arial, sans-serif;
   --o: #000;
   /* thick cartoon outline + drop shadow for display text */
@@ -219,13 +219,13 @@
   overflow: visible;
 }
 .hud-heat .shield {
-  fill: rgba(0, 0, 0, 0.42);
-  stroke: rgba(235, 228, 205, 0.45);
-  stroke-width: 1.3;
+  fill: rgba(0, 0, 0, 0.58);
+  stroke: rgba(235, 228, 205, 0.62);
+  stroke-width: 1.4;
   stroke-linejoin: round;
 }
 .hud-heat .star {
-  fill: rgba(235, 228, 205, 0.22);
+  fill: rgba(235, 228, 205, 0.3);
 }
 .hud-heat .badge.on .shield {
   fill: #f5c542;
@@ -310,6 +310,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  padding-right: 5px; /* room for the italic overhang at the screen edge */
   font-size: 24px;
   font-style: italic;
   color: var(--tc);
@@ -1039,13 +1040,14 @@
   font-size: 20px;
 }
 .hud-root.touch .hud-zone {
-  left: 50%;
-  right: auto;
+  /* full-width box with centered text (left: 50% + translate would cap it at half the screen) */
+  left: 4vw;
+  right: 4vw;
   top: 30%;
   bottom: auto;
   text-align: center;
-  transform: translateX(-50%);
-  max-width: 92vw;
+  transform: none;
+  max-width: none;
 }
 .hud-root.touch .zone-title {
   font-size: clamp(30px, 8vw, 44px);
@@ -1059,15 +1061,27 @@
   top: 40%;
 }
 .hud-root.touch .hud-dialog {
-  bottom: calc(var(--sb) + 318px * var(--ts, 1));
+  /* portrait: above the ACTION prompt pill of the button cluster; centered with auto margins so
+     the box may use the whole width (left: 50% would cap it at half the screen) */
+  bottom: calc(var(--sb) + 362px * var(--ts, 1));
+  left: 4vw;
+  right: 4vw;
+  width: fit-content;
+  margin: 0 auto;
+  transform: none;
   max-width: 92vw;
   font-size: 15px;
   padding: 6px 26px 7px;
 }
 @media (orientation: landscape) {
+  /* landscape: the free strip between the joystick and the button cluster */
   .hud-root.touch .hud-dialog {
-    bottom: calc(var(--sb) + 12px);
-    max-width: 42vw;
+    bottom: calc(var(--sb) + 8px);
+    left: calc(var(--sl) + 168px * var(--ts, 1));
+    right: calc(var(--sr) + 236px * var(--ts, 1));
+    width: auto;
+    max-width: none;
+    padding: 5px 18px 6px;
   }
 }
 .hud-root.touch .dlg-speaker {
@@ -1122,6 +1136,28 @@
   }
   .hud-root.touch .hud-objective.new {
     animation: hud-lowflash 0.3s steps(2) 3;
+  }
+}
+/* short landscape phones: subtitles clear the flatter cluster, smaller pager */
+@media (orientation: landscape) and (max-height: 520px) {
+  .hud-root.touch .hud-dialog {
+    right: calc(var(--sr) + 288px * var(--ts, 1));
+    font-size: 14px;
+    line-height: 1.25;
+  }
+  .hud-root.touch .dlg-speaker {
+    font-size: 15px;
+  }
+  /* zone banner above the big center message so the two never stack on top of each other */
+  .hud-root.touch .hud-zone {
+    top: calc(var(--st) + 21%);
+  }
+  .hud-root.touch .hud-big {
+    top: 44%;
+  }
+  /* a smaller pager so it doesn't bury the top of a short screen */
+  .hud-root.touch .hud-pager.show {
+    transform: translate(-50%, 0) rotate(-1.5deg) scale(0.66);
   }
 }
 @media (max-width: 420px) {
@@ -1218,11 +1254,11 @@
   animation-name: hud-zone-touch;
 }
 @keyframes hud-zone-touch {
-  0% { opacity: 0; transform: translate(-50%, 0) scale(1.5); }
-  8% { opacity: 1; transform: translate(-50%, 0) scale(0.96); }
-  12% { transform: translate(-50%, 0) scale(1); }
-  84% { opacity: 1; transform: translate(-50%, 0); }
-  100% { opacity: 0; transform: translate(-50%, 0); }
+  0% { opacity: 0; transform: scale(1.5); }
+  8% { opacity: 1; transform: scale(0.96); }
+  12% { transform: scale(1); }
+  84% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: none; }
 }
 @keyframes hud-obj-in {
   0% { opacity: 0; transform: translateX(-30px); }
@@ -1273,4 +1309,24 @@
 @keyframes hud-led {
   0% { opacity: 1; }
   100% { opacity: 0.3; }
+}
+
+/* touch in landscape: the radio name drops in at the top center (like on desktop) instead of
+   under the stats, where it collided with the +REP / +$ toasts; the objective card it covers for a
+   moment steps aside while it shows */
+@media (orientation: landscape) {
+  .hud-root.touch .hud-radio {
+    top: calc(var(--st) + 8px);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    padding: 4px 16px 5px;
+    background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.5) 18%, rgba(0, 0, 0, 0.5) 82%, transparent);
+  }
+  .hud-root.touch .hud-radio.show {
+    animation-name: hud-radio;
+  }
+  .hud-root.touch:has(.hud-radio.show) .hud-objective {
+    visibility: hidden;
+  }
 }

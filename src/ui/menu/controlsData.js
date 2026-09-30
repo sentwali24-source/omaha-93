@@ -19,16 +19,17 @@ export const KEYBOARD = [
 ];
 
 export const TOUCH = [
-  { keys: [['Left stick']], action: 'Walk / steer (push further to run)' },
+  { keys: [['Left thumb']], action: 'Walk / drive (the stick appears under your thumb)' },
   { keys: [['Drag right side']], action: 'Look around' },
-  { keys: [['PUNCH']], action: 'Punch combo' },
-  { keys: [['JUMP']], action: 'Jump · handbrake in a car' },
-  { keys: [['RUN']], action: 'Hold to sprint' },
-  { keys: [['CAR']], action: 'Get in / out · carjack' },
-  { keys: [['USE']], action: 'Context action (shows what it does)' },
+  { keys: [['PUNCH']], action: 'Punch (tap again for a combo)' },
+  { keys: [['JUMP']], action: 'Jump' },
+  { keys: [['SPRINT']], action: 'Hold to run' },
+  { keys: [['CAR']], action: 'Get in / out · carjack (glows next to a car)' },
+  { keys: [['ACTION']], action: 'Use / talk / shop (shows what it does; hold for tags)' },
   { keys: [['SIGN']], action: 'Throw up your set' },
-  { keys: [['HORN'], ['RADIO']], action: 'Shown while driving' },
-  { keys: [['MAP'], ['❚❚']], action: 'Map · pause (top of the screen)' },
+  { keys: [['BRAKE'], ['HORN'], ['RADIO']], action: 'In a car: handbrake, horn, next station' },
+  { keys: [['MAP'], ['Radar']], action: 'Full map' },
+  { keys: [['❚❚']], action: 'Pause (top right)' },
 ];
 
 export const GAMEPAD = [

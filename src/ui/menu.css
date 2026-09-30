@@ -1177,7 +1177,8 @@
   position: fixed;
   z-index: 45;
   left: 50%;
-  top: calc(var(--safe-t) + 24vh);
+  /* just below the HUD radar + location line (radar = clamp(104px, 30% of the short side, 150px)) */
+  top: calc(var(--safe-t) + 12px + clamp(104px, 30vw, 150px) + 72px);
   transform: translateX(-50%);
   display: flex;
   align-items: center;

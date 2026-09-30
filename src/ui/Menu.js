@@ -68,6 +68,7 @@ export class Menu {
     this._buildDom();
     this._bindInput();
     game.events?.on?.('resize', () => this._updateRotateHint());
+    window.addEventListener('resize', () => this._updateRotateHint());
     game.events?.on?.('settings:change', () => this._syncLite());
   }
 
@@ -139,12 +140,29 @@ export class Menu {
 
   onGameEnd() {
     this.pauseOpen = false;
+    this._mapFromPause = false;
     this._updateRotateHint();
   }
 
   update(dt) {
     const g = this.game;
     if (!this._debugInstalled && g.debugApi) this._installDebug();
+
+    // The map was opened from the pause menu: straight back to it (on the Map item) once it closes.
+    if (this._mapFromPause && !g.mapScreen?.open) {
+      this._mapFromPause = false;
+      if (g.mode === 'play' && g.paused && !this.pauseOpen) {
+        this.pauseOpen = true;
+        this._open('pause');
+        this.stack = [];
+        this.go('pause');
+        const mapItem = this.current?.el.querySelector('[data-key="map"]');
+        if (mapItem) {
+          this._pendingFocus = mapItem;
+          if (!this._touchMode) this.focusEl(mapItem, true);
+        }
+      }
+    }
 
     // Paused in play with no menu and no map (e.g. the map closed without resuming): show the pause
     // menu so the player is never stuck on a frozen screen.
@@ -342,7 +360,9 @@ export class Menu {
     } catch (err) {
       console.error('[menu] map failed to open', err);
     }
-    if (!ms.open) {
+    if (ms.open) {
+      this._mapFromPause = true;
+    } else {
       // map unavailable: straight back to the pause menu
       this.pauseOpen = true;
       this._open('pause');

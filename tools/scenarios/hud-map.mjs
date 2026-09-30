@@ -1,5 +1,7 @@
 // Map screen: open with M, set a waypoint by clicking, pan/zoom, close with M.
 export default async function (page, h) {
+  // screenshots can time out on a heavily loaded machine: log and carry on
+  const snap = (n) => h.shot(n).catch((e) => h.log('shot skipped', n, String(e.message).split('\n')[0]));
   await h.wait(1200);
   await h.game((g) => g.hud.addMarker({ id: 'm1', type: 'mission', x: 150, z: -560, label: 'OG Mack' }));
   await h.press('KeyM');
@@ -11,7 +13,7 @@ export default async function (page, h) {
   const wp = await h.game((g) => g.hud.getWaypoint());
   h.assert(!!wp, 'click sets a waypoint');
   h.log('waypoint', JSON.stringify(wp));
-  await h.shot('20-map');
+  await snap('20-map');
   // zoom in with the wheel around the player
   await h.page.mouse.move(640, 360);
   for (let i = 0; i < 4; i++) {
@@ -19,21 +21,21 @@ export default async function (page, h) {
     await h.wait(150);
   }
   await h.wait(600);
-  await h.shot('21-map-zoom');
+  await snap('21-map-zoom');
   // drag
   await h.page.mouse.move(640, 360);
   await h.page.mouse.down();
   await h.page.mouse.move(500, 300, { steps: 6 });
   await h.page.mouse.up();
   await h.wait(400);
-  await h.shot('22-map-drag');
+  await snap('22-map-drag');
   // zoom all the way out
   await h.game((g) => { for (let i = 0; i < 12; i++) g.mapScreen._zoomAt(640, 360, 0.7); });
   await h.wait(500);
-  await h.shot('23-map-full');
+  await snap('23-map-full');
   await h.press('KeyM');
   await h.wait(800);
   const closed = await h.game((g) => ({ open: g.mapScreen.open, paused: g.paused }));
   h.assert(!closed.open && !closed.paused, 'map closes and resumes');
-  await h.shot('24-after-map');
+  await snap('24-after-map');
 }

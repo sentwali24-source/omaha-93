@@ -10,7 +10,7 @@
 
 .touch-root {
   --ts: 1;
-  --hud-font: Impact, Haettenschweiler, 'HelveticaNeue-CondensedBlack', 'AvenirNextCondensed-Heavy', 'Arial Narrow Bold', 'sans-serif-condensed', 'Arial Black',
+  --hud-font: 'Anton', Impact, Haettenschweiler, 'HelveticaNeue-CondensedBlack', 'AvenirNextCondensed-Heavy', 'Arial Narrow Bold', 'sans-serif-condensed', 'Arial Black',
     Arial, sans-serif;
   position: fixed;
   inset: 0;
@@ -207,6 +207,17 @@
   .tb-brake { --x: 70; --y: 76; --s: 84; }
   .tb-horn { --x: 170; --y: 46; --s: 60; }
   .tb-radio { --x: 252; --y: 46; --s: 54; }
+  /* MAP moves up under PAUSE so the bottom strip stays free for subtitles (the radar opens it too) */
+  .tb.tb-map {
+    right: calc(env(safe-area-inset-right, 0px) + 10px);
+    top: calc(env(safe-area-inset-top, 0px) + 18px + 44px * var(--ts));
+    bottom: auto;
+    width: calc(44px * var(--ts));
+    height: calc(44px * var(--ts));
+    border-radius: 10px;
+  }
+  .tb-map .tb-icon { width: 50%; height: 50%; }
+  .tb-map .tb-label { display: none; }
 }
 
 .touch-root:not(.in-car) .mode-car,

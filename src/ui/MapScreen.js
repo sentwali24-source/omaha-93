@@ -16,7 +16,8 @@ const MIN_ZOOM_PAD = 0.92; // fraction of the screen the whole city fills at max
 const MAX_SCALE = 4.5; // css px per meter
 const RIVAL_RANGE = 80;
 const POI_TYPES = { clothes: 1, food: 1, garage: 1, payphone: 1 };
-const DISPLAY_FONT = 'Impact, "HelveticaNeue-CondensedBlack", "Arial Black", Arial, sans-serif';
+// self-hosted Anton (styles.css) first, like the menu and HUD; every fallback is a heavy face already
+const DISPLAY_FONT = '"Anton", Impact, "HelveticaNeue-CondensedBlack", "Arial Black", Arial, sans-serif';
 
 // Where the district names go (North Omaha is covered by turf labels, so its name sits up top).
 const DISTRICT_ANCHORS = {
@@ -505,7 +506,7 @@ export class MapScreen {
       const y = (a.z - v.oz) * v.s;
       if (x < -300 || x > v.w + 300 || y < -60 || y > v.h + 60) continue;
       const sz = dist.id === 'oldmarket' || dist.id === 'nodo' ? size * 0.72 : size;
-      this._text(ctx, dist.name.toUpperCase(), x, y, { size: sz, color: 'rgba(255, 246, 220, 0.92)', stroke: 'rgba(0,0,0,0.85)', weight: 900, font: DISPLAY_FONT, spacing: 3 * d, lw: 4 * d, avoid: true });
+      this._text(ctx, dist.name.toUpperCase(), x, y, { size: sz, color: 'rgba(255, 246, 220, 0.92)', stroke: 'rgba(0,0,0,0.85)', weight: 400, font: DISPLAY_FONT, spacing: 3 * d, lw: 4 * d, avoid: true });
     }
   }
 
@@ -527,7 +528,7 @@ export class MapScreen {
       if (size < 7 * d) continue;
       const info = zoneInfo(g, zone);
       const color = info.set ? info.set.accent : '#e8e2cf';
-      this._text(ctx, name, x, y - size * 0.55, { size, color, weight: 900, font: DISPLAY_FONT, spacing: 0.5 * d, lw: 3.5 * d, avoid: false });
+      this._text(ctx, name, x, y - size * 0.55, { size, color, weight: 400, font: DISPLAY_FONT, spacing: 0.5 * d, lw: 3.5 * d, avoid: false });
       const sub = info.set ? `${info.set.short} · ${Math.round(info.control)}%` : 'CONTESTED';
       this._text(ctx, sub, x, y + size * 0.6, { size: Math.max(8 * d, size * 0.7), color: '#fff', weight: 800, spacing: 1.5 * d, lw: 3 * d, avoid: false });
       if (info.set) {
