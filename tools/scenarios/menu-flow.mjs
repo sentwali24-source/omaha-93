@@ -41,7 +41,7 @@ export default async function (page, h) {
   await h.shot('21-pause');
 
   await tap('.m-item[data-key="settings"]');
-  await h.wait(500);
+  await h.wait(1500);
   await h.shot('22-pause-settings');
   await h.press('Escape');
   await h.wait(400);
@@ -57,7 +57,8 @@ export default async function (page, h) {
   h.assert(await h.game((g) => !g.paused && !g.menu.pauseOpen && g.input.enabled), 'Esc resumes');
 
   await h.game((g) => g.menu.showPause());
-  await h.wait(500);
+  await h.wait(1500);
+  h.log('before quit', JSON.stringify(await h.game((g) => ({ paused: g.paused, pauseOpen: g.menu.pauseOpen, screen: g.debugApi.menu.screen(), map: g.mapScreen.open }))));
   await tap('.m-item[data-key="quit"]');
   await h.wait(400);
   await h.shot('24-quit-confirm');

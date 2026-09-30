@@ -17,10 +17,18 @@ export default async function (page, h) {
       g.debugApi.teleport(a.x, a.z);
       g.cameraRig?.snap?.();
     }, at);
+    // wait until the player has actually arrived and the prompt has settled for two samples
     let prompt = null;
-    for (let i = 0; i < 12 && !prompt; i++) {
+    let prev = undefined;
+    for (let i = 0; i < 14; i++) {
       await h.wait(400);
-      prompt = await h.game((g) => g.hud.promptText);
+      const s = await h.game((g, a) => ({ p: g.hud.promptText, near: Math.hypot(g.player.position.x - a.x, g.player.position.z - a.z) < 1.5 }), at);
+      if (s.near && s.p && s.p === prev) {
+        prompt = s.p;
+        break;
+      }
+      prev = s.p;
+      prompt = s.p;
     }
     const touchLabel = await h.game((g) => (g.touch.visible ? g.touch.promptText.textContent : null));
     h.log(label, JSON.stringify({ prompt, touchLabel }));
@@ -64,7 +72,7 @@ export default async function (page, h) {
   await h.game((g) => g.debugApi.missions.abort());
   const roll = await promptAt('homie', (g) => {
     const mine = g.state.player.setId;
-    const a = g.actors.find((q) => q.kind === 'gang' && q.setId === mine && q.alive && !q.userData?.homie);
+    const a = g.actors.find((q) => q.kind === 'gang' && q.faction === mine && q.alive && !q.userData?.homie);
     return a ? { x: a.position.x + 1.1, z: a.position.z } : null;
   });
   if (roll) await h.shot('54-prompt-homie');

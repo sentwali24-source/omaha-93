@@ -1140,6 +1140,13 @@
   .hud-root.touch .dlg-speaker {
     font-size: 15px;
   }
+  /* zone banner above the big center message so the two never stack on top of each other */
+  .hud-root.touch .hud-zone {
+    top: calc(var(--st) + 21%);
+  }
+  .hud-root.touch .hud-big {
+    top: 44%;
+  }
   /* a smaller pager so it doesn't bury the top of a short screen */
   .hud-root.touch .hud-pager.show {
     transform: translate(-50%, 0) rotate(-1.5deg) scale(0.66);

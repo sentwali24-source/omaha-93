@@ -22,8 +22,15 @@ export default async function (page, h) {
   const m = await h.game((g) => ({ mapOpen: !!g.mapScreen.open, paused: g.paused, pauseOpen: g.menu.pauseOpen }));
   h.log('map', JSON.stringify(m));
   h.assert(m.paused && (m.mapOpen || m.pauseOpen), 'map opens (or pause menu stays) while paused');
-  if (m.mapOpen) await h.game((g) => g.mapScreen.close());
-  await h.wait(600);
+  if (m.mapOpen) {
+    await h.shot('30b-map-from-pause');
+    await h.game((g) => g.mapScreen.close());
+    await h.wait(900);
+    const back = await h.game((g) => ({ paused: g.paused, pauseOpen: g.menu.pauseOpen, screen: g.debugApi.menu.screen(), focus: document.activeElement?.dataset?.key || null }));
+    h.log('after map', JSON.stringify(back));
+    h.assert(back.paused && back.pauseOpen && back.screen === 'pause', 'closing the map returns to the pause menu');
+  }
+  await h.wait(300);
 
   await h.game((g) => g.menu.hidePause());
   await h.wait(500);
