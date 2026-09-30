@@ -97,6 +97,7 @@ export class Player extends Actor {
 
     // vehicles
     this._enter = null; // walk-to-door state
+    this._exitWanted = false; // F pressed while too fast to bail: brake, then get out
     this.down = null; // 'busted' while waiting for Game's respawn
 
     this._last = new THREE.Vector3(x, 0, z);
@@ -547,6 +548,7 @@ export class Player extends Actor {
     if (!v) return;
     const game = this.game;
     this._enter = null;
+    this._exitWanted = false;
     const prev = v.driver;
     if (prev && prev !== this) {
       // carjack: Traffic ejects the NPC driver as a fleeing pedestrian
@@ -580,6 +582,7 @@ export class Player extends Actor {
     const v = this.vehicle;
     if (!v) return false;
     if (!force && Math.abs(v.speed || 0) > EXIT_MAX_SPEED) return false;
+    this._exitWanted = false;
     const game = this.game;
     let exit = null;
     try {
@@ -632,6 +635,11 @@ export class Player extends Actor {
       c.steer = input.move.x;
       c.brake = brake;
       c.handbrake = input.held('handbrake');
+      if (this._exitWanted) {
+        // F pressed at speed: stand on the brakes, hop out once slow enough
+        c.throttle = 0;
+        c.brake = 1;
+      }
       if (input.pressed('horn')) v.horn?.();
     } else if (c) {
       c.throttle = 0;
@@ -648,7 +656,10 @@ export class Player extends Actor {
     this.character.steer = input.move.x;
     // stamina recovers while driving
     this.stamina = Math.min(1, this.stamina + dt * 0.2);
-    if (!this.down && input.pressed('vehicle')) this.exitVehicle();
+    if (!this.down && input.pressed('vehicle')) {
+      if (this._exitWanted) this._exitWanted = false; // pressed again: keep driving
+      else if (!this.exitVehicle()) this._exitWanted = true;
+    } else if (this._exitWanted && !this.down && Math.abs(v.speed || 0) <= EXIT_MAX_SPEED) this.exitVehicle();
   }
 
   // ---------------------------------------------------------------- respawn / cleanup
