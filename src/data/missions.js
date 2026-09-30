@@ -60,7 +60,7 @@ export const STORY = [
     ],
     objective: 'Meet {og} at the hood',
     outro: [
-      ['og', "Look at you. Summer of '93 and you finally old enough to put in work."],
+      ['og', "Look at you. Summer of '93 and you finally old enough to rep the set."],
       ['og', 'The {short} been holding down {hoodZone} since before you could ride a bike. Nobody gives us nothing.'],
       ['og', "Keep that pager on your hip. When it buzzes, find a payphone. That's how we move."],
     ],
@@ -275,10 +275,10 @@ export const JOBS = {
     reward: { cash: 80, rep: 30 },
   },
   recruit: {
-    pitch: 'We need bodies at the hood tonight. Bring two homies.',
+    pitch: 'We need numbers at the hood tonight. Bring two homies.',
     titles: ['Numbers Game', 'Roll Call'],
     brief: [
-      ['og', 'We need bodies at the hood tonight.'],
+      ['og', 'We need numbers at the hood tonight.'],
       ['og', 'Round up {count} homies and bring them through.'],
     ],
     objective: 'Recruit {count} homies',
@@ -296,7 +296,7 @@ export const JOBS = {
     timer: 180,
   },
   delivery: {
-    pitch: 'Something needs to get across town. No questions.',
+    pitch: 'Something needs to get across town. Quick.',
     titles: ['Special Delivery', 'Run It Over', 'On the Way'],
     brief: [
       ['og', 'Need {item} run over to {dest}.'],

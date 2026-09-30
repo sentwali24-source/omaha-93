@@ -98,7 +98,7 @@ export function colorName(hex) {
   else h = (r - g) / (max - min) + 4;
   h = (h * 60 + 360) % 360;
   if (h < 15 || h >= 340) return l < 0.3 ? 'maroon' : 'red';
-  if (h < 40) return l < 0.35 ? 'brown' : 'orange';
+  if (h < 40) return l < 0.35 ? 'brown' : 'tangerine'; // briefs say "a {target}": keep color words consonant-first
   if (h < 65) return l < 0.4 ? 'gold' : 'yellow';
   if (h < 160) return l < 0.3 ? 'dark green' : 'green';
   if (h < 200) return 'teal';
@@ -230,7 +230,7 @@ export const TEMPLATES = {
       m.data.garage = garage;
       m.tokens.target = describeCar(car);
       m.tokens.garage = garage.name || 'the body shop';
-      m.tokens.street = game.layout.describe(car.position.x, car.position.z).street || 'the block';
+      m.tokens.street = (game.layout.describe(car.position.x, car.position.z).street || 'the block').replace(/^near /, '');
       return true;
     },
     begin(M, m) {

@@ -52,7 +52,7 @@ export const CIV = {
   flee: ['Somebody call the police!', 'Lord have mercy!', 'Not again...', "Y'all are crazy!", "I ain't seen nothin'!", 'Run!', 'Oh my God!', "I'm out of here!"],
   car: ['Slow down, fool!', 'Watch the road!', 'This a sidewalk!', 'You tryin\' to kill somebody?!'],
   call: ["I'm callin' the police!", "That's it, I'm callin' the cops."],
-  phone: (street) => `Police? There's trouble at ${street}! Hurry!`,
+  phone: (street) => `Police? There's trouble at ${String(street).replace(/^near /, '')}! Hurry!`,
   jacked: ['My car! He took my car!', 'Somebody stop him! That\'s my ride!'],
   chatter: ['Girl, stop.', 'For real?', 'Straight up?', "No, you didn't.", 'Mm-hm.', 'Word?', 'Get outta here!', 'That\'s what I said!'],
 };
@@ -104,7 +104,7 @@ export function allyHit() {
 }
 
 export const HOMIE = {
-  recruit: (side) => (side === 'bloods' ? pick(['I got you, blood. Let\'s roll.', 'Say less. Let\'s ride, blood.']) : pick(["Let's roll, cuz.", "Say less. Let's ride, cuz."])),
+  recruit: (side) => (side === 'bloods' ? pick(['I got you, blood. Let\'s roll.', 'No doubt. Let\'s ride, blood.']) : pick(["Let's roll, cuz.", "No doubt. Let's ride, cuz."])),
   full: ["Nah, you already rollin' deep.", 'You got enough homies with you.'],
   wait: ["Aight, we'll post up right here.", "We holdin' it down.", 'We ain\'t goin\' nowhere.'],
   follow: ["Let's ride!", 'Right behind you.', 'On your six.'],
@@ -123,11 +123,13 @@ export const COP = {
   arrest: ["You're under arrest.", 'Hands behind your back. Now.', 'You have the right to remain silent.'],
   fight: ["Don't make this harder than it is!", 'Stop resisting!', 'Get down!'],
   investigate: ['Dispatch, show me en route.', "Anybody see what happened here?", "Let's take a look around."],
-  patrol: ['Evening.', 'Stay out of trouble, now.', 'Move along.', 'Keep it moving.'],
+  patrol: ['Take it easy.', 'Stay out of trouble, now.', 'Move along.', 'Keep it moving.'],
   hit: ['Officer down! I need backup!', "That's assault on an officer!"],
 };
 
 export function dispatchLine(kind, street, dir) {
+  // layout.describe() says "near X & Y" off the street; the lines below add their own preposition
+  street = String(street || '').replace(/^near /, '');
   switch (kind) {
     case 'assault':
       return `All units, assault reported near ${street}.`;

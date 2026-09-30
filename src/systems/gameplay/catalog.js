@@ -13,7 +13,7 @@ export const PRICES = {
 export const HEAL = { snack: 30, dinner: 100 };
 
 // OUTFITS / HATS come from data/sets.js; prices live here.
-export const OUTFIT_PRICES = { starter: 60, flannel: 35, tee: 25, jersey: 50, hoodie: 40 };
+export const OUTFIT_PRICES = { starter: 100, flannel: 35, tee: 25, jersey: 50, hoodie: 40 };
 export const HAT_PRICES = { none: 0, cap: 15, beanie: 12, bandana: 8 };
 
 export const HAIRCUTS = [

@@ -1422,7 +1422,7 @@ export class Gangs {
     g.destZ = dest.z;
     this.beef = { group: g, zoneId: zone.id, setId: set.id, t: 0, markT: 0 };
     const mySet = setById(ps);
-    const street = game.layout.describe(pt.x, pt.z).street || zone.name;
+    const street = (game.layout.describe(pt.x, pt.z).street || zone.name).replace(/^near /, '');
     game.events.emit('pager', { from: OGS[ps]?.name || this.ogName, text: `911 ${set.short} ROLLIN THRU ${zone.name.toUpperCase()} BY ${street.toUpperCase()}. HANDLE IT` });
     this._markBeef();
     return true;

@@ -530,7 +530,7 @@ removeMarker(id)
 fade(toBlack: bool, seconds)
 ```
 Always-on HUD: health + stamina, cash, rep + rank, heat stars (police badges), clock, location line
-(`layout.describe` → "N 24th St & Lake St · Lake Street Bloods turf"), zone-change banner,
+(`layout.describe` → "N 24th St & Lake St · Lakeview Bloods turf"), zone-change banner,
 minimap (rotating with camera: roads, blocks, water, turf tint by owner, blips for homies, rivals,
 cops, markers, shops), radio station name in car, FPS if settings.showFps.
 Listens to cash:change rep:change rank:up heat:change pager mission:* turf:change player:down etc.

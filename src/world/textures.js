@@ -1643,7 +1643,8 @@ function drawSignBoard(c, w, h, biz, r, emissive) {
       c.strokeRect(9, 9, w - 18, h - 18);
     }
     fitText(c, text, w / 2, h * 0.42, w - 26, h * 0.5, FONT_BLOCK, fg, style === 'board' ? 'rgba(0,0,0,0.35)' : null, 3);
-    if (sub) fitText(c, sub, w / 2, h * 0.79, w - 34, h * 0.19, FONT_SANS, style === 'box' ? mix(fg, '#000000', 0.2) : fg);
+    // board: sit the sub line inside the painted frame (its bottom edge is at h - 9)
+    if (sub) fitText(c, sub, w / 2, style === 'board' ? h * 0.73 : h * 0.79, w - 34, style === 'board' ? h * 0.16 : h * 0.19, FONT_SANS, style === 'box' ? mix(fg, '#000000', 0.2) : fg);
     grain(c, w, h, style === 'board' ? 0.2 : 0.08, 'overlay', r);
     streaks(c, w, h, 6, 'rgba(40,30,20,0.8)', style === 'board' ? 0.25 : 0.1, r);
   } else if (style === 'neon') {
@@ -1743,7 +1744,7 @@ function drawBillboard(c, w, h, b, r) {
     c.font = `bold ${Math.round(h * 0.14)}px monospace`;
     c.textAlign = 'center';
     c.textBaseline = 'middle';
-    c.fillText('411-911', w * 0.86, h * 0.43);
+    c.fillText('411-911', w * 0.86, h * 0.43, w * 0.15); // squeeze into the LCD
   } else if (art === 'wave') {
     c.strokeStyle = b.fg;
     c.globalAlpha = 0.5;
