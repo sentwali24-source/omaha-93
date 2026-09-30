@@ -199,7 +199,7 @@ export class CameraRig {
     const want = (down ? 6.2 : PRESETS[this.presetIndex] + this.touchBonus) + sprint;
     this.distance = snap ? want : damp(this.distance, want, 3, dt);
     // back against a wall: swing toward the most open side instead of staring down at the head
-    if (!looking && !this._lookBehind && (snap || this._lookIdle > 0.35)) this._avoidWalls(dt, this.distance, snap);
+    if (!looking && !this._lookBehind && (snap || this._lookIdle > 1.0)) this._avoidWalls(dt, this.distance, snap);
     const yaw = this.yaw + (this._lookBehind ? Math.PI : 0);
     this._place(dt, yaw, this.pitch, this.distance, snap);
     this._fov = damp(this._fov, BASE_FOV + (sprint ? 4 : 0), 3, dt);
