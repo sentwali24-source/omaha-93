@@ -1,14 +1,53 @@
-/* Base styles shared by every UI module. Module-specific styles live in their own css files. */
+/* Base styles shared by every UI module. Module-specific styles live in their own css files.
+ *
+ * Fonts are self-hosted (public/fonts, SIL OFL / Apache 2.0, see public/fonts/LICENSES.txt) so the
+ * game looks right offline and never waits on a third-party request. Every stack falls back to
+ * system condensed faces (Impact, Arial Narrow, ...) if a file is missing.
+ */
+@font-face {
+  font-family: 'Anton';
+  src: local('Anton'), local('Anton-Regular'), url('/fonts/anton.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bebas Neue';
+  src: local('Bebas Neue'), local('BebasNeue-Regular'), url('/fonts/bebas-neue.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Permanent Marker';
+  src: local('Permanent Marker'), local('PermanentMarker-Regular'), url('/fonts/permanent-marker.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'VT323';
+  src: local('VT323'), local('VT323-Regular'), url('/fonts/vt323.woff2') format('woff2');
+  font-display: swap;
+}
+
 :root {
   --bg: #0b0b12;
+  --bg-deep: #07050d;
   --ink: #f4efe3;
   --muted: #a39d8f;
   --gold: #f2b632;
+  --orange: #ff7a2f;
+  --magenta: #c2346b;
+  --purple: #5b2a86;
   --crip: #1f5fe0;
   --blood: #d4202c;
-  --font-display: Impact, 'Haettenschweiler', 'Arial Narrow Bold', 'Arial Black', sans-serif;
+  /* the OMAHA '93 sunset: gold → orange → purple */
+  --sunset: linear-gradient(180deg, #fff0a0 0%, #ffc53d 24%, #ff8a2c 46%, #ef4f4a 64%, #c2346b 80%, #6a2a8e 100%);
+  --font-display: 'Anton', Impact, 'Haettenschweiler', 'Arial Narrow Bold', 'Arial Black', sans-serif;
+  --font-condensed: 'Bebas Neue', 'Anton', Impact, 'Arial Narrow Bold', 'Arial Narrow', sans-serif;
+  --font-marker: 'Permanent Marker', 'Marker Felt', 'Comic Sans MS', 'Segoe Print', cursive;
+  --font-osd: 'VT323', 'Courier New', ui-monospace, Menlo, monospace;
   --font-body: 'Trebuchet MS', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'Courier New', ui-monospace, Menlo, monospace;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
 }
 
 * { box-sizing: border-box; }
@@ -25,6 +64,8 @@ html, body {
   user-select: none;
   touch-action: none;
   overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 #game-canvas {
@@ -46,6 +87,10 @@ html, body {
 
 #ui-root > * { pointer-events: auto; }
 
+/* ------------------------------------------------------------------ loading screen
+ * Markup comes from src/main.js: .loading > .loading-title (OMAHA <span>'93</span>), .loading-sub,
+ * .loading-bar > .loading-fill, .loading-label. Decoration (VHS OSD, scanlines, sun) is pseudo-elements.
+ */
 .loading {
   position: fixed;
   inset: 0;
@@ -53,27 +98,111 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  background: radial-gradient(ellipse at 50% 60%, #2a1a10 0%, #0b0b12 70%);
+  gap: clamp(10px, 2.2vh, 18px);
+  padding: calc(16px + var(--safe-t)) calc(16px + var(--safe-r)) calc(16px + var(--safe-b)) calc(16px + var(--safe-l));
+  text-align: center;
+  overflow: hidden;
   z-index: 100;
   transition: opacity 0.6s ease;
-  padding: 16px;
-  text-align: center;
+  background:
+    radial-gradient(ellipse 70% 42% at 50% 104%, rgba(255, 138, 44, 0.55) 0%, rgba(194, 52, 107, 0.35) 45%, transparent 72%),
+    linear-gradient(180deg, #07050d 0%, #120a22 48%, #2a0f33 78%, #3a1230 100%);
+}
+/* scanlines + vignette */
+.loading::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
+}
+/* VCR on-screen display */
+.loading::after {
+  content: 'PLAY \25B6';
+  position: absolute;
+  top: calc(14px + var(--safe-t));
+  left: calc(20px + var(--safe-l));
+  font-family: var(--font-osd);
+  font-size: clamp(22px, 3.2vw, 34px);
+  letter-spacing: 0.08em;
+  color: #eaf6ff;
+  text-shadow: 2px 0 rgba(255, 40, 80, 0.55), -2px 0 rgba(40, 200, 255, 0.55);
+  animation: loading-blink 1.1s steps(2, jump-none) infinite;
 }
 .loading.done { opacity: 0; pointer-events: none; }
 .loading-title {
+  position: relative;
   font-family: var(--font-display);
-  font-size: clamp(48px, 12vw, 120px);
-  letter-spacing: 0.04em;
-  color: var(--ink);
-  text-shadow: 4px 4px 0 #000, 0 0 30px rgba(242, 182, 50, 0.35);
-  line-height: 1;
+  font-size: clamp(56px, min(15vw, 22vh), 150px);
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  color: #ffb13b;
+  background: var(--sunset);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(3px 3px 0 #2a0b3d) drop-shadow(3px 3px 0 #12041d) drop-shadow(0 0 26px rgba(255, 122, 47, 0.35));
+  animation: loading-jitter 3.2s steps(1) infinite;
 }
-.loading-title span { color: var(--gold); }
-.loading-sub { color: var(--muted); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; }
-.loading-bar { width: min(420px, 80vw); height: 8px; background: #222; border: 2px solid #000; box-shadow: 0 0 0 1px #444; }
-.loading-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--crip), var(--gold), var(--blood)); transition: width 0.2s; }
-.loading-label { font-family: var(--font-mono); font-size: 13px; color: var(--muted); min-height: 1.2em; }
+.loading-title span {
+  font-family: var(--font-display);
+  display: inline-block;
+  margin-left: 0.1em;
+  transform: rotate(-6deg) translateY(-0.02em);
+  font-size: 0.8em;
+  background: none;
+  -webkit-text-fill-color: #fffaf0;
+  color: #fffaf0;
+  text-shadow: -3px 0 rgba(31, 95, 224, 0.9), 3px 0 rgba(212, 32, 44, 0.9);
+}
+.loading-sub {
+  position: relative;
+  font-family: var(--font-condensed);
+  color: #e8cfa8;
+  font-size: clamp(15px, 2.1vw, 22px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.loading-bar {
+  position: relative;
+  width: min(440px, 82vw);
+  height: 16px;
+  margin-top: 6px;
+  padding: 2px;
+  background: #0d0a14;
+  border: 2px solid #eaf6ff;
+  box-shadow: 0 0 0 2px #000, 0 0 18px rgba(255, 138, 44, 0.25);
+}
+.loading-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--crip) 0%, var(--gold) 50%, var(--blood) 100%);
+  /* LED segments like a tape deck level meter */
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 12px);
+  mask: repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 12px);
+  transition: width 0.2s;
+}
+.loading-label {
+  position: relative;
+  font-family: var(--font-osd);
+  font-size: clamp(18px, 2.4vw, 24px);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #eaf6ff;
+  opacity: 0.85;
+  min-height: 1.2em;
+}
+
+@keyframes loading-blink { 50% { opacity: 0.15; } }
+@keyframes loading-jitter {
+  0%, 93%, 100% { transform: none; }
+  94% { transform: translateX(-3px) skewX(-3deg); }
+  96% { transform: translateX(4px); }
+  98% { transform: translateX(-1px); }
+}
 
 .fatal {
   position: fixed;
@@ -84,7 +213,19 @@ html, body {
   justify-content: center;
   padding: 24px;
   text-align: center;
-  background: var(--bg);
+  background: linear-gradient(180deg, #07050d 0%, #1a0b24 100%);
 }
-.fatal h1 { font-family: var(--font-display); font-size: 56px; margin: 0 0 12px; }
-.fatal p { max-width: 520px; color: var(--muted); }
+.fatal h1 {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 10vw, 72px);
+  margin: 0 0 12px;
+  background: var(--sunset);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.fatal p { max-width: 520px; color: var(--muted); font-size: 16px; line-height: 1.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .loading::after, .loading-title { animation: none; }
+}

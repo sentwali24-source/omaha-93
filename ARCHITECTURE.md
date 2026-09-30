@@ -306,8 +306,9 @@ env.update(dt)          sky, sun/moon position from game.clock.hour, light color
                         calls game.city.setNight(n), moves the shadow camera with game.focus
 env.night               0 (day) .. 1 (full night)
 env.sun                 THREE.DirectionalLight (shadow caster when quality.shadows)
-env.weather             'clear' | 'overcast' | 'rain' (summer 1993 was the Great Flood: rain happens)
-env.setWeather(kind)
+env.weather             'clear' | 'overcast' | 'rain' | 'thunderstorm' (summer 1993 was the Great Flood)
+env.raining             true while rain actually falls (rain or thunderstorm)
+env.setWeather(kind) → bool   ('storm' is accepted as an alias of 'thunderstorm'; false for unknown kinds)
 ```
 
 ## 11. Audio (`game.audio`, ATMOSPHERE agent)
@@ -529,7 +530,7 @@ removeMarker(id)
 fade(toBlack: bool, seconds)
 ```
 Always-on HUD: health + stamina, cash, rep + rank, heat stars (police badges), clock, location line
-(`layout.describe` → "N 24th St & Lake St · Lake Street Bloods turf"), zone-change banner,
+(`layout.describe` → "N 24th St & Lake St · Lakeview Bloods turf"), zone-change banner,
 minimap (rotating with camera: roads, blocks, water, turf tint by owner, blips for homies, rivals,
 cops, markers, shops), radio station name in car, FPS if settings.showFps.
 Listens to cash:change rep:change rank:up heat:change pager mission:* turf:change player:down etc.
@@ -540,7 +541,8 @@ waypoint by click/tap (adds a 'waypoint' marker). Pauses the game while open (`g
 
 `game.touch` (HUD agent): on touch devices only (`input.isTouch`): left virtual joystick →
 `input.setVirtualMove`, right-half drag → `input.addLook`, buttons (attack, jump, sprint, vehicle,
-interact — shows the current prompt label —, sign, map, pause, horn/radio when driving). Scales with
+interact — shows the current prompt label —, sign, map, pause, horn/radio when driving,
+homies follow/wait while homies roll with you). Scales with
 settings.touchScale. Hidden in menus.
 
 ## 21. Events

@@ -244,6 +244,9 @@ export class Game {
 
   _beginPlay(isNew) {
     const st = this.state;
+    // a KO / bust from the previous session must not respawn (and charge) the new one
+    this._respawnTimer = null;
+    this._autosave = 0;
     this.clock.hour = st.clock?.hour ?? 18.25;
     this.clock.day = st.clock?.day ?? 1;
     const spawn = st.position || this.hoodSpawn();
@@ -278,6 +281,12 @@ export class Game {
   }
 
   quitToTitle() {
+    // quitting while knocked out / busted still counts: respawn (hospital / bail) before saving
+    if (this._respawnTimer && this.player) {
+      const { reason } = this._respawnTimer;
+      this._respawnTimer = null;
+      this.respawnPlayer(reason);
+    }
     this.save();
     for (const name of ORDER) {
       const s = this.systems[name];
@@ -295,6 +304,7 @@ export class Game {
     }
     this.player = null;
     this.systems.player = null;
+    this._respawnTimer = null;
     this.mode = 'attract';
     this.paused = false;
     this.input.exitPointerLock();
@@ -317,7 +327,21 @@ export class Game {
     const p = this.player;
     st.clock = { hour: this.clock.hour, day: this.clock.day };
     st.health = p.health;
-    if (!p.vehicle && p.alive) st.position = { x: p.position.x, z: p.position.z, heading: p.heading };
+    // no position while knocked out / busted (the pending respawn moves the player anyway)
+    const free = p.alive && !this._respawnTimer;
+    if (!p.vehicle && free) st.position = { x: p.position.x, z: p.position.z, heading: p.heading };
+    else if (p.vehicle && free) {
+      // driving: continue on foot beside the car, not back where the player got in
+      let e = null;
+      try {
+        e = p.vehicle.getExitPoint?.();
+      } catch {
+        e = null;
+      }
+      const v = p.vehicle.position;
+      if (!e || !Number.isFinite(e.x) || !Number.isFinite(e.z)) e = { x: v.x, z: v.z };
+      st.position = { x: e.x, z: e.z, heading: p.vehicle.heading || 0 };
+    }
     for (const name of ORDER) {
       const s = this.systems[name];
       if (s && s.serialize) {
@@ -380,7 +404,8 @@ export class Game {
     let spawn;
     if (reason === 'busted') {
       spawn = SPAWNS.jail;
-      const fine = Math.min(this.state.cash, 100 + Math.round(this.state.cash * 0.1));
+      // bail: a flat $20 plus 15% of what you carry (never your last dollar as a new player)
+      const fine = Math.min(Math.max(0, this.state.cash - 5), 20 + Math.round(this.state.cash * 0.15));
       this.addCash(-fine, 'bail');
       this.state.stats.busted++;
     } else {

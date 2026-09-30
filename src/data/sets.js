@@ -90,7 +90,7 @@ export const SETS = [
     short: 'WBB',
     hood: { ...at('40th', 'hamilton', 11, -11), heading: -Math.PI / 2 },
     turf: ['westlake'],
-    blurb: 'Westside of North O on the hill by 40th & Hamilton. Hustlers first, soldiers when they have to be.',
+    blurb: 'Westside of North O on the hill by 40th & Hamilton. Car guys first, fighters when they have to be.',
     accent: '#e0182d',
   },
 ];
@@ -158,7 +158,7 @@ export const OUTFITS = [
   { id: 'starter', name: 'Starter Jacket', desc: 'Satin team-style jacket in your colors' },
   { id: 'flannel', name: 'Flannel & Dickies', desc: 'Buttoned-top flannel, creased work pants' },
   { id: 'tee', name: 'White Tee', desc: 'Oversized white tee, rag hanging from the back pocket' },
-  { id: 'jersey', name: 'Jersey', desc: 'Throwback-style jersey in your colors' },
+  { id: 'jersey', name: 'Jersey', desc: 'Mesh team-style jersey in your colors' },
   { id: 'hoodie', name: 'Hoodie', desc: 'Heavy hoodie, good for Nebraska nights' },
 ];
 export const HATS = [

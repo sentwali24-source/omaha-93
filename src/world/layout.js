@@ -259,27 +259,72 @@ export class Layout {
   }
 
   // ------------------------------------------------------------------ lookups
+  // Roadway / sidewalk tests use the real graph (edge segments + intersection boxes), so streets
+  // that stop at a park or the airport don't count as road there. Rects live in a coarse grid.
+  _buildRoadIndex() {
+    const rects = []; // { x0, x1, z0, z1, road: bool }
+    const add = (x0, x1, z0, z1, road) => rects.push({ x0, x1, z0, z1, road });
+    const nsW = new Map(this.nsStreets.map((s) => [s.id, s.width]));
+    const ewW = new Map(this.ewStreets.map((s) => [s.id, s.width]));
+    for (const e of this.edges) {
+      const a = this.nodes[e.a];
+      const b = this.nodes[e.b];
+      const h = e.width / 2;
+      if (e.axis === 'z') {
+        const z0 = Math.min(a.z, b.z);
+        const z1 = Math.max(a.z, b.z);
+        add(a.x - h, a.x + h, z0, z1, true);
+        add(a.x - h - SIDEWALK, a.x + h + SIDEWALK, z0, z1, false);
+      } else {
+        const x0 = Math.min(a.x, b.x);
+        const x1 = Math.max(a.x, b.x);
+        add(x0, x1, a.z - h, a.z + h, true);
+        add(x0, x1, a.z - h - SIDEWALK, a.z + h + SIDEWALK, false);
+      }
+    }
+    for (const n of this.nodes) {
+      const hx = (nsW.get(n.ns) || 12) / 2;
+      const hz = (ewW.get(n.ew) || 12) / 2;
+      add(n.x - hx, n.x + hx, n.z - hz, n.z + hz, true);
+      add(n.x - hx - SIDEWALK, n.x + hx + SIDEWALK, n.z - hz - SIDEWALK, n.z + hz + SIDEWALK, false);
+    }
+    const cell = 40;
+    const grid = new Map();
+    rects.forEach((r, i) => {
+      for (let cx = Math.floor(r.x0 / cell); cx <= Math.floor(r.x1 / cell); cx++) {
+        for (let cz = Math.floor(r.z0 / cell); cz <= Math.floor(r.z1 / cell); cz++) {
+          const k = cx * 100003 + cz;
+          let list = grid.get(k);
+          if (!list) grid.set(k, (list = []));
+          list.push(i);
+        }
+      }
+    });
+    this._roadRects = rects;
+    this._roadGrid = grid;
+    this._roadCell = cell;
+  }
+
+  _roadHit(x, z) {
+    if (!this._roadGrid) this._buildRoadIndex();
+    const list = this._roadGrid.get(Math.floor(x / this._roadCell) * 100003 + Math.floor(z / this._roadCell));
+    if (!list) return 0;
+    let hit = 0; // 0 none, 1 sidewalk band, 2 roadway
+    for (let i = 0; i < list.length; i++) {
+      const r = this._roadRects[list[i]];
+      if (x < r.x0 || x > r.x1 || z < r.z0 || z > r.z1) continue;
+      if (r.road) return 2;
+      hit = 1;
+    }
+    return hit;
+  }
+
   isRoad(x, z) {
-    for (const s of this.nsStreets) {
-      if (Math.abs(x - s.x) <= s.width / 2 && z >= (s.from ?? -Infinity) && z <= (s.to ?? Infinity) && z >= this.bounds.minZ && z <= this.bounds.maxZ) return true;
-    }
-    for (const s of this.ewStreets) {
-      if (Math.abs(z - s.z) <= s.width / 2 && x >= (s.from ?? -Infinity) && x <= (s.to ?? Infinity) && x >= this.bounds.minX && x <= this.bounds.maxX) return true;
-    }
-    return false;
+    return this._roadHit(x, z) === 2;
   }
 
   isSidewalk(x, z) {
-    if (this.isRoad(x, z)) return false;
-    for (const s of this.nsStreets) {
-      const d = Math.abs(x - s.x) - s.width / 2;
-      if (d >= 0 && d <= SIDEWALK && z >= (s.from ?? -Infinity) && z <= (s.to ?? Infinity)) return true;
-    }
-    for (const s of this.ewStreets) {
-      const d = Math.abs(z - s.z) - s.width / 2;
-      if (d >= 0 && d <= SIDEWALK && x >= (s.from ?? -Infinity) && x <= (s.to ?? Infinity)) return true;
-    }
-    return false;
+    return this._roadHit(x, z) === 1;
   }
 
   isWater(x, z) {

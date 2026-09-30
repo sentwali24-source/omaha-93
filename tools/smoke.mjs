@@ -119,7 +119,13 @@ const h = {
     await page.waitForTimeout(ms);
     await page.keyboard.up(code);
   },
-  shot: (name) => page.screenshot({ path: path.join(outDir, `${name}.png`) }),
+  shot: async (name) => {
+    try {
+      await page.screenshot({ path: path.join(outDir, `${name}.png`), timeout: 90000 });
+    } catch (e) {
+      console.log(`[smoke] screenshot ${name} failed: ${e.message.split('\n')[0]}`);
+    }
+  },
   game: (fn, arg) => page.evaluate(({ src, arg }) => new Function('g', 'arg', `return (${src})(g, arg)`)(window.__game, arg), { src: fn.toString(), arg }),
   log: (...a) => console.log('[scenario]', ...a),
   failures: [],
