@@ -32,6 +32,8 @@ export const ICONS = {
   hand: svg('<path class="fill" d="M9 11.5V4.2a1.5 1.5 0 0 1 3 0v6.3-7.4a1.5 1.5 0 0 1 3 0v7.4-5.8a1.5 1.5 0 0 1 3 0v8.8c0 4.2-2.6 7-6.4 7-2.4 0-4-1-5.3-3.1l-2.6-4.2a1.5 1.5 0 0 1 2.4-1.8z"/>'),
   sign: svg('<path class="fill" d="M8.2 12V3.6a1.5 1.5 0 0 1 3 0V10l1.6-6.3a1.5 1.5 0 0 1 2.9.8L14 11.2c1.9.2 3.5 1.8 3.5 3.9 0 3.4-2.6 6-6 6-3.3 0-5.8-2.5-5.8-5.8v-2.5a1.3 1.3 0 0 1 2.5-.8z"/>'),
   map: svg('<path class="fill" d="M2.5 5.5l6-2 7 2 6-2v15l-6 2-7-2-6 2z"/><path class="cut" d="M8.5 3.5v15M15.5 5.5v15"/>'),
+  // two heads: the homies rolling with you (touch HOMIES button)
+  crew: svg('<circle cx="8.5" cy="7.5" r="3.2" class="fill"/><circle cx="16.2" cy="8.6" r="2.7" class="fill"/><path class="fill" d="M2.5 19.5c0-3.6 2.7-6.3 6-6.3s6 2.7 6 6.3z"/><path class="fill" d="M15.4 19.5c0-2.2-.7-4-1.9-5.3.8-.6 1.7-.9 2.7-.9 2.9 0 5.3 2.6 5.3 6.2z"/>'),
   pause: svg('<rect x="5.5" y="4" width="4.5" height="16" rx="1" class="fill"/><rect x="14" y="4" width="4.5" height="16" rx="1" class="fill"/>'),
   horn: svg('<path class="fill" d="M3 9.5h4l7-5v15l-7-5H3z"/><path class="cut-stroke" d="M17 8.5c1.2 1 1.8 2.2 1.8 3.5s-.6 2.5-1.8 3.5M19.5 5.8c2 1.7 3 3.8 3 6.2s-1 4.5-3 6.2"/>'),
   brake: svg('<circle cx="12" cy="12" r="8.6" class="ring"/><circle cx="12" cy="12" r="4.4" class="fill"/><path class="cut-stroke" d="M2.8 5.8A10.5 10.5 0 0 0 2.8 18.2M21.2 5.8a10.5 10.5 0 0 1 0 12.4"/>'),

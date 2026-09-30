@@ -4,6 +4,7 @@
 //   left ~42%    floating joystick: appears where the thumb lands → input.setVirtualMove
 //   right side   drag to look → input.addLook
 //   bottom-right PUNCH, JUMP, SPRINT (hold), CAR, ACTION (shows the prompt, supports hold), SIGN, MAP
+//                HOMIES (follow / wait, under PAUSE) only while homies roll with you
 //                in a car: BRAKE (handbrake), HORN, RADIO, EXIT, MAP
 //   top-right    PAUSE → game.menu.showPause()
 //
@@ -28,6 +29,7 @@ const BUTTONS = [
   { id: 'action', action: 'interact', label: 'ACTION', icon: 'hand', mode: 'foot' },
   { id: 'sign', action: 'sign', label: 'SIGN', icon: 'sign', mode: 'foot' },
   { id: 'map', tap: 'map', label: 'MAP', icon: 'map', mode: 'both' },
+  { id: 'homies', action: 'homies', label: 'HOMIES', icon: 'crew', mode: 'foot' }, // shown with homies only
   { id: 'brake', action: 'jump', label: 'BRAKE', icon: 'brake', mode: 'car' }, // 'jump' also raises 'handbrake'
   { id: 'horn', action: 'horn', label: 'HORN', icon: 'horn', mode: 'car' },
   { id: 'radio', action: 'radio', label: 'RADIO', icon: 'tape', mode: 'car' },
@@ -129,6 +131,54 @@ export class Touch {
       },
       true,
     );
+    this._multiTouchClicks();
+  }
+
+  // Browsers only turn a single-finger tap into a `click`: with the joystick thumb still resting on
+  // the glass, taps on the pause menu / map / shop buttons (all `click` handlers) did nothing.
+  // A still tap on a button while another finger is down gets its click here instead.
+  _multiTouchClicks() {
+    const CLICKABLE = 'button, a[href], [role="button"], [role="tab"], [role="switch"], .m-rotate';
+    const downs = new Map(); // pointerId -> { x, y, btn, multi }
+    let synth = null; // { el, t }: swallow a native click that still follows the synthetic one
+    const now = () => performance.now();
+    window.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (e.pointerType !== 'touch') return;
+        const t = e.target instanceof Element ? e.target.closest(CLICKABLE) : null;
+        const btn = t && !t.disabled && !this.el.contains(t) ? t : null;
+        downs.set(e.pointerId, { x: e.clientX, y: e.clientY, btn, multi: downs.size > 0 });
+      },
+      true,
+    );
+    window.addEventListener(
+      'pointerup',
+      (e) => {
+        const d = downs.get(e.pointerId);
+        downs.delete(e.pointerId);
+        if (!d?.btn || !(d.multi || downs.size > 0)) return;
+        if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 14) return; // a drag / scroll, not a tap
+        const under = document.elementFromPoint(e.clientX, e.clientY);
+        if (!d.btn.isConnected || d.btn.disabled || !under || !d.btn.contains(under)) return;
+        synth = { el: d.btn, t: now() };
+        d.btn.click();
+      },
+      true,
+    );
+    window.addEventListener('pointercancel', (e) => downs.delete(e.pointerId), true);
+    window.addEventListener(
+      'click',
+      (e) => {
+        if (!synth || !e.isTrusted) return;
+        if (now() - synth.t < 500 && synth.el.contains(e.target)) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+        synth = null;
+      },
+      true,
+    );
   }
 
   _bindButton(b, def) {
@@ -183,7 +233,11 @@ export class Touch {
   _layout() {
     const s = Number(this.game.settings?.touchScale) || 1;
     const short = Math.min(window.innerWidth, window.innerHeight);
-    const ts = clamp(s, 0.6, 1.6) * clamp(short / 400, 0.78, 1.3);
+    let ts = clamp(s, 0.6, 1.6) * clamp(short / 400, 0.78, 1.3);
+    // short landscape phones: a big touch size must not push the cluster up over the HUD stats and
+    // the PAUSE / MAP / HOMIES column (touch.css at scale 1: CAR top 207 px from the bottom, HOMIES
+    // bottom 26 + 132 px from the top)
+    if (window.innerWidth > window.innerHeight && window.innerHeight <= 520) ts = Math.min(ts, Math.max(0.78, (window.innerHeight - 30) / 339));
     this._ts = ts;
     this.el.style.setProperty('--ts', ts.toFixed(3));
     this.game.hud?.root?.style.setProperty('--ts', ts.toFixed(3));
@@ -377,6 +431,11 @@ export class Touch {
       if (c.near !== near) {
         c.near = near;
         this.buttons.car.el.classList.toggle('glow', near);
+      }
+      const homies = (g.gangs?.homies?.length || 0) > 0;
+      if (c.homies !== homies) {
+        c.homies = homies;
+        this.el.classList.toggle('has-homies', homies);
       }
     }
   }

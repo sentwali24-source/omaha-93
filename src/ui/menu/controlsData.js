@@ -27,6 +27,7 @@ export const TOUCH = [
   { keys: [['CAR']], action: 'Get in / out · carjack (glows next to a car)' },
   { keys: [['ACTION']], action: 'Use / talk / shop (shows what it does; hold for tags)' },
   { keys: [['SIGN']], action: 'Throw up your set' },
+  { keys: [['HOMIES']], action: 'Homies: follow / wait (under pause, while they roll with you)' },
   { keys: [['BRAKE'], ['HORN'], ['RADIO']], action: 'In a car: handbrake, horn, next station' },
   { keys: [['MAP'], ['Radar']], action: 'Full map' },
   { keys: [['❚❚']], action: 'Pause (top right)' },

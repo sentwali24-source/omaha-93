@@ -62,7 +62,7 @@ There are no guns and no drugs in the game. Conflict is fist fights, tagging, ca
 | Use / talk / tag (hold) | E | ACTION | B |
 | Enter / exit car | F | CAR | Y |
 | Throw up your set | Q | SIGN | LB |
-| Homies follow / wait | G | | R3 |
+| Homies follow / wait | G | HOMIES | R3 |
 | Horn / radio | H / R | HORN / RADIO | RB / d-pad up |
 | Map / pause | M or Tab / Esc or P | MAP / pause | Back / Start |
 
