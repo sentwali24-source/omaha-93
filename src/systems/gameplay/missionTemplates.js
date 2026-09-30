@@ -313,7 +313,13 @@ export const TEMPLATES = {
       if (!zoneId) return false;
       const owner = M.game.gangs?.getZoneOwner?.(zoneId) ?? zoneById(zoneId)?.owner;
       const rival = owner && areRivals(owner, M.setId) ? setById(owner) : M.rival;
-      const pt = M.pointInZone(zoneId, rival?.id);
+      // catch them on a corner of their turf, not at their hood where the whole set (and the OG)
+      // hangs out and jumps in: that turned the first beef into one player against eight
+      const theirHood = M.pois('hood').find((q) => q.id === `hood-${rival?.id}`);
+      const corner = M.poi(['store', 'food', 'payphone', 'barber', 'record'], {
+        filter: (q) => M.game.layout.zoneAt(q.x, q.z)?.id === zoneId && (!theirHood || d2(q, theirHood) > 60),
+      });
+      const pt = corner || M.pointInZone(zoneId, rival?.id);
       if (!pt) return false;
       m.data.zoneId = zoneId;
       m.data.rival = rival;
@@ -348,7 +354,9 @@ export const TEMPLATES = {
       const game = M.game;
       const pos = playerPos(M);
       if (m.stage === 0 && d2(pos, m.data.pt) < 70) {
-        const crew = spawnCrew(M, m, m.data.rival.id, m.data.pt, m.data.need + 1);
+        // as many as the OG said; the story's first beef is a corner crew, not hand-picked fighters
+        // (four fighters on one player swarm him before he can land a combo)
+        const crew = spawnCrew(M, m, m.data.rival.id, m.data.pt, m.data.need, m.story ? 'hang' : 'fighter');
         const local = (game.gangs?.members || []).filter((a) => a.alive && a.faction === m.data.rival.id && d2(a.position, m.data.pt) < 80);
         if (!crew.length && !local.length) {
           // no one to fight (NPC system could not spawn): hold the corner instead

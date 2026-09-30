@@ -320,7 +320,7 @@ const NICKS = [
   'Lil Man', 'Tiny', 'Duke', 'Pooh', 'Ace', 'June Bug', 'Peanut', 'Lil D', 'Dre', 'Tay', 'Pee Wee', 'Bird',
   'Scooter', 'Cool Breeze', 'Baby Ray', 'Big Mike', 'Lil Kev', 'Nook', 'Face', 'Boo', 'Man-Man', 'Stretch',
   'Q', 'Lil Rob', 'Sleepy', 'T-Bone', 'Bishop', 'Rocko', 'Dink', 'Poochie', 'Lil Earl', 'Chico', 'Smiley',
-  'Lil Tone', 'Big Lou', 'Deuce', 'Monk', 'Bam', 'Kiki', 'Dee Dee', 'Nene', 'Tasha', 'Boo Boo',
+  'Lil Tone', 'Lil Lou', 'Deuce', 'Monk', 'Bam', 'Kiki', 'Dee Dee', 'Nene', 'Tasha', 'Boo Boo',
 ];
 // female members get girls' or unisex nicknames; the girls-only ones are kept off the boys
 const FEMALE_NICKS = ['Kiki', 'Dee Dee', 'Nene', 'Tasha', 'Boo Boo', 'Pooh', 'Peanut', 'Tay', 'Boo'];
