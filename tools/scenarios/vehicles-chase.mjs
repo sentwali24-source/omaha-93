@@ -6,6 +6,14 @@
 import { waitGame, waitUntil } from './player-util.mjs';
 
 export default async function (page, h) {
+  const only = process.env.CHASE_ONLY || '';
+  if (only === 'traffic') {
+    await h.game((g) => {
+      g.debugApi.driveCar('sedan');
+      g.__inside = { n: 0 };
+    });
+    return trafficChase(h);
+  }
   // ---- 1. carjack
   const setup = await h.game((g) => {
     g.debugApi.setHour(17);
@@ -107,6 +115,10 @@ export default async function (page, h) {
   h.log('inside', JSON.stringify(ins));
   h.assert(ins.n === 0, `no car inside a building (${ins.n})`);
 
+  await trafficChase(h);
+}
+
+async function trafficChase(h) {
   // ---- 3. Traffic makeAIDriver chase
   const ch = await h.game((g) => {
     g.debugApi.heat(0);
@@ -119,13 +131,17 @@ export default async function (page, h) {
   });
   h.log('traffic chaser', JSON.stringify(ch));
   if (ch) {
-    await waitGame(h, 10);
-    const d2 = await h.game((g) => {
-      const p = g.player.vehicle.position;
-      const v = g.__chaser;
-      return { d: Math.round(Math.hypot(v.position.x - p.x, v.position.z - p.z)), mode: v.ai?.mode, speed: +v.speed.toFixed(1), inside: g.__inside.n };
-    });
-    h.log('traffic chaser after 10 s', JSON.stringify(d2));
+    let d2 = null;
+    for (let i = 0; i < 4; i++) {
+      await waitGame(h, 5);
+      d2 = await h.game((g) => {
+        const p = g.player.vehicle.position;
+        const v = g.__chaser;
+        return { d: Math.round(Math.hypot(v.position.x - p.x, v.position.z - p.z)), mode: v.ai?.mode, speed: +v.speed.toFixed(1), inside: g.__inside.n, route: v.ai?.route?.length ?? null, at: [Math.round(v.position.x), Math.round(v.position.z)], player: [Math.round(p.x), Math.round(p.z)] };
+      });
+      h.log(`traffic chaser t${i}`, JSON.stringify(d2));
+      if (d2.d < 25) break;
+    }
     h.assert(d2.d < ch.d * 0.6 || d2.d < 25, `makeAIDriver chase closes in (${ch.d} → ${d2.d} m)`);
     h.assert(d2.inside === 0, 'chaser never inside a building');
     await h.shot('chase-3-traffic-chaser');

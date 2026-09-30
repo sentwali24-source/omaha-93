@@ -88,7 +88,11 @@ export class Traffic {
     this._buildGraphInfo();
     this._buildSpots();
     const ev = game.events;
-    ev.on('vehicle:jacked', ({ vehicle, from, by }) => this._onJacked(vehicle, from, by));
+    ev.on('vehicle:jacked', (e) => {
+      const ped = this._onJacked(e.vehicle, e.from, e.by);
+      // later listeners (Police crime report, Audio) see the real pedestrian as the victim
+      if (ped) e.from = ped;
+    });
     ev.on('player:enterVehicle', ({ vehicle }) => {
       if (!vehicle) return;
       this.release(vehicle);
@@ -583,13 +587,17 @@ export class Traffic {
     this._removeFrom(this.abandoned, vehicle);
     if (from && from.isVirtual) {
       from.vehicle = null;
+      // the seat-filler object leaves the world; the pedestrian below takes its place
+      from.state = 'removed';
+      from.alive = false;
       const exit = vehicle.getExitPoint();
       try {
-        this.game.pedestrians?.spawnPed?.({ x: exit.x, z: exit.z, flee: by || this.game.player, look: from.look });
+        return this.game.pedestrians?.spawnPed?.({ x: exit.x, z: exit.z, flee: by || this.game.player, look: from.look }) || null;
       } catch (err) {
         console.error('[traffic] spawnPed failed', err);
       }
     }
+    return null;
   }
 
   _ensureCarNearPlayer() {
