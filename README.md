@@ -38,8 +38,8 @@ All six sets are **fictional**. Their turf sits on real 1993 North Omaha streets
 - **Police heat.** Crimes seen by cops or reported by witnesses raise your heat. Cruisers chase you, and
   officers get out on foot. Lose them, or get busted and released at Police HQ.
 - **Missions, 1993-style.** Your pager buzzes with a code, and you call the OG back from a payphone. There
-  is a story chain for each side plus repeatable jobs: tag runs, boosting cars, beefs, escorts, deliveries,
-  and losing the heat.
+  is a ten-mission story chain (the same for every set, told from your side) plus repeatable jobs: tag
+  runs, boosting cars, beefs, escorts, deliveries, recruiting homies and losing the heat.
 - **Cars.** Boxy 80s sedans, coupes, a lowrider with hydraulics, wagons, pickups, vans, city buses and
   police cruisers. Traffic follows the lights.
 - **Radio.** Five fictional K-call stations with procedurally generated music (G-funk, boom-bap, quiet

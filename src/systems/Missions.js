@@ -258,7 +258,7 @@ export class Missions {
   placeName(p) {
     if (!p) return 'the spot';
     if (p.type === 'hood') return p.id === `hood-${this.setId}` ? 'the hood' : p.name || 'the hood';
-    if (p.type === 'payphone' || !p.name) return this.game.layout.describe(p.x, p.z).street || 'the corner';
+    if (p.type === 'payphone' || !p.name) return (this.game.layout.describe(p.x, p.z).street || 'the corner').replace(/^near /, '');
     return p.name;
   }
 

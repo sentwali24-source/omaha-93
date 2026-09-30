@@ -431,7 +431,7 @@ export class Tagging {
         if (wasPlayer) {
           game.gangs?.addInfluence?.(s.zoneId, zo, 8);
           const by = setById(zo);
-          const where = game.layout.describe(s.x, s.z).street || 'the block';
+          const where = (game.layout.describe(s.x, s.z).street || 'the block').replace(/^near /, '');
           game.hud?.toast?.(`${by?.short || 'Somebody'} painted over your piece on ${where}`, { color: SIDES[by?.side]?.color, duration: 4 });
         }
       }
@@ -461,7 +461,7 @@ export class Tagging {
       }
       if (!enemy) return;
       this.setOwner(s.id, enemy.id, { silent: false });
-      const where = game.layout.describe(s.x, s.z).street || 'the block';
+      const where = (game.layout.describe(s.x, s.z).street || 'the block').replace(/^near /, '');
       game.hud?.toast?.(`${enemy.short} hit one of our walls on ${where}`, { color: SIDES[enemy.side].color, duration: 5 });
     }
   }

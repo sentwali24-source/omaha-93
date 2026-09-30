@@ -322,12 +322,15 @@ const NICKS = [
   'Q', 'Lil Rob', 'Sleepy', 'T-Bone', 'Bishop', 'Rocko', 'Dink', 'Poochie', 'Lil Earl', 'Chico', 'Smiley',
   'Lil Tone', 'Big Lou', 'Deuce', 'Monk', 'Bam', 'Kiki', 'Dee Dee', 'Nene', 'Tasha', 'Boo Boo',
 ];
+// female members get girls' or unisex nicknames; the girls-only ones are kept off the boys
+const FEMALE_NICKS = ['Kiki', 'Dee Dee', 'Nene', 'Tasha', 'Boo Boo', 'Pooh', 'Peanut', 'Tay', 'Boo'];
+const MALE_NICKS = NICKS.filter((n) => !['Kiki', 'Dee Dee', 'Nene', 'Tasha', 'Boo Boo'].includes(n));
 const OG_NICKS = ['Big Earl', 'Unc', 'Old Man Ray', 'Big Tone', 'Pops', 'OG Mack', 'Big Lou', 'Mister Lee'];
 const COP_NAMES = ['Novak', 'Kowalski', "O'Brien", 'Hansen', 'Petersen', 'Jackson', 'Dvorak', 'Svoboda', 'Murphy', 'Reyes', 'Johnson', 'Williams', 'Sorensen', 'Kucera', 'Brennan', 'Tran', 'Lindquist', 'Carter'];
 
 export function gangName(role = 'hang', female = false, r = Math.random) {
   if (role === 'og') return pick(OG_NICKS, r);
-  return pick(NICKS, r);
+  return pick(female ? FEMALE_NICKS : MALE_NICKS, r);
 }
 
 export function copName(r = Math.random) {

@@ -14,7 +14,7 @@ export const BUSINESSES = {
     { poi: 'store', name: 'Quick Stop Grocery', text: 'QUICK STOP', sub: 'GROCERY & MEAT', style: 'box', bg: '#fff5c2', fg: '#1d4f9c' },
     { poi: 'store', name: 'Deuce Mini Mart', text: 'DEUCE MINI MART', sub: 'CIGS · POP · CHIPS', style: 'board', bg: '#2e6b3a', fg: '#f6f0d8' },
     { poi: 'store', name: 'Ames Food Mart', text: 'AMES FOOD MART', sub: 'WE ACCEPT FOOD STAMPS', style: 'box', bg: '#ffffff', fg: '#227a3e' },
-    { poi: 'store', name: 'Northside Liquor', text: 'NORTHSIDE', sub: 'LIQUOR · WINE · BEER', style: 'neon', bg: '#141018', fg: '#58c7ff', blade: 'LIQUOR' },
+    { poi: null, name: 'Northside Liquor', text: 'NORTHSIDE', sub: 'LIQUOR · WINE · BEER', style: 'neon', bg: '#141018', fg: '#58c7ff', blade: 'LIQUOR' },
     { poi: 'food', name: "Big Mama's Fried Chicken", text: "BIG MAMA'S", sub: 'FRIED CHICKEN · FISH', style: 'box', bg: '#ffd23a', fg: '#b01b1b' },
     { poi: 'food', name: 'Smokehouse BBQ', text: 'SMOKEHOUSE BBQ', sub: 'RIBS · LINKS · SLAW', style: 'board', bg: '#5a2a16', fg: '#ffcf7a' },
     { poi: 'food', name: 'Golden Wing', text: 'GOLDEN WING', sub: '10 WINGS $3.99', style: 'box', bg: '#fff3dc', fg: '#d0661b' },

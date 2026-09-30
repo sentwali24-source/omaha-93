@@ -158,7 +158,7 @@ export const OUTFITS = [
   { id: 'starter', name: 'Starter Jacket', desc: 'Satin team-style jacket in your colors' },
   { id: 'flannel', name: 'Flannel & Dickies', desc: 'Buttoned-top flannel, creased work pants' },
   { id: 'tee', name: 'White Tee', desc: 'Oversized white tee, rag hanging from the back pocket' },
-  { id: 'jersey', name: 'Jersey', desc: 'Throwback-style jersey in your colors' },
+  { id: 'jersey', name: 'Jersey', desc: 'Mesh team-style jersey in your colors' },
   { id: 'hoodie', name: 'Hoodie', desc: 'Heavy hoodie, good for Nebraska nights' },
 ];
 export const HATS = [

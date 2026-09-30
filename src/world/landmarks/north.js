@@ -111,7 +111,7 @@ function omahaStar(P, ctx) {
   box(b, X1 + 0.3, 3.05, Z0 + 2 * seg + 0.2, X1 + 1.6, 3.25, Z0 + 3 * seg - 0.2, C('#9aa0a3'), { bottom: true });
   sign(P, 'omahastar', X1 + 0.36, 4.05, (Z0 + Z1) / 2, 5.6, 0, -Math.PI / 2);
   ctx.box(X0, Z0, X1 + 0.35, Z1, H + 1);
-  ctx.tag({ id: 'lm-omahastar-n', x: (X0 + X1) / 2, y: 1.8, z: Z0, nx: 0, nz: -1, w: 2.4, h: 1.4 });
+  // no tag spot: the Omaha Star is a community institution, not a turf wall
 }
 
 // ------------------------------------------------------------------ Jewell Building / Dreamland Ballroom (1923)
@@ -138,7 +138,7 @@ function jewell(P, ctx) {
   sign(P, 'dreamland', X0 - 0.75, 7, bz + 0.13, 1.3, 7.2, Math.PI);
   ctx.glow(X0 - 0.75, 7, bz, '#ff3040', 6);
   ctx.box(X0, Z0, X1, Z1, 9.4);
-  ctx.tag({ id: 'lm-jewell-s', x: (X0 + X1) / 2, y: 1.8, z: Z1, nx: 0, nz: 1 });
+  // no tag spot on the historic Jewell Building (Dreamland Ballroom)
 }
 
 // ------------------------------------------------------------------ Skeet's Ribs & Chicken (c. 1955)
@@ -186,8 +186,7 @@ function fairDeal(P, ctx) {
   ctx.glow(X1 + 0.8, 2.9, (Z0 + Z1) / 2, '#ffe0a0', 2.4);
   ctx.box(X0, Z0, X1 + 0.05, Z1, 5);
   ctx.poi({ id: 'lm-food-fairdeal', type: 'food', name: 'Fair Deal Cafe', x: X1 + 1.8, z: (Z0 + Z1) / 2, heading: Math.PI / 2, landmark: 'fairdeal' });
-  ctx.tag({ id: 'lm-fairdeal-n', x: (X0 + X1) / 2, y: 1.8, z: Z0, nx: 0, nz: -1, w: 2.2, h: 1.3 });
-  ctx.tag({ id: 'lm-fairdeal-w', x: X0, y: 1.8, z: (Z0 + Z1) / 2, nx: -1, nz: 0, w: 2.6, h: 1.3 });
+  // no tag spots on the Fair Deal Cafe, North O's 'Black City Hall'
 }
 
 // ------------------------------------------------------------------ Great Plains Black History Museum (1906 exchange)

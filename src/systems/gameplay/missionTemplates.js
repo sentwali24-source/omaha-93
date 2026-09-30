@@ -98,7 +98,7 @@ export function colorName(hex) {
   else h = (r - g) / (max - min) + 4;
   h = (h * 60 + 360) % 360;
   if (h < 15 || h >= 340) return l < 0.3 ? 'maroon' : 'red';
-  if (h < 40) return l < 0.35 ? 'brown' : 'orange';
+  if (h < 40) return l < 0.35 ? 'brown' : 'tangerine'; // briefs say "a {target}": keep color words consonant-first
   if (h < 65) return l < 0.4 ? 'gold' : 'yellow';
   if (h < 160) return l < 0.3 ? 'dark green' : 'green';
   if (h < 200) return 'teal';
@@ -230,7 +230,7 @@ export const TEMPLATES = {
       m.data.garage = garage;
       m.tokens.target = describeCar(car);
       m.tokens.garage = garage.name || 'the body shop';
-      m.tokens.street = game.layout.describe(car.position.x, car.position.z).street || 'the block';
+      m.tokens.street = (game.layout.describe(car.position.x, car.position.z).street || 'the block').replace(/^near /, '');
       return true;
     },
     begin(M, m) {
@@ -354,7 +354,7 @@ export const TEMPLATES = {
           // no one to fight (NPC system could not spawn): hold the corner instead
           m.data.hold = 0;
           m.stage = 3;
-          M.objective(m, `Hold it down in ${m.tokens.zone}`);
+          M.objective(m, `Hold it down around ${m.tokens.zone}`);
         } else {
           m.data.need = Math.min(m.data.need, Math.max(1, crew.length || local.length));
           markFoes(M, m, crew.length ? crew : local.slice(0, m.data.need), SIDES[m.data.rival.side].color);
@@ -366,7 +366,7 @@ export const TEMPLATES = {
         const left = Math.max(0, Math.ceil(30 - m.data.hold));
         if (left !== m.data.holdShown) {
           m.data.holdShown = left;
-          M.objective(m, `Hold it down in ${m.tokens.zone} (${left}s)`);
+          M.objective(m, `Hold it down around ${m.tokens.zone} (${left}s)`);
         }
         if (m.data.hold >= 30) this.leave(M, m);
       } else if (m.stage === 2) {

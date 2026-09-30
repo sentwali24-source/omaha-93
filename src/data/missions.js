@@ -29,7 +29,7 @@ export const HOMIE_NAMES = ['Peanut', 'June Bug', 'Lil Man', 'Tiny', 'Boo', 'Ray
 // Things that get delivered. Never anything illegal.
 export const DELIVERY_ITEMS = [
   { item: 'a fresh mixtape', to: 'the DJ', contact: 'DJ Slick', line: "Aw, this the one with the slow jams on side B? Good looking out." },
-  { item: "bail money for Peanut's mama", to: "Peanut's mama", contact: 'Miss Lorraine', line: 'Bless you, baby. Tell them boys I said thank you.' },
+  { item: "Peanut's bail money", to: "Peanut's mama", contact: 'Miss Lorraine', line: 'Bless you, baby. Tell them boys I said thank you.' },
   { item: 'a stack of block party flyers', to: 'the church', contact: 'Deacon Hayes', line: 'Saturday at noon. Tell everybody, and tell them to bring a dish.' },
   { item: 'a letter from the pen', to: "Keisha's grandma", contact: 'Grandma Pearl', line: "Lord, he wrote! I'm gonna read this twice." },
   { item: 'a borrowed boombox', to: 'Cousin Dee', contact: 'Cousin Dee', line: "Finally! Took y'all long enough. It still got batteries?" },
@@ -60,7 +60,7 @@ export const STORY = [
     ],
     objective: 'Meet {og} at the hood',
     outro: [
-      ['og', "Look at you. Summer of '93 and you finally old enough to put in work."],
+      ['og', "Look at you. Summer of '93 and you finally old enough to rep the set."],
       ['og', 'The {short} been holding down {hoodZone} since before you could ride a bike. Nobody gives us nothing.'],
       ['og', "Keep that pager on your hip. When it buzzes, find a payphone. That's how we move."],
     ],
@@ -79,7 +79,7 @@ export const STORY = [
       ['og', 'The city came through and buffed our walls on the block. Gray paint everywhere.'],
       ['og', 'Grab a can and put the {short} back up. Two walls. Let them know who we are.'],
     ],
-    objective: 'Tag the buffed walls in {zone}',
+    objective: 'Tag the buffed walls around {zone}',
     outro: [['og', "That's what I'm talking about. Every wall is a flag, {greet}."]],
   },
   {
@@ -150,7 +150,7 @@ export const STORY = [
       ['og', '{rivalShort} caught Lil Man slipping by the store and took his Starter jacket.'],
       ['og', 'Roll through {zone}, put hands on three of them, and get out before Five-O shows up.'],
     ],
-    objective: 'Run up on the {rivalShort} in {zone}',
+    objective: 'Run up on the {rivalShort} around {zone}',
     outro: [['og', 'Word travels fast. They know your name over there now. Stay sharp.']],
   },
   {
@@ -237,10 +237,10 @@ export const JOBS = {
     pitch: 'The {rivalShort} been talking reckless on the walls. Go cross them out.',
     titles: ['Bomb the Block', 'Cross-Out Payback', 'Paint the Town'],
     brief: [
-      ['og', '{rivalShort} been talking reckless on the walls in {zone}.'],
+      ['og', '{rivalShort} been talking reckless on the walls around {zone}.'],
       ['og', 'Go hit {count} of their spots. In and out.'],
     ],
-    objective: 'Tag {count} walls in {zone}',
+    objective: 'Tag {count} walls around {zone}',
     reward: { cash: 50, rep: 30 },
     timer: 240,
   },
@@ -258,10 +258,10 @@ export const JOBS = {
     pitch: 'The {rivalShort} posted up talking about the {short}. Handle it.',
     titles: ['Run Up on Them', 'Settle It', 'Respect the Name'],
     brief: [
-      ['og', '{rivalShort} posted up in {zone} talking about the {short}.'],
+      ['og', '{rivalShort} posted up around {zone} talking about the {short}.'],
       ['og', 'Go handle it. Three of them. Then get out of there.'],
     ],
-    objective: 'Run up on the {rivalShort} in {zone}',
+    objective: 'Run up on the {rivalShort} around {zone}',
     reward: { cash: 90, rep: 45 },
   },
   escort: {
@@ -275,10 +275,10 @@ export const JOBS = {
     reward: { cash: 80, rep: 30 },
   },
   recruit: {
-    pitch: 'We need bodies at the hood tonight. Bring two homies.',
+    pitch: 'We need numbers at the hood tonight. Bring two homies.',
     titles: ['Numbers Game', 'Roll Call'],
     brief: [
-      ['og', 'We need bodies at the hood tonight.'],
+      ['og', 'We need numbers at the hood tonight.'],
       ['og', 'Round up {count} homies and bring them through.'],
     ],
     objective: 'Recruit {count} homies',
@@ -296,7 +296,7 @@ export const JOBS = {
     timer: 180,
   },
   delivery: {
-    pitch: 'Something needs to get across town. No questions.',
+    pitch: 'Something needs to get across town. Quick.',
     titles: ['Special Delivery', 'Run It Over', 'On the Way'],
     brief: [
       ['og', 'Need {item} run over to {dest}.'],

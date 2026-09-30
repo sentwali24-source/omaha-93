@@ -141,7 +141,7 @@ export class Progression {
     if (!game.state || !rank) return;
     const side = SIDES[game.state.player.side];
     const next = nextRank(game.state.rep);
-    this._big('RANK UP', `You're a ${rank.name} now${next ? ` · next: ${next.name}` : ''}`, { color: side?.color, duration: 3.5 });
+    this._big('RANK UP', `You're ${/^[AEIOU]/.test(rank.name) ? 'an' : 'a'} ${rank.name} now${next ? ` · next: ${next.name}` : ''}`, { color: side?.color, duration: 3.5 });
     const og = OGS[this.playerSet] || { name: 'OG', number: '555-0100' };
     // the OG notices a little later — like a real page would
     game.missions?.later?.(2.5, () => {
