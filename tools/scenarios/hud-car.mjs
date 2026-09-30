@@ -1,12 +1,8 @@
-// In-car HUD: get in the stub car, drive, radio name, speedometer, radar zoom-out.
+// In-car HUD: get in a car, drive, radio name, speedometer, radar zoom-out.
 export default async function (page, h) {
   await h.wait(1200);
-  await h.game((g) => {
-    const v = g.vehicles[0];
-    if (v) g.debugApi.teleport(v.position.x - 2.6, v.position.z);
-  });
-  await h.wait(400);
-  await h.press('KeyF');
+  // the real Traffic system's debug helper spawns a car on the nearest lane and seats the player
+  await h.game((g) => g.debugApi.driveCar('coupe'));
   const inCar = await page.waitForFunction(() => !!window.__game.player.vehicle, null, { timeout: 8000 }).then(() => true, () => false);
   h.assert(inCar, 'player got into the car');
   await h.game((g) => g.events.emit('radio:station', { station: { id: 'kbnc', name: 'KBNC 94.1 The Bounce', genre: 'Hip-hop & R&B' } }));
