@@ -245,6 +245,18 @@ function installDebug(ctx) {
       return true;
     },
     meshes: () => ctx.group.children.map((m) => ({ name: m.name, tris: Math.round((m.geometry?.attributes.position.count || 0) / 3) })),
+    /** Freeway deck samples every `step` m: [{ s, x, z, y (deck top), w }]. */
+    freeway(step = 6) {
+      const F = ctx.freeway;
+      if (!F) return [];
+      const q = { x: 0, z: 0, dx: 0, dz: 0 };
+      const out = [];
+      for (let s = 0; s < F.sGround; s += step) {
+        F.path.at(s, q);
+        out.push({ s, x: q.x, z: q.z, dx: q.dx, dz: q.dz, y: F.yAt(s), w: F.wAt(s) });
+      }
+      return out;
+    },
     /** The Eppley jet: { t, phase, x, y, z }; jet(t) jumps its loop to time t (s). */
     jet(t) {
       if (!ctx.jet) return null;

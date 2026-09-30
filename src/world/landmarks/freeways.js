@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { FREEWAYS, ewStreet } from '../../data/map.js';
+import { FREEWAYS } from '../../data/map.js';
 import { C, shade, box, cylinder, beam, hitsRoad, rotPt } from './kit.js';
 import { sign, carGeometry } from './props.js';
 import { IY } from './iowa.js';
@@ -78,9 +78,9 @@ export function buildFreeways(ctx) {
   const R1 = (nf.corridor.x1 - nf.corridor.x0) / 2;
   const R2 = 40;
   const xs = 580; // the riverfront swing runs down x = 580, between 10th St and ASARCO
-  // the North Freeway comes down to grade at the south sidewalk of Fort St
-  const fort = ewStreet('fort');
-  const footZ = fort.z + fort.width / 2 + ctx.layout.SIDEWALK + 0.5;
+  // the North Freeway comes down to grade at the north end of its corridor (the city builds
+  // houses north of it, up to Fort St)
+  const footZ = nf.corridor.z0 + 1;
   const path = new Path()
     .line(nx, footZ, nx, iz - R1)
     .arc(nx + R1, iz - R1, R1, Math.PI, Math.PI / 2)
@@ -98,7 +98,12 @@ export function buildFreeways(ctx) {
   const sRiver0 = sBridge + (700 - (xs + R2));
   const sRiver1 = sBridge + (1000 - (xs + R2));
   const sGround = sBridge + (1120 - (xs + R2));
-  const RAMP = 64;
+  // the ramp (solid fill) must end before the first cross street's sidewalk
+  const cross = ctx.layout.ewStreets
+    .map((e) => e.z - e.width / 2 - ctx.layout.SIDEWALK)
+    .filter((z) => z > footZ + 20)
+    .sort((a, b) => a - b)[0];
+  const RAMP = Math.min(64, (cross ?? footZ + 80) - footZ - 4);
   const yAt = (s) => {
     if (s < RAMP) return 0.25 + (nf.deckY - 0.25) * smooth(s / RAMP);
     if (s < sJunction - 50) return nf.deckY;
@@ -110,6 +115,7 @@ export function buildFreeways(ctx) {
   };
   const wAt = (s) => (s < sWiden ? 18 : s > sBridge ? 26 : 18 + 8 * smooth((s - sWiden) / (sBridge - sWiden)));
   const F = { path, yAt, wAt, RAMP, sRiver0, sRiver1, sGround, sBridge };
+  ctx.freeway = F;
   deck(ctx, F);
   pillars(ctx, F);
   gantries(ctx, F, { sJunction });

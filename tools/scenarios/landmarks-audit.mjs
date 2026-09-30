@@ -34,6 +34,29 @@ export default async function (page, h) {
         if (road) out.pillarsInRoad.push({ fw: f.id, tag: b.tag, x: +((b.minX + b.maxX) / 2).toFixed(1), z: +((b.minZ + b.maxZ) / 2).toFixed(1), w: +(b.maxX - b.minX).toFixed(1), d: +(b.maxZ - b.minZ).toFixed(1) });
       }
     }
+    // city buildings that poke up into a freeway deck (anything taller than the deck soffit)
+    out.deckHits = [];
+    const seen = new Set();
+    for (const p of g.debugApi.landmarks?.freeway?.(4) || []) {
+      if (p.x > 1000) continue;
+      const hw = p.w / 2;
+      const rx = -p.dz;
+      const rz = p.dx;
+      const ax = p.x + rx * hw;
+      const az = p.z + rz * hw;
+      const bx = p.x - rx * hw;
+      const bz = p.z - rz * hw;
+      for (const b of col.query(Math.min(ax, bx), Math.min(az, bz), Math.max(ax, bx), Math.max(az, bz))) {
+        if (seen.has(b.id) || b.tag === 'landmark' || b.tag === 'water' || b.tag === 'bounds') continue;
+        if (b.maxY < p.y - 1.6) continue;
+        seen.add(b.id);
+        out.deckHits.push({ tag: b.tag, x: +((b.minX + b.maxX) / 2).toFixed(1), z: +((b.minZ + b.maxZ) / 2).toFixed(1), maxY: +b.maxY.toFixed(1), deckY: +p.y.toFixed(1) });
+      }
+    }
+    // city objects standing on the levee slope (x 689..700)
+    out.levee = boxes
+      .filter((b) => b.maxX > 689.5 && b.minX < 700 && b.tag !== 'landmark' && b.tag !== 'water' && b.tag !== 'bounds')
+      .map((b) => ({ tag: b.tag, x: +((b.minX + b.maxX) / 2).toFixed(1), z: +((b.minZ + b.maxZ) / 2).toFixed(1), x1: +b.maxX.toFixed(1) }));
     for (const w of map.WATER) {
       out.water[w.id] = boxes.filter((b) => b.tag === 'water' && inRect(b, w)).length;
     }
@@ -46,6 +69,8 @@ export default async function (page, h) {
   h.log('intruders', report.intruders.length, JSON.stringify(report.intruders.slice(0, 40)));
   h.log('pillarsInRoad', report.pillarsInRoad.length, JSON.stringify(report.pillarsInRoad.slice(0, 40)));
   h.log('water', JSON.stringify(report.water));
+  h.log('levee', report.levee.length, JSON.stringify(report.levee.slice(0, 30)));
+  h.log('deckHits', report.deckHits.length, JSON.stringify(report.deckHits.slice(0, 40)));
   h.log('meshCount', report.meshCount, 'top', JSON.stringify(report.meshes));
 
   // landmark draw-call share at viewpoints (player teleported, normal game camera)

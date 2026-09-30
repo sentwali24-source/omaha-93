@@ -151,9 +151,9 @@ function fountain(ctx, x, z) {
   const colGeo = alphaRamp(new THREE.CylinderGeometry(0.55, 1.5, 1, 10, 6, true).translate(0, 0.5, 0), 0.85, 0.45);
   const column = new THREE.Mesh(colGeo, mat);
   column.position.set(x, 0.8, z);
-  const burstGeo = alphaRamp(new THREE.IcosahedronGeometry(1, 1), 0.02, 0.3);
+  const burstGeo = alphaRamp(new THREE.IcosahedronGeometry(1, 1), 0.34, 0.04);
   const burst = new THREE.Mesh(burstGeo, mist);
-  const curtainGeo = alphaRamp(new THREE.CylinderGeometry(3.2, 11, 1, 16, 4, true).translate(0, 0.5, 0), 0.0, 0.32);
+  const curtainGeo = alphaRamp(new THREE.CylinderGeometry(2.2, 9, 1, 16, 4, true).translate(0, 0.5, 0), 0.03, 0.26);
   const curtain = new THREE.Mesh(curtainGeo, mist);
   curtain.position.set(x, 0.5, z);
   // ring of eight side jets, merged into one geometry
@@ -177,9 +177,9 @@ function fountain(ctx, x, z) {
     // programmed show: slow surges with quick pulses
     const h = 28 + 32 * (0.5 + 0.5 * Math.sin(t * 0.33)) + 4 * Math.sin(t * 1.9);
     column.scale.set(1 + 0.15 * Math.sin(t * 3.1), h, 1 + 0.15 * Math.cos(t * 2.7));
-    const r = 5 + h * 0.07;
-    burst.position.set(x + Math.sin(t * 0.7) * 0.8, 0.8 + h, z);
-    burst.scale.set(r * 1.2, r * 0.7, r * 1.2);
+    const r = 3 + h * 0.05;
+    burst.position.set(x + Math.sin(t * 0.7) * 0.6, 0.8 + h - r * 0.35, z);
+    burst.scale.set(r, r * 1.25, r);
     curtain.scale.set(0.8 + h / 70, h * 0.92, 0.8 + h / 70);
     ring.scale.set(1, 7 + 4 * Math.sin(t * 2.2), 1);
     splash.scale.set(1, 2 + 2 * (0.5 + 0.5 * Math.sin(t * 0.33)), 1);

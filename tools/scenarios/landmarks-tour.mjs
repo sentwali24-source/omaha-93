@@ -3,6 +3,11 @@
 //   view: [name, playerX, playerZ, hour, camPos[x,y,z], lookAt[x,y,z]]
 //   or    [name, playerX, playerZ, hour, null, null, yaw, pitch]  (normal game camera)
 const GROUPS = {
+  ramp: [
+    ['nf-ramp', 30, -1000, 12, [45, 18, -1030], [0, 3, -990]],
+    ['heartland-fountain', 640, 130, 12, [615, 20, 150], [640, 25, 64]],
+    ['leahy', 515, 110, 13, [555, 18, 125], [500, 0, 88]],
+  ],
   check: [
     ['kountze', 290, -800, 14, [300, 22, -795], [290, 0, -840]],
     ['kountze-sw', 275, -815, 14, [262, 12, -800], [295, 0, -845]],
