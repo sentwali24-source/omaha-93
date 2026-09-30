@@ -82,6 +82,8 @@ export class Gangs {
     ev.on('player:enterVehicle', (e) => this._onEnterVehicle(e));
     ev.on('player:exitVehicle', (e) => this._onExitVehicle(e));
     ev.on('vehicle:hitActor', (e) => this._onRunOver(e));
+    ev.on('mission:complete', (e) => this._releaseMissionCrew(e?.mission));
+    ev.on('mission:fail', (e) => this._releaseMissionCrew(e?.mission));
   }
 
   onGameStart() {
@@ -1487,6 +1489,34 @@ export class Gangs {
         a.brain.state = 'leave';
         a.brain.walker = null;
       } else a.brain.beaten = true;
+    }
+  }
+
+  /**
+   * A mission's rival crew ('hunt' group) outlives the job: once it passes, fails or is dropped they
+   * head home like a finished beef crew. Otherwise a crew sent to the player's hood (defend) keeps
+   * jumping the player at the respawn point after every knockout.
+   */
+  _releaseMissionCrew(m) {
+    const spawned = m?.data?.spawned;
+    if (!Array.isArray(spawned) || !spawned.length) return;
+    const groups = new Set();
+    for (const a of spawned) {
+      const g = a?.brain?.group;
+      if (g && g.kind === 'hunt' && this.groups.includes(g)) groups.add(g);
+    }
+    for (const g of groups) {
+      g.kind = 'hang';
+      g.mode = 'hang';
+      g.target = null;
+      g.alert = 'none';
+      for (const a of g.members) {
+        if (a.state === 'active') {
+          stopFight(a);
+          a.brain.state = 'leave';
+          a.brain.walker = null;
+        } else a.brain.beaten = true;
+      }
     }
   }
 
