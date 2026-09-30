@@ -1059,15 +1059,21 @@
   top: 40%;
 }
 .hud-root.touch .hud-dialog {
-  bottom: calc(var(--sb) + 318px * var(--ts, 1));
+  /* portrait: above the ACTION prompt pill of the button cluster */
+  bottom: calc(var(--sb) + 362px * var(--ts, 1));
   max-width: 92vw;
   font-size: 15px;
   padding: 6px 26px 7px;
 }
 @media (orientation: landscape) {
+  /* landscape: the free strip between the joystick and the button cluster */
   .hud-root.touch .hud-dialog {
-    bottom: calc(var(--sb) + 12px);
-    max-width: 42vw;
+    bottom: calc(var(--sb) + 8px);
+    left: calc(var(--sl) + 168px * var(--ts, 1));
+    right: calc(var(--sr) + 236px * var(--ts, 1));
+    transform: none;
+    max-width: none;
+    padding: 5px 18px 6px;
   }
 }
 .hud-root.touch .dlg-speaker {
@@ -1122,6 +1128,21 @@
   }
   .hud-root.touch .hud-objective.new {
     animation: hud-lowflash 0.3s steps(2) 3;
+  }
+}
+/* short landscape phones: subtitles clear the flatter cluster, smaller pager */
+@media (orientation: landscape) and (max-height: 520px) {
+  .hud-root.touch .hud-dialog {
+    right: calc(var(--sr) + 288px * var(--ts, 1));
+    font-size: 14px;
+    line-height: 1.25;
+  }
+  .hud-root.touch .dlg-speaker {
+    font-size: 15px;
+  }
+  /* a smaller pager so it doesn't bury the top of a short screen */
+  .hud-root.touch .hud-pager.show {
+    transform: translate(-50%, 0) rotate(-1.5deg) scale(0.66);
   }
 }
 @media (max-width: 420px) {

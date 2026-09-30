@@ -257,13 +257,15 @@ export class HUD {
     ev.on('mission:update', (e) => {
       if (e?.mission && e.mission.objective !== undefined) this.setObjective(e.mission.objective);
     });
+    // The Missions system queues its own result cards (MISSION PASSED / FAILED / JOB DROPPED) through
+    // missions.announce(); the HUD only shows them itself when no such announcer exists.
     ev.on('mission:complete', (e) => {
-      this.bigMessage('MISSION PASSED', rewardText(e?.reward ?? e?.mission?.reward), { duration: 3.6 });
+      if (!this._announcer()) this.bigMessage('MISSION PASSED', rewardText(e?.reward ?? e?.mission?.reward), { duration: 3.6 });
       this.setObjective(null);
     });
     ev.on('mission:fail', (e) => {
       const why = e?.reason || e?.mission?.failReason || '';
-      this.bigMessage('MISSION FAILED', why ? String(why) : '', { duration: 3.4 });
+      if (!this._announcer()) this.bigMessage('MISSION FAILED', why ? String(why) : '', { duration: 3.4 });
       this.setObjective(null);
     });
     ev.on('turf:change', (e) => this._onTurfChange(e));
@@ -371,6 +373,9 @@ export class HUD {
 
   /** Short popup near the stats, e.g. "+15 REP". opts: { color, icon, duration } */
   toast(text, { color = null, icon = null, duration = 2.4, key = null } = {}) {
+    // a toast that repeats the big message on screen (e.g. a mission title) adds nothing
+    const up = String(text ?? '').trim().toUpperCase();
+    if (up && (this._big?.title === up || this._bigQueue.some((m) => m.title === up))) return null;
     const t = el('div', 'hud-toast', null);
     if (icon) {
       const ico = el('span', 'toast-ico', t, TOAST_ICONS[icon] || '');
@@ -508,9 +513,21 @@ export class HUD {
       for (const [k, o] of this.markers) if (o.type === 'waypoint' && k !== id) this.markers.delete(k);
       this._waypointId = id;
     }
+    // a payphone / shop the current job points at (Missions ids start with 'mission:') must stay
+    // visible on the radar rim even when it is far away
+    if (m.important === undefined && typeof id === 'string' && id.startsWith('mission:')) m.important = true;
     this.markers.set(id, m);
     this.minimap.invalidate();
     return id;
+  }
+
+  /** Move a marker (markers are also kept by reference, so mutating x/z works too). */
+  updateMarker(id, x, z) {
+    const m = this.markers.get(id);
+    if (!m) return false;
+    if (typeof x === 'number') m.x = x;
+    if (typeof z === 'number') m.z = z;
+    return true;
   }
 
   removeMarker(id) {
@@ -886,13 +903,18 @@ export class HUD {
     this._owners[e.zoneId] = e.owner ?? null;
     this.minimap.invalidate();
     this._c.area = null; // re-color the location line
-    if (!zone) return;
+    if (!zone || this._announcer()) return; // progression.js announces TURF TAKEN / LOST through Missions
     if (e.owner && e.owner === mySet) {
       const side = SIDES[this.game.state?.player?.side];
       this.bigMessage('TURF TAKEN', zone.name, { color: this.game.playerSet?.accent || side?.light || BIG_COLORS['TURF TAKEN'] });
     } else if (prev && prev === mySet) {
       this.bigMessage(`LOST ${zone.name}`, e.owner ? `${setById(e.owner)?.name || 'Rivals'} took it` : '', { color: '#ff2d3a' });
     }
+  }
+
+  /** True when the gameplay systems queue their own big result messages (missions.announce). */
+  _announcer() {
+    return typeof this.game.missions?.announce === 'function';
   }
 
   // ------------------------------------------------------------------ vehicle, radio, fps, prompt
@@ -922,6 +944,12 @@ export class HUD {
   _showRadio(station, quiet = false) {
     const stations = this.game.audio?.radio?.stations;
     if (!station && quiet && !(stations && stations.length)) return; // no radio system at all
+    if (!station && !this.game.player?.vehicle) {
+      // the radio switches off as the player gets out: nothing to announce on foot
+      this._radioT = 0;
+      this.radioEl.classList.remove('show');
+      return;
+    }
     const name = station ? String(station.name || station.id || 'RADIO') : 'RADIO OFF';
     const genre = station ? String(station.genre || '') : '';
     this.radioName.textContent = name;

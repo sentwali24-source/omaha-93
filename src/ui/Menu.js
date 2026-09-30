@@ -68,6 +68,7 @@ export class Menu {
     this._buildDom();
     this._bindInput();
     game.events?.on?.('resize', () => this._updateRotateHint());
+    window.addEventListener('resize', () => this._updateRotateHint());
     game.events?.on?.('settings:change', () => this._syncLite());
   }
 

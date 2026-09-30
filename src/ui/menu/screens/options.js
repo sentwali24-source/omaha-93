@@ -92,7 +92,7 @@ export function settingsScreen(menu) {
       { class: 'm-panel m-settings-panel m-scroll' },
       section(
         'Video',
-        row('Quality', segmented('quality', [{ id: 'low', label: 'Low' }, { id: 'medium', label: 'Medium' }, { id: 'high', label: 'High' }]), 'Low for phones. World detail updates on the next load.'),
+        row('Quality', segmented('quality', [{ id: 'low', label: 'Low' }, { id: 'medium', label: 'Medium' }, { id: 'high', label: 'High' }]), 'Low for phones. Applies right away; building detail updates on the next launch.'),
         row('Show FPS', toggle('showFps', 'Show FPS')),
       ),
       section(
