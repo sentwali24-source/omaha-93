@@ -3,6 +3,10 @@
 //   view: [name, playerX, playerZ, hour, camPos[x,y,z], lookAt[x,y,z]]
 //   or    [name, playerX, playerZ, hour, null, null, yaw, pitch]  (normal game camera)
 const GROUPS = {
+  riverside: [
+    ['riverside-player', 686, 80, 18.5, null, null, -Math.PI / 2, 0.08],
+    ['riverside-rail', 686, -400, 12, null, null, -Math.PI / 2 + 0.4, 0.08],
+  ],
   ramp: [
     ['nf-ramp', 30, -1000, 12, [45, 18, -1030], [0, 3, -990]],
     ['heartland-fountain', 640, 130, 12, [615, 20, 150], [640, 25, 64]],
@@ -26,6 +30,7 @@ const GROUPS = {
   ],
   skyline: [
     ['skyline-dusk', 200, -300, 20.2, null, null, 2.7, 0.12],
+    ['skyline-player', 205, -300, 20.2, null, null, -2.75, 0.05],
     ['skyline-north-dusk', 200, -300, 20.2, [196, 11, -318], [380, 42, 60]],
     ['skyline-north-night', 200, -300, 22.5, [196, 11, -318], [380, 42, 60]],
     ['skyline-24lake-dusk', 150, -560, 20.2, [150, 14, -575], [380, 40, 60]],
@@ -111,6 +116,7 @@ export default async function (page, h) {
           g.camera.position.set(...a.cam);
           g.camera.lookAt(...a.look);
         } else if (g.cameraRig) {
+          if (g.player) g.player.heading = a.yaw;
           g.cameraRig.yaw = a.yaw;
           g.cameraRig.pitch = a.pitch ?? 0.15;
           g.cameraRig.snap?.();

@@ -8,9 +8,12 @@ import { lamp } from './props.js';
 // double-track truss bridge and floating flood debris.
 //
 // The city ground plane sits at y = 0, so the river surface is drawn *above* it (y = 1.1) and
-// the levee rises to 2.4 m: the water really is "near the top of the banks".
+// the levee crest is at 1.7 m with sandbags to 2.45 m: the water really is "near the top of the
+// banks", and from the riverfront park you can still see the river over the sandbag wall.
 
 export const WATER_Y = 1.1;
+const LH = 1.7; // levee crest
+const BAGS = 2.45; // top of the sandbag wall
 export const UP_BRIDGE = { z: -300, deckY: 7.5, x0: 700, x1: 1000, spans: 4, width: 10 };
 
 export function buildRiver(ctx) {
@@ -25,26 +28,26 @@ export function buildRiver(ctx) {
   for (const [za, zb, bags] of [[z0, -1260, false], [-1260, 420, true], [420, z1]]) {
     const g = P.get('grass');
     const s = 1 / 7;
-    // landside slope 690 → 697 (0 → 2.4)
-    g.quad(690, 0.04, zb, 697, 2.4, zb, 697, 2.4, za, 690, 0.04, za, grass, 690 * s, zb * s, 697 * s, za * s);
-    // riverside slope 701.5 → 705 (2.4 → under water)
-    g.quad(701.5, 2.4, zb, 705, 0.8, zb, 705, 0.8, za, 701.5, 2.4, za, shade(grass, 0.85), 701.5 * s, zb * s, 705 * s, za * s);
+    // landside slope 690 → 697 (0 → crest)
+    g.quad(690, 0.04, zb, 697, LH, zb, 697, LH, za, 690, 0.04, za, grass, 690 * s, zb * s, 697 * s, za * s);
+    // riverside slope 701.5 → 705 (crest → under water)
+    g.quad(701.5, LH, zb, 705, 0.8, zb, 705, 0.8, za, 701.5, LH, za, shade(grass, 0.85), 701.5 * s, zb * s, 705 * s, za * s);
     const R = ctx.T.rows.dirt;
     const b = P.get('ground');
-    b.quad(701.5, 2.42, zb, 701.5, 2.42, za, 697, 2.42, za, 697, 2.42, zb, C('#b0a28a'), -zb / 8, R.v0, -za / 8, R.v1);
+    b.quad(701.5, LH + 0.02, zb, 701.5, LH + 0.02, za, 697, LH + 0.02, za, 697, LH + 0.02, zb, C('#b0a28a'), -zb / 8, R.v0, -za / 8, R.v1);
     if (bags) {
       // sandbag wall along the crest, facing the river
       const L = P.get('lowrise');
       const row = ctx.T.rows.sandbag;
       const len = zb - za;
       const u1 = len / 6;
-      L.quad(701.3, 2.4, zb, 701.3, 2.4, za, 701.3, 3.35, za, 701.3, 3.35, zb, C('#ffffff'), 0, row.v0, u1, row.v1);
-      L.quad(700.2, 2.4, za, 700.2, 2.4, zb, 700.2, 3.35, zb, 700.2, 3.35, za, C('#e8e0d0'), 0, row.v0, u1, row.v1);
-      flat(P.get('solid'), 700.2, za, 701.3, zb, 3.35, C('#b3a075'));
+      L.quad(701.3, LH, zb, 701.3, LH, za, 701.3, BAGS, za, 701.3, BAGS, zb, C('#ffffff'), 0, row.v0, u1, row.v1);
+      L.quad(700.2, LH, za, 700.2, LH, zb, 700.2, BAGS, zb, 700.2, BAGS, za, C('#e8e0d0'), 0, row.v0, u1, row.v1);
+      flat(P.get('solid'), 700.2, za, 701.3, zb, BAGS, C('#b3a075'));
       // black plastic sheeting draped over some stretches (a real 1993 flood-fight detail)
       for (let z = za + 30; z < zb - 40; z += 90 + ctx.rng() * 80) {
         const zl = 12 + ctx.rng() * 20;
-        box(P.get('solid'), 701.28, 2.3, z, 701.45, 3.3, z + zl, C('#1c1d1f'), { top: false });
+        box(P.get('solid'), 701.28, LH - 0.1, z, 701.45, BAGS - 0.05, z + zl, C('#1c1d1f'), { top: false });
       }
     }
   }
