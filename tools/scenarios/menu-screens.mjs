@@ -5,8 +5,11 @@
 export default async function (page, h) {
   const shot = async (name, ms = 1400) => {
     await h.wait(ms);
-    await h.shot(name);
+    await h.shot(name).catch((e) => h.log('shot skipped', name, String(e.message).split('\n')[0]));
   };
+  // forced clicks: the enter animations never look "stable" to Playwright on a starved machine
+  const click = page.click.bind(page);
+  page.click = (sel, opts = {}) => click(sel, { force: true, timeout: 60000, ...opts });
   const screen = () => h.game((g) => g.debugApi?.menu?.screen?.() ?? null);
 
   await h.wait(1500);
