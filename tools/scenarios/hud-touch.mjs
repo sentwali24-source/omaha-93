@@ -82,16 +82,23 @@ export default async function (page, h) {
   h.assert(await h.game((g) => !g.mapScreen.open && !g.paused), 'close button closes the map');
 
   // in-car controls
-  await h.game((g) => {
-    const v = g.vehicles[0];
-    if (v) g.debugApi.teleport(v.position.x - 2.6, v.position.z);
+  // the nearest empty (parked) car: stand next to its driver door
+  const carAt = await h.game((g) => {
+    const p = g.player.position;
+    const v = g.vehiclesNear(p.x, p.z, 150, (q) => !q.driver && !q.isPolice).sort((a, b) => a.position.distanceTo(p) - b.position.distanceTo(p))[0] || g.vehicles.find((q) => !q.driver);
+    if (!v) return null;
+    const hx = -Math.cos(v.heading), hz = Math.sin(v.heading); // left side of the car
+    g.debugApi.teleport(v.position.x + hx * 2.2, v.position.z + hz * 2.2);
+    return { x: v.position.x, z: v.position.z };
   });
-  await h.wait(600);
+  h.log('car at', JSON.stringify(carAt));
+  await h.wait(1200);
   const carBtn = await center('.tb-car');
   await touch('touchStart', [[carBtn[0], carBtn[1], 9]]);
   await touch('touchEnd', []);
-  await h.wait(800);
+  await page.waitForFunction(() => !!window.__game.player.vehicle, null, { timeout: 8000 }).catch(() => {});
   h.assert(await h.game((g) => !!g.player.vehicle), 'CAR button enters the car');
+  h.log('in car', JSON.stringify(await h.game((g) => ({ inCar: g.touch.inCar, brake: getComputedStyle(document.querySelector('.tb-brake')).display, horn: getComputedStyle(document.querySelector('.tb-horn')).display, punch: getComputedStyle(document.querySelector('.tb-punch')).display }))));
   await touch('touchStart', [[sx, sy, 10]]);
   await touch('touchMove', [[sx + 20, sy - 70, 10]]);
   await h.wait(2500);

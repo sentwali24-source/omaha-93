@@ -4,6 +4,8 @@
 //   node tools/smoke.mjs --port 5215 --no-server --out tools/out/ui-hud-live \
 //     --params "autostart=1&side=bloods&set=lvb&debug=1&quality=low" --script tools/scenarios/hud-live.mjs [--mobile]
 export default async function (page, h) {
+  // screenshots can time out on a heavily loaded machine: log and carry on
+  const shot = (n) => h.shot(n).catch((e) => h.log('shot skipped', n, String(e.message).split('\n')[0]));
   const mobile = await h.game(() => navigator.maxTouchPoints > 0 || 'ontouchstart' in window);
   if (mobile) await page.setViewportSize({ width: 844, height: 390 });
   const hud = () => h.game((g) => g.debugApi.hud());
@@ -37,21 +39,21 @@ export default async function (page, h) {
 
   await h.wait(2500);
   h.assert((await hud()).visible, 'HUD visible in play');
-  await h.shot('50-play');
+  await shot('50-play');
 
   // pager + payphone marker straight from the Missions system
   const offer = await h.game((g) => g.debugApi.missions.page());
   await h.wait(1500);
   const st1 = await h.game((g) => ({ markers: [...g.hud.markers.values()].map((m) => `${m.id}:${m.type}${m.important ? '!' : ''}`), pager: document.querySelector('.hud-pager')?.className || null, obj: document.querySelector('.hud-objective')?.textContent || '' }));
   h.log('offer', offer, JSON.stringify(st1));
-  await h.shot('51-pager');
+  await shot('51-pager');
 
   // answer it → mission title card, objective, mission markers
   const started = await h.game((g) => g.debugApi.missions.answer());
   await h.wait(1200);
   const act = await h.game((g) => g.debugApi.missions.active());
   h.log('mission', started, JSON.stringify(act));
-  await h.shot('52-mission');
+  await shot('52-mission');
 
   // real prompts
   await promptAt('payphone', (g) => {
@@ -68,14 +70,14 @@ export default async function (page, h) {
     const nz = s.nz ?? s.normal?.z ?? 0;
     return { x: s.x + nx * 1.2, z: s.z + nz * 1.2 };
   });
-  if (tag) await h.shot('53-prompt-tag');
+  if (tag) await shot('53-prompt-tag');
   await h.game((g) => g.debugApi.missions.abort());
   const roll = await promptAt('homie', (g) => {
     const mine = g.state.player.setId;
     const a = g.actors.find((q) => q.kind === 'gang' && q.faction === mine && q.alive && !q.userData?.homie);
     return a ? { x: a.position.x + 1.1, z: a.position.z } : null;
   });
-  if (roll) await h.shot('54-prompt-homie');
+  if (roll) await shot('54-prompt-homie');
 
   // zone banner: walk into another set's turf
   await h.game((g) => g.debugApi.teleport(150, -560));
@@ -83,7 +85,7 @@ export default async function (page, h) {
   await h.game((g) => g.debugApi.teleport(372, 120));
   await h.wait(2200);
   h.log('zone', JSON.stringify((await hud()).zone));
-  await h.shot('55-zone');
+  await shot('55-zone');
 
   // in a car: speedometer + real radio popup
   await h.game((g) => g.debugApi.teleport(150, -420));
@@ -94,7 +96,7 @@ export default async function (page, h) {
   h.log('radio', JSON.stringify(radio));
   await h.down('KeyW');
   await h.wait(3000);
-  await h.shot('56-car');
+  await shot('56-car');
   await h.up('KeyW');
   const car = await h.game((g) => ({ mph: g.hud.speedoNum.textContent, speed: g.player.vehicle?.speed }));
   h.log('car', JSON.stringify(car));
@@ -107,7 +109,7 @@ export default async function (page, h) {
   // heat badges
   await h.game((g) => g.police.setHeat?.(2));
   await h.wait(800);
-  await h.shot('57-heat');
+  await shot('57-heat');
   await h.game((g) => g.police.setHeat?.(0));
 
   // map with a waypoint
@@ -115,9 +117,9 @@ export default async function (page, h) {
   await h.game((g) => g.mapScreen.toggle());
   await h.wait(1500);
   h.assert(await h.game((g) => g.mapScreen.open && g.paused), 'map open and paused');
-  await h.shot('58-map');
+  await shot('58-map');
   await h.game((g) => g.mapScreen.close());
   await h.wait(800);
   h.assert(await h.game((g) => !g.mapScreen.open && !g.paused), 'map closed and resumed');
-  await h.shot('59-after-map');
+  await shot('59-after-map');
 }
