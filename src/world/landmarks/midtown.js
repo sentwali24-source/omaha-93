@@ -1,10 +1,11 @@
 import { C, shade, box, block, cylinder, gableRoof, hipRoof, pyramid, dome, lawn, surface } from './kit.js';
 import { tree, bench, lamp, flagpole, sign, postSign, trashCan } from './props.js';
 import { roofTop } from './downtown.js';
+import { nsStreet } from '../../data/map.js';
 
 // Midtown: Joslyn Art Museum (pink Georgia marble, 1931 — no Scott Pavilion yet), Central High
-// School's hollow square on Capitol Hill, Creighton University around St. John's Church (with
-// I-480 slicing along the south edge of campus), Mutual of Omaha's tower and glass dome,
+// School's hollow square on Capitol Hill, Creighton University around St. John's Church on the
+// Burt–Cuming block, Mutual of Omaha's tower and glass dome,
 // Kiewit Plaza and the old Blackstone Hotel.
 
 const ROOF = C('#5e5b57');
@@ -111,29 +112,28 @@ function centralHigh(P, ctx) {
 
 // ------------------------------------------------------------------ Creighton University
 function creighton(P, ctx) {
+  // the Burt–Cuming block, split by 24th St: St. John's and Kiewit Hall west of 24th, Swanson
+  // Hall, a science hall and a small quad east of it
   const parts = ctx.land(ctx.lm('creighton').rect);
-  const west = parts.find((p) => p.x1 < 140);
-  const east = parts.find((p) => p.x0 > 140);
+  const x24 = nsStreet('24th').x;
+  const west = parts.filter((p) => p.x1 <= x24).sort((p, q) => (q.x1 - q.x0) * (q.z1 - q.z0) - (p.x1 - p.x0) * (p.z1 - p.z0))[0];
+  const east = parts.filter((p) => p.x0 >= x24).sort((p, q) => (q.x1 - q.x0) * (q.z1 - q.z0) - (p.x1 - p.x0) * (p.z1 - p.z0))[0];
   const b = P.get('solid');
-  const deckS = -93; // the I-480 deck runs over z -112..-94 here
-  const deckN = -113;
   const rng = ctx.rng;
-  for (const p of [west, east]) {
-    lawn(P, { x0: p.x0, x1: p.x1, z0: p.z0, z1: deckN - 1 }, '#6a9642');
-    surface(P, { x0: p.x0, x1: p.x1, z0: deckN - 1, z1: p.z1 }, 'asphalt', 8, { across: 7 });
-  }
+  for (const p of parts) lawn(P, p, '#6a9642');
   const sandstone = '#b8946c';
   // St. John's Church (1888): English Gothic nave with twin towers facing 24th St
-  const nx0 = 99;
-  const nx1 = 122;
-  const nz0 = -136;
-  const nz1 = -123;
+  const tw = 4.4;
+  const nx1 = west.x1 - tw - 1.6;
+  const nx0 = nx1 - 23;
+  const czc = (west.z0 + west.z1) / 2;
+  const nz0 = czc - 6.5;
+  const nz1 = czc + 6.5;
   block(P, { mat: 'lowrise', row: 'deco', tile: 5, tint: sandstone }, nx0, nz0, nx1, nz1, 0, 10, null);
   gableRoof(b, nx0, nz0, nx1, nz1, 10, 7.5, 'x', C('#4f4a47'), C(sandstone), 0.4);
   for (let x = nx0 + 2.8; x < nx1 - 1; x += 4.6) {
     for (const z of [nz0 - 0.5, nz1]) box(b, x - 0.45, 0, z, x + 0.45, 9, z + 0.5, shade(C(sandstone), 0.9));
   }
-  const tw = 4.4;
   for (const tz of [nz0 - 0.6, nz1 + 0.6 - tw]) {
     block(P, { mat: 'solid', color: C(sandstone) }, nx1, tz, nx1 + tw, tz + tw, 0, 22, ROOF);
     // battlements and corner pinnacles
@@ -152,36 +152,42 @@ function creighton(P, ctx) {
   b.tri(nx1 + 1.25, 14, fz + 1.8, nx1 + 1.25, 14, fz - 1.8, nx1 + 1.25, 16, fz, C('#3a4a6a'));
   box(b, nx1 + 1.2, 0, fz - 1.2, nx1 + 1.3, 4.5, fz + 1.2, C('#4a2f22'));
   sign(P, 'stjohns', nx1 + 2.4, 1.1, fz, 4.2, 0, -Math.PI / 2);
+  surface(P, { x0: nx1 + 1.3, x1: west.x1, z0: fz - 1.5, z1: fz + 1.5 }, 'path', 3, { across: 3 });
   ctx.box(nx0, nz0 - 0.6, nx1 + tw, nz1 + 0.6, 22);
-  // Kiewit Hall: 9-story dorm (1966)
-  block(P, { mat: 'office', tint: '#b99c80', bay: 3.0, floor: 3.3 }, west.x0 + 2, west.z0 + 1, west.x0 + 26, west.z0 + 13, 0, 30, ROOF);
-  roofTop(P, west.x0 + 2, west.z0 + 1, west.x0 + 26, west.z0 + 13, 30, rng, { hvac: 1 });
-  ctx.box(west.x0 + 2, west.z0 + 1, west.x0 + 26, west.z0 + 13, 30);
+  // Kiewit Hall: 9-story dorm (1966) at the west end
+  const kh = { x0: west.x0 + 2, x1: west.x0 + 26, z0: west.z0 + 1, z1: west.z0 + 13 };
+  block(P, { mat: 'office', tint: '#b99c80', bay: 3.0, floor: 3.3 }, kh.x0, kh.z0, kh.x1, kh.z1, 0, 30, ROOF);
+  roofTop(P, kh.x0, kh.z0, kh.x1, kh.z1, 30, rng, { hvac: 1 });
+  ctx.box(kh.x0, kh.z0, kh.x1, kh.z1, 30);
   // low modernist hall between the dorm and the church
-  block(P, { mat: 'office', tint: '#d4d0c6', bay: 3.2, floor: 3.8 }, west.x0 + 28, west.z0 + 1, nx0 - 2, west.z0 + 20, 0, 11.4, ROOF);
-  ctx.box(west.x0 + 28, west.z0 + 1, nx0 - 2, west.z0 + 20, 11.4);
+  const mh = { x0: kh.x1 + 2, x1: nx0 - 2, z0: west.z0 + 1, z1: west.z0 + 17 };
+  block(P, { mat: 'office', tint: '#d4d0c6', bay: 3.2, floor: 3.8 }, mh.x0, mh.z0, mh.x1, mh.z1, 0, 11.4, ROOF);
+  ctx.box(mh.x0, mh.z0, mh.x1, mh.z1, 11.4);
+  // campus mall south of Kiewit: path, trees, benches, a small visitor lot on Burt St
+  surface(P, { x0: west.x0, x1: nx0 - 1, z0: mh.z1 + 3, z1: mh.z1 + 5.5 }, 'path', 3, { across: 2.5 });
+  const lot = { x0: west.x0 + 1, x1: kh.x1, z0: west.z1 - 7, z1: west.z1 - 0.5 };
+  surface(P, lot, 'parking', 10.8, { across: lot.z1 - lot.z0 });
+  for (let x = lot.x0 + 1.4; x < lot.x1 - 1; x += 2.7) ctx.park(x, (lot.z0 + lot.z1) / 2, Math.PI);
+  for (const [tx, tz] of [[kh.x1 + 6, mh.z1 + 9], [mh.x1 - 2, mh.z1 + 10], [kh.x0 + 4, mh.z1 + 1.5], [nx0 + 4, nz1 + 4]]) tree(P, tx, tz, { h: 9 + rng() * 3, kind: 'broad' });
+  bench(P, kh.x1 + 2, mh.z1 + 7, Math.PI);
+  bench(P, mh.x1 - 6, mh.z1 + 7, Math.PI);
+  lamp(P, (kh.x1 + mh.x1) / 2, mh.z1 + 6.5, { style: 'park' });
   // east campus: Swanson Hall (tall dorm), a science hall, and a small quad
   block(P, { mat: 'office', tint: '#c2a88c', bay: 3.0, floor: 3.3 }, east.x1 - 19, east.z0 + 1, east.x1 - 1, east.z0 + 12, 0, 27, ROOF);
   roofTop(P, east.x1 - 19, east.z0 + 1, east.x1 - 1, east.z0 + 12, 27, rng, { hvac: 1 });
   ctx.box(east.x1 - 19, east.z0 + 1, east.x1 - 1, east.z0 + 12, 27);
   block(P, { mat: 'office', tint: '#d6d2c8', bay: 3.2, floor: 3.8 }, east.x0 + 1, east.z0 + 1, east.x0 + 17, east.z0 + 22, 0, 15.2, ROOF);
   ctx.box(east.x0 + 1, east.z0 + 1, east.x0 + 17, east.z0 + 22, 15.2);
-  const quad = { x0: east.x0 + 19, x1: east.x1 - 1, z0: east.z0 + 14, z1: deckN - 2 };
-  surface(P, { x0: quad.x0 + 7.5, x1: quad.x0 + 10.5, z0: quad.z0, z1: quad.z1 }, 'path', 3, { axis: 'z', across: 3 });
+  const quad = { x0: east.x0 + 19, x1: east.x1 - 1, z0: east.z0 + 14, z1: east.z1 - 3 };
+  const qx = (quad.x0 + quad.x1) / 2;
+  surface(P, { x0: qx - 1.5, x1: qx + 1.5, z0: quad.z0, z1: east.z1 }, 'path', 3, { axis: 'z', across: 3 });
   for (const [tx, tz] of [[quad.x0 + 3, quad.z0 + 3], [quad.x1 - 3, quad.z0 + 3], [quad.x0 + 3, quad.z1 - 3], [quad.x1 - 3, quad.z1 - 3]]) tree(P, tx, tz, { h: 8, kind: 'round' });
-  bench(P, quad.x0 + 6.4, (quad.z0 + quad.z1) / 2, Math.PI / 2);
-  bench(P, quad.x0 + 11.6, (quad.z0 + quad.z1) / 2, -Math.PI / 2);
-  postSign(P, 'creighton', east.x0 + 20, deckN - 2.5, 5, Math.PI, { post: '#2c3e6b', y: 0.4 });
-  trashCan(P, quad.x0 + 12, quad.z0 + 1);
-  // parking under the freeway: stalls between the bents (checked against the pillar colliders)
-  for (const p of [west, east]) {
-    for (const [z, heading] of [[-103, 0], [(deckS + p.z1) / 2 - 0.2, Math.PI]]) {
-      for (let x = p.x0 + 2; x < p.x1 - 2; x += 2.7) {
-        if (ctx.col.isFree(x, z, 2.2, 0.3, 1.6)) ctx.park(x, z, heading);
-      }
-    }
-  }
-  for (const x of [west.x0 + 20, east.x0 + 10]) lamp(P, x, deckN - 1.5, { style: 'cobra', rot: Math.PI, h: 6 });
+  bench(P, qx - 2.6, (quad.z0 + quad.z1) / 2, Math.PI / 2);
+  bench(P, qx + 2.6, (quad.z0 + quad.z1) / 2, -Math.PI / 2);
+  postSign(P, 'creighton', east.x0 + 9, east.z1 - 1.6, 5, Math.PI, { post: '#2c3e6b', y: 0.4 });
+  trashCan(P, qx + 2.2, quad.z0 + 1);
+  for (const x of [east.x0 + 3, west.x1 - 3]) lamp(P, x, west.z1 - 1.5, { style: 'cobra', rot: Math.PI, h: 7 });
+  ctx.tag({ id: 'lm-creighton-sci-s', x: east.x0 + 9, y: 1.8, z: east.z0 + 22, nx: 0, nz: 1, w: 3, h: 1.4 });
 }
 
 // ------------------------------------------------------------------ Mutual of Omaha (1970 tower, 1979 dome)

@@ -73,7 +73,7 @@ function woodmen(P, ctx) {
     box(b, x1 - 1.0, 0, z - 0.55, x1 + 0.1, 7.2, z + 0.55, granite);
   }
   // the slab: dark red-brown granite piers with bronze glass, strongly vertical
-  block(P, { mat: 'slab', tint: '#7a5c52', bay: 1.55, floor: 3.62, base: 7.2 }, x0, z0, x1, z1, 7.2, H - 4.5, ROOF);
+  block(P, { mat: 'slab', tint: '#5e4a44', bay: 1.55, floor: 3.62, base: 7.2 }, x0, z0, x1, z1, 7.2, H - 4.5, ROOF);
   // mechanical crown: blank granite band, then the flat roof
   block(P, { mat: 'solid', color: granite }, x0, z0, x1, z1, H - 4.5, H - 0.6, ROOF_DARK);
   box(b, x0 - 0.2, H - 0.6, z0 - 0.2, x1 + 0.2, H, z1 + 0.2, C('#3a2e2a'));

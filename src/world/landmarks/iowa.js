@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { C, shade, jitter, box, block, cylinder, gableRoof, pyramid, lawn, surface, strip, beam } from './kit.js';
 import { tree, railcar, sign } from './props.js';
 import { createRng } from '../../core/rng.js';
@@ -16,6 +17,72 @@ export function buildIowa(ctx) {
   shore(ctx);
   town(ctx);
   bluffs(ctx);
+  backdrop(ctx);
+}
+
+// ------------------------------------------------------------------ Loess Hills backdrop
+// The real bluffs start ~750 m east of the playable area, beyond the camera's far plane on low
+// and medium quality. This band of hazy ridge silhouettes rides with the camera just inside the
+// far plane (like the sky), always to the east, tinted from the current fog colour so it reads
+// as distant hills at noon, a purple silhouette at dusk and a dark ridge line at night.
+function backdrop(ctx) {
+  const game = ctx.game;
+  const q = game.quality || {};
+  if ((q.far || 850) >= 1200) return; // high quality draws the real bluffs far enough
+  const deg = Math.PI / 180;
+  const n = ctx.detail === 0 ? 72 : 120;
+  const pos = [];
+  const col = [];
+  let rad = 1;
+  const vtx = (th, e, v) => {
+    pos.push(Math.cos(th) * Math.cos(e) * rad, Math.sin(e) * rad, -Math.sin(th) * Math.cos(e) * rad);
+    col.push(v[0], v[1], v[2]);
+  };
+  const quad = (a, b, c, d) => {
+    for (const t of [a, b, c, a, c, d]) vtx(...t);
+  };
+  // two ridge layers: the far one higher and paler, the near one darker and lower
+  const layers = [
+    { lift: 0.6, amp: 1.2, seed: 2.1, tone: [0.74, 0.78, 0.8], rad: 1 },
+    { lift: 0, amp: 1, seed: 0.3, tone: [0.52, 0.6, 0.55], rad: 0.96 },
+  ];
+  const base = -0.8 * deg;
+  const fog = [1, 1, 1];
+  for (const L of layers) {
+    rad = L.rad;
+    const ridge = (th) => {
+      const k = 1 - Math.pow(Math.min(1, Math.abs(th) / (80 * deg)), 3) * 0.7;
+      const e = 1.45 + 0.75 * Math.sin(2.3 * th + L.seed) + 0.45 * Math.sin(6.1 * th + 1.1 + L.seed) + 0.22 * Math.sin(14.5 * th + L.seed * 3) + 0.1 * Math.sin(31 * th + L.seed);
+      return (e * L.amp * k + L.lift) * deg;
+    };
+    const mid = L.tone.map((c) => Math.min(1, c * 1.06));
+    for (let i = 0; i < n; i++) {
+      const t0 = (-80 + (160 * i) / n) * deg;
+      const t1 = (-80 + (160 * (i + 1)) / n) * deg;
+      const r0 = ridge(t0);
+      const r1 = ridge(t1);
+      const m0 = base + (r0 - base) * 0.35;
+      const m1 = base + (r1 - base) * 0.35;
+      quad([t0, base, fog], [t1, base, fog], [t1, m1, mid], [t0, m0, mid]);
+      quad([t0, m0, mid], [t1, m1, mid], [t1, r1, L.tone], [t0, r0, L.tone]);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  const mat = new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.name = 'lm:iowa:backdrop';
+  mesh.frustumCulled = false;
+  ctx.group.add(mesh);
+  ctx.addUpdater(() => {
+    const cam = game.camera;
+    const f = game.scene.fog;
+    if (!cam || !f) return;
+    mesh.position.copy(cam.position);
+    mesh.scale.setScalar(cam.far * 0.95);
+    mat.color.copy(f.color);
+  });
 }
 
 // ------------------------------------------------------------------ shore

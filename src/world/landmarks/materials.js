@@ -93,7 +93,22 @@ export function buildMaterials(game, T, S) {
   M.lights.visible = false;
   M.beacon = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ff2414') });
   M.nightMaterials = [M.office, M.slab, M.glass, M.masonry, M.lowrise, M.signs];
+  for (const id of ['solid', 'office', 'slab', 'glass', 'masonry', 'shiny', 'signs', 'lights', 'beacon']) heightFog(M[id]);
   return M;
+}
+
+/**
+ * Height haze: the summer haze hangs low, so geometry high above the ground is fogged less
+ * (up to 45 % less distance at 90 m). Street level is untouched, but the towers and the Loess
+ * Hills keep their silhouettes against the sky from across the city.
+ */
+export function heightFog(m) {
+  m.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <fog_vertex>',
+      '#include <fog_vertex>\n#ifdef USE_FOG\n  vFogDepth *= 1.0 - 0.45 * smoothstep(18.0, 90.0, (modelMatrix * vec4(transformed, 1.0)).y);\n#endif',
+    );
+  };
 }
 
 /**
