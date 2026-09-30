@@ -1,3 +1,4 @@
+import { FREEWAYS } from '../../data/map.js';
 import { C, shade, jitter, box, obox, wall, flat, hipRoof, lawn, surface, mound } from './kit.js';
 import { tree, lamp, fence, postSign, payphone, clothesline, trashCan, bench } from './props.js';
 
@@ -178,8 +179,9 @@ function pleasantview(ctx) {
 
 /** Split a land rect around the North Freeway corridor (keeps pillars clear). */
 function freewaySplit(p) {
-  const c0 = -10;
-  const c1 = 16;
+  const fw = FREEWAYS.find((f) => f.id === 'northfreeway').corridor;
+  const c0 = fw.x0 - 2;
+  const c1 = fw.x1 + 2;
   const out = [];
   if (p.x0 < c0) out.push({ ...p, x1: Math.min(p.x1, c0) });
   if (p.x1 > c1) out.push({ ...p, x0: Math.max(p.x0, c1) });

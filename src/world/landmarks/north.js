@@ -1,4 +1,4 @@
-import { C, shade, box, block, cylinder, hipRoof, pyramid, lawn, surface } from './kit.js';
+import { C, shade, box, block, wall, flat, cylinder, hipRoof, pyramid, lawn, surface } from './kit.js';
 import { tree, treesIn, bench, lamp, flagpole, sign, postSign, payphone, trashCan } from './props.js';
 import { smoke } from './riverfront.js';
 
@@ -88,7 +88,13 @@ function omahaStar(P, ctx) {
   const Z0 = z0 + 0.5;
   const Z1 = z1 - 0.5;
   const H = 4.4;
-  block(P, { mat: 'lowrise', row: 'storefront', tile: 5.5, tint: brick }, X0, Z0, X1, Z1, 0, H, ROOF_TAR);
+  const front = { mat: 'lowrise', row: 'storefront', tile: 5.5, tint: brick, fit: true };
+  const side = { mat: 'solid', color: shade(C(brick), 0.9) };
+  wall(P, front, X1, Z1, X1, Z0, 0, H);
+  wall(P, front, X1, Z0, X0, Z0, 0, H);
+  wall(P, side, X0, Z1, X1, Z1, 0, H);
+  wall(P, side, X0, Z0, X0, Z1, 0, H);
+  flat(b, X0, Z0, X1, Z1, H, ROOF_TAR);
   crenellate(b, X0, Z0, X1, Z1, H, C('#6d4531'));
   // brick piers on limestone bases along the 24th St front
   for (let z = Z0; z <= Z1 + 0.01; z += (Z1 - Z0) / 5) {
@@ -158,21 +164,30 @@ function skeets(P, ctx) {
 }
 
 // ------------------------------------------------------------------ Fair Deal Cafe (1954)
+// West side of 24th St: the storefront faces east onto 24th, blank brick on the other sides.
 function fairDeal(P, ctx) {
   const land = ctx.land(ctx.lm('fairdeal').rect)[0];
   const { x0, x1, z0, z1 } = land;
   const b = P.get('solid');
-  const X0 = x0 + 0.2;
-  const X1 = x1 - 0.5;
+  const X0 = x0 + 0.5;
+  const X1 = x1 - 0.2;
   const Z0 = z0 + 0.5;
   const Z1 = z1 - 0.5;
-  block(P, { mat: 'lowrise', row: 'storefront', tile: 4.5, tint: '#a35d44' }, X0, Z0, X1, Z1, 0, 4.4, ROOF_TAR);
+  const brick = C('#a35d44');
+  const side = { mat: 'solid', color: shade(brick, 0.94) };
+  wall(P, { mat: 'lowrise', row: 'storefront', tile: 4.5, tint: '#b86a4e', fit: true }, X1, Z1, X1, Z0, 0, 4.4);
+  wall(P, side, X0, Z1, X1, Z1, 0, 4.4);
+  wall(P, side, X1, Z0, X0, Z0, 0, 4.4);
+  wall(P, side, X0, Z0, X0, Z1, 0, 4.4);
+  flat(b, X0, Z0, X1, Z1, 4.4, ROOF_TAR);
   box(b, X0 - 0.2, 4.4, Z0 - 0.2, X1 + 0.2, 4.8, Z1 + 0.2, C('#e5ddcc'));
-  sign(P, 'fairdeal', X0 - 0.05, 3.85, (Z0 + Z1) / 2, 6.4, 0, Math.PI / 2);
-  awning(P, X0 - 0.05, Z1 - 0.6, X0 - 0.05, Z0 + 0.6, -1, 0, 3.1, 0.9, 0.45, ['#1f4f8f', '#f4f1ea']);
-  ctx.box(X0, Z0, X1, Z1, 5);
-  ctx.poi({ id: 'lm-food-fairdeal', type: 'food', name: 'Fair Deal Cafe', x: X0 - 1.8, z: (Z0 + Z1) / 2, heading: -Math.PI / 2, landmark: 'fairdeal' });
+  sign(P, 'fairdeal', X1 + 0.05, 3.85, (Z0 + Z1) / 2, 6.4, 0, -Math.PI / 2);
+  awning(P, X1 + 0.05, Z0 + 0.6, X1 + 0.05, Z1 - 0.6, 1, 0, 3.1, 0.9, 0.45, ['#1f4f8f', '#f4f1ea']);
+  ctx.glow(X1 + 0.8, 2.9, (Z0 + Z1) / 2, '#ffe0a0', 2.4);
+  ctx.box(X0, Z0, X1 + 0.05, Z1, 5);
+  ctx.poi({ id: 'lm-food-fairdeal', type: 'food', name: 'Fair Deal Cafe', x: X1 + 1.8, z: (Z0 + Z1) / 2, heading: Math.PI / 2, landmark: 'fairdeal' });
   ctx.tag({ id: 'lm-fairdeal-n', x: (X0 + X1) / 2, y: 1.8, z: Z0, nx: 0, nz: -1, w: 2.2, h: 1.3 });
+  ctx.tag({ id: 'lm-fairdeal-w', x: X0, y: 1.8, z: (Z0 + Z1) / 2, nx: -1, nz: 0, w: 2.6, h: 1.3 });
 }
 
 // ------------------------------------------------------------------ Great Plains Black History Museum (1906 exchange)

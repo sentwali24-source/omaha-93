@@ -235,5 +235,12 @@ function installDebug(ctx) {
       return true;
     },
     meshes: () => ctx.group.children.map((m) => ({ name: m.name, tris: Math.round((m.geometry?.attributes.position.count || 0) / 3) })),
+    /** The Eppley jet: { t, phase, x, y, z }; jet(t) jumps its loop to time t (s). */
+    jet(t) {
+      if (!ctx.jet) return null;
+      if (t != null) ctx.jet.t = t;
+      const j = ctx.jet;
+      return { t: +j.t.toFixed(1), phase: j.phase, x: +j.x.toFixed(1), y: +j.y.toFixed(1), z: +j.z.toFixed(1) };
+    },
   };
 }
