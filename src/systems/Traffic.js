@@ -617,18 +617,24 @@ export class Traffic {
     const game = this.game;
     const L = game.layout;
     const rng = createRng((game.seed || 1993) ^ 0x9a4c);
-    const add = (x, z, heading, src) => {
-      const s = { x, z, heading, v: null, fill: rng.next() < 0.5, seed: hash(Math.round(x * 10), Math.round(z * 10)), src };
+    const add = (x, z, heading, src, fill) => {
+      const s = { x, z, heading, v: null, fill: rng.next() < fill, seed: hash(Math.round(x * 10), Math.round(z * 10)), src };
       this.spots.push(s);
       const k = this._cellKey(x, z, 64);
       let list = this._spotCells.get(k);
       if (!list) this._spotCells.set(k, (list = []));
       list.push(s);
     };
-    for (const s of game.city?.parkingSpots || []) {
-      if (Number.isFinite(s.x) && Number.isFinite(s.z)) add(s.x, s.z, s.heading || 0, 'city');
-    }
-    // curbside spots derived from the lane layout (only streets wide enough for a parking lane)
+    const citySpots = (game.city?.parkingSpots || []).filter((s) => Number.isFinite(s.x) && Number.isFinite(s.z));
+    // the real city already thins its curbside spots (~1/3 used) and avoids hoods / landmarks:
+    // most of its spots get a car; the stub city has none and relies on derived spots below
+    for (const s of citySpots) add(s.x, s.z, s.heading || 0, 'city', 0.82);
+    const realCity = citySpots.length >= 150;
+    // POIs nobody should park in front of (bus stops, hangouts, garage doors)
+    const keepClear = (game.city?.pois || []).filter((p) => p.type === 'bus' || p.type === 'hood' || p.type === 'garage');
+    const cityCell = new Set(citySpots.map((s) => this._cellKey(s.x, s.z, 24)));
+    // curbside spots derived from the lane layout (only streets wide enough for a parking lane; with
+    // the real city only on stretches where it placed no spots of its own)
     for (const e of L.edges) {
       const outer = L.laneOffset(e, e.lanesPerDir - 1);
       const off = e.width / 2 - 1.15;
@@ -645,7 +651,12 @@ export class Traffic {
           const x = a.x + dir.x * s - dir.z * off;
           const z = a.z + dir.z * s + dir.x * off;
           if (L.isWater?.(x, z)) continue;
-          add(x, z, heading, 'curb');
+          if (realCity) {
+            if (cityCell.has(this._cellKey(x, z, 24))) continue;
+            if (keepClear.some((p) => (p.x - x) ** 2 + (p.z - z) ** 2 < 10 * 10)) continue;
+            if (L.landmarkAt?.(x, z)) continue;
+          }
+          add(x, z, heading, 'curb', realCity ? 0.35 : 0.5);
         }
       }
     }
@@ -699,10 +710,46 @@ export class Traffic {
         v.userData.spot = null;
       }
     }
-    let n = this.parked.length;
-    if (n >= max) return;
     const f = game.focus;
-    const minD = initial ? 8 : 45;
+    // teleports / respawns: refill around the new spot right away (the view is jumping anyway)
+    const lf = this._lastParkFocus || (this._lastParkFocus = { x: f.x, z: f.z });
+    const jumped = (f.x - lf.x) ** 2 + (f.z - lf.z) ** 2 > 70 * 70;
+    lf.x = f.x;
+    lf.z = f.z;
+    if (jumped && !initial) {
+      for (let i = this.parked.length - 1; i >= 0; i--) {
+        const v = this.parked[i];
+        if (v.driver || (v.position.x - f.x) ** 2 + (v.position.z - f.z) ** 2 < 150 * 150) continue;
+        this.parked.splice(i, 1);
+        this.release(v);
+        game.removeVehicle(v);
+      }
+      initial = true;
+    }
+    let n = this.parked.length;
+    if (n >= max && !initial) {
+      // at the cap: recycle the farthest hidden car behind us so the street ahead gets cars
+      let far = null;
+      let fd = 120 * 120;
+      for (const v of this.parked) {
+        if (v.driver) continue;
+        const d2 = (v.position.x - f.x) ** 2 + (v.position.z - f.z) ** 2;
+        if (d2 > fd && !this._visible(v.position.x, v.position.z, v.radius + 2)) {
+          fd = d2;
+          far = v;
+        }
+      }
+      if (far) {
+        this._removeFrom(this.parked, far);
+        this.release(far);
+        game.removeVehicle(far);
+        n--;
+      }
+    }
+    if (n >= max) return;
+    // hidden spots (behind the camera / around a corner) may fill fairly close; spots in view only
+    // far away so cars never pop in on screen
+    const minD = initial ? 8 : 12;
     const cands = [];
     this._forSpotsNear(f.x, f.z, 170, (s) => {
       if (s.v || !s.fill) return;
@@ -716,7 +763,7 @@ export class Traffic {
     for (const s of cands) {
       if (n >= max || budget <= 0) break;
       const d = Math.hypot(s.x - f.x, s.z - f.z);
-      if (!initial && d < 115 && this._visible(s.x, s.z, 3)) continue;
+      if (!initial && d < 115 && this._visible(s.x, s.z, 3.5)) continue;
       if (this._vehicleNear(s.x, s.z, 4.2)) continue;
       if (!game.collision.isFree(s.x, s.z, 1.05, 0.3, 1.5)) continue;
       this._spawnParkedAt(s);

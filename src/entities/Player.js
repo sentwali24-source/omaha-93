@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Actor } from './Actor.js';
 import { Character, sideLook } from './Character.js';
 import { hashString } from './character/looks.js';
-import { SKIN_TONES } from '../data/sets.js';
+import { SKIN_TONES, SIDES, SETS } from '../data/sets.js';
 import { clamp, damp, dampAngle, headingTo, angleDiff } from '../core/math.js';
 
 // The player: tight third-person control on foot, a 3-hit combo, and cars.
@@ -45,10 +45,27 @@ const COMBO = [
 
 const _v = new THREE.Vector3();
 
-/** Player look = saved look + side colors (or neutral colors when not wearing colors). */
+const SIDE_SHADES = new Set();
+for (const s of Object.values(SIDES)) for (const c of [s.color, s.dark, s.light]) SIDE_SHADES.add(c.toLowerCase());
+for (const s of SETS) if (s.accent) SIDE_SHADES.add(s.accent.toLowerCase());
+const isSideShade = (c) => typeof c === 'string' && SIDE_SHADES.has(c.toLowerCase());
+
+/**
+ * Player look = saved look + side colors (or neutral colors when not wearing colors).
+ * Colors chosen explicitly in the character creator (Menu) or bought at a clothes store (Shops) are
+ * kept, so the game shows exactly what the preview showed; missing colors come from the side palette.
+ * When not wearing colors, a look that still carries the rag / side colors falls back to neutrals.
+ */
 export function resolvePlayerLook(look = {}, side = 'crips', wearingColors = true, seedKey = '') {
   const base = { outfit: 'tee', hat: 'cap', hair: 'fade', skin: SKIN_TONES[3], build: 1, shoeStyle: undefined, ...look };
-  return sideLook(base, side, { wearingColors, seed: hashString(String(seedKey)) });
+  const auto = sideLook(base, side, { wearingColors, seed: hashString(String(seedKey)) });
+  if (typeof look?.shirt !== 'string') return auto;
+  if (!wearingColors) {
+    const flagged = (look.bandana && (look.hat !== 'bandana' || isSideShade(look.bandana))) || isSideShade(look.shirt) || isSideShade(look.shirt2) || isSideShade(look.hatColor);
+    if (flagged) return { ...auto, pants: look.pants || auto.pants, shoes: look.shoes || auto.shoes };
+    return { ...auto, shirt: look.shirt, shirt2: look.shirt2 || auto.shirt2, hatColor: look.hatColor || auto.hatColor, bandana: look.hat === 'bandana' ? look.bandana || null : null };
+  }
+  return { ...auto, shirt: look.shirt, shirt2: look.shirt2 || auto.shirt2, hatColor: look.hatColor || auto.hatColor, bandana: look.bandana || auto.bandana };
 }
 
 export class Player extends Actor {

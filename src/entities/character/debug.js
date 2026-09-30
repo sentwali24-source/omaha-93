@@ -27,7 +27,7 @@ function dummyUpdater(dt) {
 
 export function installCharacterDebug(game) {
   const api = game.debugApi;
-  if (!api || api.spawnDummy) return;
+  if (!api || api.lineup) return;
 
   const spawn = (x, z, look = {}, opts = {}) => {
     const character = new Character(look);

@@ -249,11 +249,12 @@ function buildHead(b, c) {
       if (band === 3) {
         if (front) return skin;
         if (style === 'fade' || style === 'hightop') return fadeMix(0.62);
+        if (style === 'waves') return fadeMix(0.8);
         return hair;
       }
       if (band === 2) {
-        if (fem || style === 'afro' || style === 'cornrows' || style === 'curly') return back ? hair : dz > 0 && !covered ? mix(skin, hair, 0.5) : skin;
-        if (style === 'fade' || style === 'hightop') return back ? fadeMix(0.38) : skin;
+        if (fem || style === 'afro' || style === 'cornrows' || style === 'curly' || style === 'jheri') return back ? hair : dz > 0 && !covered ? mix(skin, hair, 0.5) : skin;
+        if (style === 'fade' || style === 'hightop' || style === 'waves') return back ? fadeMix(0.38) : skin;
       }
       if (band === 1 && fem && back) return hair;
       return skin;
@@ -338,6 +339,24 @@ function buildHair(b, c) {
   } else if (style === 'curly' && !hatOn) {
     const rj = (k, i) => 1 + (((k * 5 + i * 11) % 4) - 1.5) * 0.03;
     b.lathe(HEAD, { x: 0, y: 1.71, z: 0.01, h: 0.1, w: 0.225, d: 0.25, sides: 8, round: 2.5, rings: [[0, 1.0, 1.0], [0.55, 0.98, 0.98], [1, 0.62, 0.66]], rfn: rj, color: hair, capTopColor: shade(hair, 1.12), capBottom: false, fn: (band, dx, dz) => (band === 0 && dz < -0.6 ? shade(hair, 0.9) : hair) });
+  } else if (style === 'jheri' && !hatOn) {
+    // Jheri curl: glossy wet-look curls, fuller on top and down the back of the neck
+    const gloss = shade(hair, 1.45);
+    const rj = (k, i) => 1 + (((k * 3 + i * 7) % 4) - 1.5) * 0.035;
+    b.lathe(HEAD, { x: 0, y: 1.7, z: 0.012, h: 0.12, w: 0.232, d: 0.258, sides: 8, round: 2.4, rings: [[0, 1.0, 1.0], [0.5, 1.0, 1.0], [1, 0.64, 0.68]], rfn: rj, color: hair, capTopColor: gloss, capBottom: false, fn: (band) => (band === 1 ? shade(hair, 1.2) : hair) });
+    b.box(HEAD, { x: 0, y: 1.6, z: 0.094, w: 0.2, h: 0.15, d: 0.06, color: hair, top: [1.05, 1.1], faces: { top: gloss, bottom: hairDark } });
+  } else if (style === 'waves' && !hatOn) {
+    // 360 waves: a close brushed crop, low-contrast ridges over the scalp
+    const cx = 0;
+    const cy = 1.66;
+    const cz = 0.008;
+    const ridge = shade(hair, 1.55);
+    b.surface(HEAD, 11, 5, (u, v) => {
+      const phi = (u - 0.5) * 2.2;
+      const th = -0.95 + v * 2.35;
+      const s = 1.025;
+      return [cx + Math.sin(phi) * 0.106 * s, cy + Math.cos(phi) * Math.cos(th) * 0.137 * s, cz + Math.cos(phi) * Math.sin(th) * 0.121 * s];
+    }, (iu) => (iu % 2 === 0 ? hair : ridge), [cx, cy, cz]);
   } else if (style === 'cornrows' && !hatOn) {
     // rows running front to back over the scalp: alternating braid / parting colors
     const cx = 0;

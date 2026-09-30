@@ -198,6 +198,8 @@ export class CameraRig {
     const sprint = player._sprinting && player.speed > 5 ? 0.5 : 0;
     const want = (down ? 6.2 : PRESETS[this.presetIndex] + this.touchBonus) + sprint;
     this.distance = snap ? want : damp(this.distance, want, 3, dt);
+    // back against a wall: swing toward the most open side instead of staring down at the head
+    if (!looking && !this._lookBehind && (snap || this._lookIdle > 0.35)) this._avoidWalls(dt, this.distance, snap);
     const yaw = this.yaw + (this._lookBehind ? Math.PI : 0);
     this._place(dt, yaw, this.pitch, this.distance, snap);
     this._fov = damp(this._fov, BASE_FOV + (sprint ? 4 : 0), 3, dt);
@@ -235,6 +237,33 @@ export class CameraRig {
     this._place(dt, this.yaw, this.pitch, this.distance, snap);
     this._fov = damp(this._fov, BASE_FOV + Math.min(14, sp * 0.45), 2, dt);
     this._finish(dt);
+  }
+
+  /** Free distance from the target along (yaw, pitch), capped at dist. */
+  _rayDist(yaw, pitch, dist) {
+    const col = this.game.collision;
+    if (!col) return dist;
+    const cp = Math.cos(pitch);
+    const t = this._aim;
+    const hit = col.raycast(t.x, t.y, t.z, Math.sin(yaw) * cp, Math.sin(pitch), Math.cos(yaw) * cp, dist + WALL_GAP, camFilter);
+    return hit < Infinity ? Math.max(0, hit - WALL_GAP) : dist;
+  }
+
+  _avoidWalls(dt, dist, snap) {
+    const here = this._rayDist(this.yaw, this.pitch, dist);
+    if (here > dist * 0.55) return;
+    let best = 0;
+    let bestScore = here;
+    for (const off of [0.45, -0.45, 0.9, -0.9, 1.4, -1.4, 1.9, -1.9]) {
+      const d = this._rayDist(this.yaw + off, this.pitch, dist);
+      const score = d - Math.abs(off) * 0.35;
+      if (score > bestScore + 0.6) {
+        bestScore = score;
+        best = off;
+      }
+    }
+    if (!best) return;
+    this.yaw += snap ? best : best * (1 - Math.exp(-dt * 2.2));
   }
 
   /** Orbit position around the target with wall pull-in. */
@@ -397,10 +426,11 @@ export class CameraRig {
         need = Math.max(need, bx.maxY + (bx.tag === 'tree' ? 3 : 5));
       }
     }
-    // elevated freeway decks have no colliders: pass over them
+    // elevated freeway decks have no colliders: pass well over them (cobra-head light poles and
+    // guide-sign gantries stand ~11 m above the deck)
     for (const f of FREEWAYS) {
       const c = f.corridor;
-      if (x > c.x0 - 6 && x < c.x1 + 6 && z > c.z0 - 6 && z < c.z1 + 6) need = Math.max(need, (f.deckY || 8) + 5);
+      if (x > c.x0 - 8 && x < c.x1 + 8 && z > c.z0 - 8 && z < c.z1 + 8) need = Math.max(need, (f.deckY || 8) + 14);
     }
     return need;
   }

@@ -24,7 +24,7 @@ import { hexColor, hexShade } from './palette.js';
 export const OUTFIT_IDS = ['starter', 'flannel', 'tee', 'jersey', 'hoodie', 'uniform', 'civilian'];
 export const GANG_OUTFITS = ['starter', 'flannel', 'tee', 'jersey', 'hoodie'];
 export const HAT_IDS = ['none', 'cap', 'beanie', 'bandana', 'police'];
-export const HAIR_MALE = ['fade', 'hightop', 'cornrows', 'afro', 'bald', 'curly'];
+export const HAIR_MALE = ['fade', 'hightop', 'cornrows', 'afro', 'bald', 'curly', 'waves', 'jheri'];
 export const HAIR_FEMALE = ['ponytail', 'long', 'bun', 'braids', 'afro', 'curly'];
 export const HAIR_STYLES = [...new Set([...HAIR_MALE, ...HAIR_FEMALE])];
 export const HAIR_COLORS = ['#120d0a', '#1a120d', '#24170f', '#3a2515', '#5b3b21', '#8a6238', '#b99260', '#8d8a84'];
