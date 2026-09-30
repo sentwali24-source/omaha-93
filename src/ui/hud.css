@@ -18,7 +18,7 @@
   --side-light: #7fb0ff;
   --side-dark: #0c2a74;
   /* Impact on desktop; condensed heavy system faces on iOS / Android; bold sans elsewhere */
-  --hud-font: Impact, Haettenschweiler, 'HelveticaNeue-CondensedBlack', 'AvenirNextCondensed-Heavy', 'Futura-CondensedExtraBold', 'Arial Narrow Bold',
+  --hud-font: 'Anton', Impact, Haettenschweiler, 'HelveticaNeue-CondensedBlack', 'AvenirNextCondensed-Heavy', 'Futura-CondensedExtraBold', 'Arial Narrow Bold',
     'sans-serif-condensed', 'Franklin Gothic Heavy', 'Arial Black', Arial, sans-serif;
   --o: #000;
   /* thick cartoon outline + drop shadow for display text */
@@ -1308,4 +1308,24 @@
 @keyframes hud-led {
   0% { opacity: 1; }
   100% { opacity: 0.3; }
+}
+
+/* short landscape phones: the radio name drops in at the top center (like on desktop) instead of
+   under the stats, where it collided with the +REP / +$ toasts; the objective card it covers for a
+   moment steps aside while it shows */
+@media (orientation: landscape) and (max-height: 520px) {
+  .hud-root.touch .hud-radio {
+    top: calc(var(--st) + 8px);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    padding: 4px 16px 5px;
+    background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.5) 18%, rgba(0, 0, 0, 0.5) 82%, transparent);
+  }
+  .hud-root.touch .hud-radio.show {
+    animation-name: hud-radio;
+  }
+  .hud-root.touch:has(.hud-radio.show) .hud-objective {
+    visibility: hidden;
+  }
 }

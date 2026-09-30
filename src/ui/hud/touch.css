@@ -10,7 +10,7 @@
 
 .touch-root {
   --ts: 1;
-  --hud-font: Impact, Haettenschweiler, 'HelveticaNeue-CondensedBlack', 'AvenirNextCondensed-Heavy', 'Arial Narrow Bold', 'sans-serif-condensed', 'Arial Black',
+  --hud-font: 'Anton', Impact, Haettenschweiler, 'HelveticaNeue-CondensedBlack', 'AvenirNextCondensed-Heavy', 'Arial Narrow Bold', 'sans-serif-condensed', 'Arial Black',
     Arial, sans-serif;
   position: fixed;
   inset: 0;
