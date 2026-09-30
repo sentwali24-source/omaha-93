@@ -688,6 +688,19 @@ export function buildRiverfrontBlock(C, blk) {
       C.riverStore = true;
     }
   }
+  // only 10th St is paved along the riverfront blocks: face it, set back behind a gravel lot so
+  // the shop door (and its POI) sit inside the riverfront zone (x >= 575)
+  if (!C.riverStore && p.w && z1 - z0 > 26 && x1 - x0 > 30) {
+    const fx = Math.max(x0 + 6, 577.5);
+    const rect = [fx, z0 + 6, fx + 12, z0 + 20];
+    if (!C.isReserved(x0, rect[1], rect[2], rect[3], ['landmark', 'water', 'park', 'freeway', 'hood'])) {
+      groundAvoid(C, x0, rect[1] - 1, fx, rect[3] + 1, Y.lot, C.s('gravel', '#d8d0c0'));
+      const lot = rectLot(rect, 'w', blk);
+      lot.street = blk.frontage.w;
+      buildStorefront(C, lot, BUSINESSES.riverfront[0], { stories: 1, depth: 11 });
+      C.riverStore = true;
+    }
+  }
   if (p.w) {
     for (const t of [0.2, 0.5, 0.8]) {
       const z = z0 + (z1 - z0) * t;
