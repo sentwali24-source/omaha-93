@@ -92,7 +92,9 @@ export class Shops {
       id: `shop:${poi.id}`,
       position: poi,
       radius: RADIUS[type] || 2.2,
-      priority: 0,
+      // stores get a ~2 m head start over a set member in the doorway; the hood keeps 0 so
+      // 'Roll with me' is easy to reach next to the save spot
+      priority: type === 'hood' ? 0 : 0.02,
       label: () => this._label(poi),
       enabled: () => !!game.state && !this.panel.isOpen && (type !== 'hood' || own()),
       onInteract: () => this.use(poi),

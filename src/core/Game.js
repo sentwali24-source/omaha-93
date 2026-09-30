@@ -404,7 +404,8 @@ export class Game {
     let spawn;
     if (reason === 'busted') {
       spawn = SPAWNS.jail;
-      const fine = Math.min(this.state.cash, 100 + Math.round(this.state.cash * 0.1));
+      // bail: a flat $20 plus 15% of what you carry (never your last dollar as a new player)
+      const fine = Math.min(Math.max(0, this.state.cash - 5), 20 + Math.round(this.state.cash * 0.15));
       this.addCash(-fine, 'bail');
       this.state.stats.busted++;
     } else {
