@@ -758,6 +758,10 @@
 .hud-prompt.touch-ui {
   display: none;
 }
+/* a long (three-line) subtitle reaches the prompt's slot: lift the prompt above it */
+.hud-dialog.show ~ .hud-prompt {
+  bottom: calc(var(--pad) + var(--sb) + 150px);
+}
 .prompt-key {
   position: relative;
   width: 46px;

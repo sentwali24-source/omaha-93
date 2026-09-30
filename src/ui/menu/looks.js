@@ -27,7 +27,7 @@ export const BUILD_MAX = 1.15;
 
 // Fictional street nicknames, era-appropriate and clean. Max 16 characters each.
 const NAMES_ANY = [
-  'Lil Tre', 'Baby Dre', 'Big Lou', 'June Bug', 'Slim', 'Deuce', 'Man-Man', 'Pooh Bear', 'Smiley',
+  'Lil Tre', 'Baby Dre', 'Lil Lou', 'June Bug', 'Skinny', 'Deuce', 'Man-Man', 'Pooh Bear', 'Smiley',
   'Casper', 'Boogie', 'Cool Breeze', 'Tank', 'Hollywood', 'Scooter', 'Peanut', 'Shorty', 'Tay-Tay',
   'Lil Nook', 'Big Moe', 'Lil Rome', 'Dre Dog', 'Kev-O', 'Ricky Ric', 'Boo', 'Dee Dee', 'Lady T',
   'Neecy', 'Baby Girl', 'Tootie', 'Lil Bit', 'Sunshine',
