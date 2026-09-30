@@ -25,6 +25,24 @@ export default async function (page, h) {
     const s1 = await h.game((g) => ({ cash: g.state.cash, ko: g.state.stats.knockedOut, timer: !!g._respawnTimer, alive: g.player.alive, big: g.debugApi.hud?.().big }));
     h.log('ko-quit', JSON.stringify({ s0, s1 }));
     h.assert(s1.cash === 60 && s1.ko === 0, 'stale KO respawn leaked into the new game');
+    // KO far from the hood, quit before the respawn, Continue: the KO still counts for that save
+    await h.game((g) => {
+      g.debugApi.teleport(372, 118);
+      g.save();
+      g.player.knockOut(null);
+    });
+    await waitGame(h, 0.6);
+    await h.game((g) => g.quitToTitle());
+    await h.wait(800);
+    const c = await h.game((g) => {
+      g.continueGame();
+      const s = g.hoodSpawn();
+      return { cash: g.state.cash, ko: g.state.stats.knockedOut, dHood: Math.round(Math.hypot(g.player.position.x - s.x, g.player.position.z - s.z)), alive: g.player.alive, timer: !!g._respawnTimer };
+    });
+    await waitGame(h, 4, 60000);
+    const c2 = await h.game((g) => ({ cash: g.state.cash, ko: g.state.stats.knockedOut }));
+    h.log('ko-continue', JSON.stringify({ c, c2 }));
+    h.assert(c.ko === 1 && c.dHood < 6 && c2.ko === 1 && c2.cash === c.cash, 'KO before quitting not honored exactly once on Continue');
   }
 
   if (only.includes('bust')) {

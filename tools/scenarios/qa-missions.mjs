@@ -20,8 +20,8 @@ export default async function (page, h) {
     for (const n of ['mission:start', 'mission:complete', 'mission:fail']) g.events.on(n, (e) => window.__ev.push(`${n.slice(8)}:${e?.mission?.id}${e?.reason ? '(' + e.reason + ')' : ''}`));
   });
   const ff = (n) => h.game((g, n) => window.__ff(n), n);
-  const ids = ['story1', 'story2', 'story3', 'story4', 'story5', 'story6', 'story7', 'story8', 'story9', 'story10', 'tag_run', 'wheels', 'beef', 'escort', 'recruit', 'lose_heat', 'delivery'];
-  for (const pass of ['complete', 'idle']) {
+  const ids = process.env.MISSIONS ? process.env.MISSIONS.split(',') : ['story1', 'story2', 'story3', 'story4', 'story5', 'story6', 'story7', 'story8', 'story9', 'story10', 'tag_run', 'wheels', 'beef', 'escort', 'recruit', 'lose_heat', 'delivery'];
+  for (const pass of (process.env.PASSES || 'complete,idle').split(',')) {
     for (const id of ids) {
       if (pass === 'idle' && id.startsWith('story') && id !== 'story8' && id !== 'story9') continue;
       const r = await h.game(
@@ -53,7 +53,7 @@ export default async function (page, h) {
         return out;
       });
       await ff(40);
-      const after = await h.game((g) => ({ markers: g.hud.markers.size, worldMarkers: g.missions.markers.group?.children.length ?? null, ia: g.interactions.items.size, ev: window.__ev.splice(0) }));
+      const after = await h.game((g) => ({ markers: [...g.hud.markers.keys()].join(' '), offer: g.missions.offer?.id || null, worldMarkers: g.missions.markers.group?.children.length ?? null, ia: g.interactions.items.size, ev: window.__ev.splice(0) }));
       h.log(pass, id, JSON.stringify({ r, end, after }));
     }
   }

@@ -281,6 +281,12 @@ export class Game {
   }
 
   quitToTitle() {
+    // quitting while knocked out / busted still counts: respawn (hospital / bail) before saving
+    if (this._respawnTimer && this.player) {
+      const { reason } = this._respawnTimer;
+      this._respawnTimer = null;
+      this.respawnPlayer(reason);
+    }
     this.save();
     for (const name of ORDER) {
       const s = this.systems[name];
