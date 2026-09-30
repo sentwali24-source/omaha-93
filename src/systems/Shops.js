@@ -477,8 +477,12 @@ export class Shops {
   }
 }
 
-/** Repaint a car. Uses vehicle.setColor when the Vehicle class has it. */
+/** Repaint a car: Vehicle.respray(color) (real vehicles), else setColor / a material fallback. */
 function applyVehicleColor(v, hex) {
+  if (typeof v.respray === 'function') {
+    v.respray(hex);
+    return;
+  }
   if (typeof v.setColor === 'function') {
     v.setColor(hex);
     return;

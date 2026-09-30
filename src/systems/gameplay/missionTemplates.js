@@ -118,7 +118,11 @@ export const TEMPLATES = {
     },
     begin(M, m) {
       const hood = m.data.hood;
-      const og = M.spawn(M.setId, hood.x + 1.2, hood.z + 1.2, 'og');
+      // the OG already posted up with the hood crew, else he walks up now
+      const here = (M.game.gangs?.members || []).find(
+        (a) => a.faction === M.setId && a.brain?.role === 'og' && a.state === 'active' && Math.hypot(a.position.x - hood.x, a.position.z - hood.z) < 16,
+      );
+      const og = here || M.spawn(M.setId, hood.x + 1.2, hood.z + 1.2, 'og');
       m.data.og = og;
       if (og) M.mark(m, 'og', { follow: og, kind: 'arrow', type: 'mission', label: M.ogName, yOffset: 2.4 });
       else M.mark(m, 'og', { x: hood.x, z: hood.z, type: 'mission', label: M.ogName, radius: 1.6 });
@@ -220,6 +224,8 @@ export const TEMPLATES = {
       if (!car) return false;
       const garage = M.poi('garage', { near: car.position, minDist: 80 }) || M.poi('garage', { near: car.position });
       if (!garage) return false;
+      // claim it: Traffic must not recycle the target when the player drives away from it
+      if (game.traffic?.parked?.includes(car)) game.traffic.release?.(car);
       m.data.car = car;
       m.data.garage = garage;
       m.tokens.target = describeCar(car);
@@ -417,6 +423,7 @@ export const TEMPLATES = {
       const p = m.data.pickup;
       m.data.spawned = [];
       const homie = M.spawn(M.setId, p.x + 1, p.z + 1, 'hang');
+      if (homie?.brain) homie.brain.noRecruit = true; // the passenger, not a recruit
       m.data.homie = homie;
       if (homie) M.mark(m, 'homie', { follow: homie, kind: 'arrow', type: 'target', label: m.tokens.homie, yOffset: 2.3 });
       M.mark(m, 'pickup', { x: p.x, z: p.z, type: 'mission', label: m.tokens.place, radius: 4 });
@@ -446,6 +453,7 @@ export const TEMPLATES = {
     },
     pickUp(M, m) {
       const h = m.data.homie;
+      if (h?.userData?.homie) M.game.gangs?.dismiss?.(h, true);
       if (h && h.state !== 'removed') h.remove?.();
       M.unmark(m, 'homie');
       M.unmark(m, 'pickup');

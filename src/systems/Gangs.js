@@ -8,6 +8,7 @@ import { startFight, fightStep, stopFight } from './npc/fight.js';
 import { gangLook, gangName } from './npc/looks.js';
 import { makeBoombox, placeProp } from './npc/props.js';
 import * as D from './npc/dialog.js';
+import { OGS } from '../data/missions.js';
 
 // Sets, hangouts, the rules of the street, homies and turf (ARCHITECTURE §18).
 //
@@ -85,8 +86,10 @@ export class Gangs {
   onGameStart() {
     this.clearAll();
     this.homieMode = 'follow';
+    this._fresh = true; // first manage pass may spawn in view (the hood crew must be there)
+    this._manageT = 0;
     this._beefT = 150 + Math.random() * 150;
-    this.ogName = gangName('og');
+    this.ogName = OGS[this.game.state?.player?.setId]?.name || gangName('og');
     const g = this.game;
     if (g.debugApi) {
       g.debugApi.spawnGang = (setId, x, z, n = 3, role = 'hang') => {
@@ -210,6 +213,9 @@ export class Gangs {
     const set = setById(setId) || SETS[0];
     const district = game.layout.districtAt(x, z)?.id || 'north';
     const look = gangLook(set, role, district);
+    // each set's OG is a known face: the same man who pages the player (data/missions.js OGS)
+    const ogName = role === 'og' ? OGS[set.id]?.name : null;
+    if (ogName) look.female = false;
     const a = createNpc(game, {
       kind: 'gang',
       faction: set.id,
@@ -219,7 +225,7 @@ export class Gangs {
       z,
       heading,
       system: 'gangs',
-      name: gangName(role, look.female),
+      name: ogName || gangName(role, look.female),
       maxHealth: role === 'og' ? 130 : role === 'fighter' ? 115 : 100,
     });
     const b = a.brain;
@@ -319,6 +325,9 @@ export class Gangs {
       if (poi.type === 'hood') {
         const setId = String(poi.id || '').replace(/^hood-/, '');
         add({ id: `spot-${poi.id}`, type: 'hood', x: poi.x, z: poi.z, heading: poi.heading || 0, hoodSet: setById(setId) ? setId : null, size: [4, 6] });
+      } else if (poi.type === 'hangout') {
+        // housing-project courtyards (landmarks): open ground, bigger crews
+        add({ id: `spot-${poi.id}`, type: 'park', x: poi.x, z: poi.z, heading: poi.heading || 0, size: [4, 6] });
       } else if (SPOT_POI[poi.type]) {
         add({ id: `spot-${poi.id}`, type: 'store', x: poi.x, z: poi.z, heading: poi.heading || 0, size: [3, 4] });
       }
@@ -449,7 +458,7 @@ export class Gangs {
         !a.vehicle &&
         (a.userData.homie
           ? b.state !== 'fight' && distTo(a, game.player) < 1.45
-          : this.homies.length < MAX_HOMIES && b.role !== 'og' && b.state !== 'fight' && b.group?.mode !== 'fight'),
+          : !b.noRecruit && this.homies.length < MAX_HOMIES && b.role !== 'og' && b.state !== 'fight' && b.group?.mode !== 'fight'),
       priority: a.userData.homie ? -1 : 0,
       onInteract: () => (a.userData.homie ? this.dismiss(a) : this.recruit(a)),
     });
@@ -500,7 +509,8 @@ export class Gangs {
     this._manageT -= dt;
     if (this._manageT <= 0 || ctx.jumped) {
       this._manageT = 1;
-      this._manage(ctx);
+      this._manage(ctx, ctx.jumped || this._fresh);
+      if (game.mode === 'play') this._fresh = false;
     }
     if (game.mode === 'play' && game.state) {
       this._regenT -= dt;
@@ -536,7 +546,7 @@ export class Gangs {
     return Math.round((this.game.quality.maxGang || 14) * tf);
   }
 
-  _manage(ctx) {
+  _manage(ctx, jumped = ctx.jumped) {
     const game = this.game;
     const L = game.layout;
     let count = 0;
@@ -590,7 +600,7 @@ export class Gangs {
       const home = s.type === 'hood' && s.hoodSet === owner;
       const p = home ? 1 : Math.min(0.85, 0.18 + (control / 100) * 0.55);
       if (s.roll > p) continue;
-      if (!ctx.jumped && s._d2 < 65 * 65 && ctx.inView(s.x, s.z, 4)) continue; // don't pop in under the camera
+      if (!jumped && s._d2 < 65 * 65 && ctx.inView(s.x, s.z, 4)) continue; // don't pop in under the camera
       let size = s.size[0] + Math.round((control / 100) * (s.size[1] - s.size[0]) * (0.6 + Math.random() * 0.6));
       size = Math.max(3, Math.min(6, size));
       if (count + size > budget) {
@@ -1371,7 +1381,7 @@ export class Gangs {
     this.beef = { group: g, zoneId: zone.id, setId: set.id, t: 0, markT: 0 };
     const mySet = setById(ps);
     const street = game.layout.describe(pt.x, pt.z).street || zone.name;
-    game.events.emit('pager', { from: `${this.ogName} (${mySet?.short || 'OG'})`, text: `911 ${set.short} ROLLIN THRU ${zone.name.toUpperCase()} BY ${street.toUpperCase()}. HANDLE IT` });
+    game.events.emit('pager', { from: OGS[ps]?.name || this.ogName, text: `911 ${set.short} ROLLIN THRU ${zone.name.toUpperCase()} BY ${street.toUpperCase()}. HANDLE IT` });
     this._markBeef();
     return true;
   }

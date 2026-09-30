@@ -4,6 +4,7 @@ import { waitGame, collectDialog } from './npc-util.mjs';
 
 export default async function (page, h) {
   const dialogs = collectDialog(page);
+  await dialogs.ready;
   const ok = await h.game((g) => {
     const v = g.vehicles.find((q) => !q.isPolice);
     if (!v) return false;

@@ -5,6 +5,7 @@ import { waitGame, collectDialog } from './npc-util.mjs';
 
 export default async function (page, h) {
   const dialogs = collectDialog(page);
+  await dialogs.ready;
   const events = [];
   await h.game((g) => {
     window.__npcEvents = [];
