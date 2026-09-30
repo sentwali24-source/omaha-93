@@ -221,6 +221,7 @@ export class City {
     }
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     const mat = new THREE.MeshLambertMaterial({ map: tex.ground, vertexColors: true, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 6 });
+    this._groundMat = mat;
     const m = new THREE.Mesh(g, mat);
     m.name = 'city:base-ground';
     m.receiveShadow = true;
@@ -314,6 +315,21 @@ export class City {
       else if (walk > n * 0.3) out.sidewalk.push(e);
     }
     return out;
+  }
+
+  /**
+   * Rain-soaked look (Environment calls this with env.wetness 0..1): asphalt, sidewalks and
+   * lawns darken, paint a little less.
+   */
+  setWetness(w) {
+    w = Math.max(0, Math.min(1, w || 0));
+    if (Math.abs(w - (this._wet ?? -1)) < 0.01) return;
+    this._wet = w;
+    const m = this.materials;
+    if (!m) return;
+    m.surface.color.setScalar(1 - 0.34 * w);
+    m.paint.color.setScalar(1 - 0.18 * w);
+    this._groundMat?.color.setScalar(1 - 0.2 * w);
   }
 
   setNight(n) {

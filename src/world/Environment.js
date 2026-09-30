@@ -277,6 +277,7 @@ export class Environment {
     for (let i = 0; i < 3; i++) rc[i] = clamp(g.fog[i] * 0.5 + g.hemiSky[i] * 0.3 + 0.24 + this.flash * 0.5, 0, 1);
     this.rainFx.update(dt, cam, P.rain, rc, this.wind, this._time);
     this.fireflies.update(dt, this);
+    game.city?.setWetness?.(this.wetness);
 
     // ---- city night lighting (only when it changed: setNight may be expensive)
     this._applyNight();
