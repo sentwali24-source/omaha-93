@@ -180,6 +180,14 @@ export class Menu {
     }
 
     this._rotateCheck -= dt;
+    // a nudge, not a banner: left up it sits over the speedo / objective for the whole session
+    if (!this.rotateEl.hidden) {
+      this._rotateShown = (this._rotateShown || 0) + dt;
+      if (this._rotateShown > 10) {
+        this._rotateDismissed = true; // this session only (tapping it remembers it for good)
+        this._rotateCheck = 0;
+      }
+    }
     if (this._rotateCheck <= 0) {
       this._rotateCheck = 1;
       this._updateRotateHint();
@@ -828,14 +836,6 @@ export class Menu {
     const show = g.mode === 'play' && !g.paused && !this.context && !!g.input?.isTouch && portrait && !this._rotateDismissed;
     if (this.rotateEl.hidden === !show) return;
     this.rotateEl.hidden = !show;
-    // a nudge, not a banner: left up it sits over the speedo / objective for the whole session
-    clearTimeout(this._rotateTimer);
-    if (show) {
-      this._rotateTimer = setTimeout(() => {
-        this._rotateDismissed = true; // this session only (tapping it remembers it for good)
-        this._updateRotateHint();
-      }, 10000);
-    }
   }
 
   _installDebug() {
