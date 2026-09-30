@@ -322,6 +322,18 @@ export class Game {
     st.clock = { hour: this.clock.hour, day: this.clock.day };
     st.health = p.health;
     if (!p.vehicle && p.alive) st.position = { x: p.position.x, z: p.position.z, heading: p.heading };
+    else if (p.vehicle && p.alive) {
+      // driving: continue on foot beside the car, not back where the player got in
+      let e = null;
+      try {
+        e = p.vehicle.getExitPoint?.();
+      } catch {
+        e = null;
+      }
+      const v = p.vehicle.position;
+      if (!e || !Number.isFinite(e.x) || !Number.isFinite(e.z)) e = { x: v.x, z: v.z };
+      st.position = { x: e.x, z: e.z, heading: p.vehicle.heading || 0 };
+    }
     for (const name of ORDER) {
       const s = this.systems[name];
       if (s && s.serialize) {

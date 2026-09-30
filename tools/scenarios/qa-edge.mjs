@@ -92,7 +92,8 @@ export default async function (page, h) {
     for (const [w, hh] of [[800, 600], [390, 844], [1280, 720]]) {
       await page.setViewportSize({ width: w, height: hh });
       await h.wait(700);
-      const r = await h.game((g) => ({ aspect: +g.camera.aspect.toFixed(3), cw: g.renderer.domElement.width, ch: g.renderer.domElement.height }));
+      await waitUntil(h, (g, a) => window.innerWidth === a.w && g.renderer.domElement.width === a.w, { w }, 5, 15000);
+      const r = await h.game((g) => ({ iw: window.innerWidth, ih: window.innerHeight, aspect: +g.camera.aspect.toFixed(3), cw: g.renderer.domElement.width, ch: g.renderer.domElement.height }));
       h.log('resize', w, hh, JSON.stringify(r));
     }
   }
@@ -135,6 +136,15 @@ export default async function (page, h) {
       g.save();
       return { cash: g.state.cash, rep: g.state.rep, x: Math.round(g.player.position.x), z: Math.round(g.player.position.z), turf: JSON.stringify(g.state.turf[z]), zone: z, completed: g.state.missions.completed.slice(), hour: +g.clock.hour.toFixed(2) };
     });
+    // drive off and save while still in the car: Continue must put us beside the car
+    await h.game((g) => g.debugApi.driveCar('sedan'));
+    await h.hold('KeyW', 2500);
+    const car = await h.game((g) => {
+      g.save();
+      const v = g.player.vehicle;
+      return v ? { x: Math.round(v.position.x), z: Math.round(v.position.z) } : null;
+    });
+    before.car = car;
     await page.goto(page.url().replace('autostart=1&', ''), { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => window.__game && window.__game.mode !== 'boot', null, { timeout: 90000 });
     await h.wait(1000);
@@ -142,7 +152,8 @@ export default async function (page, h) {
     await waitGame(h, 1.5);
     const after = await h.game((g, z) => ({ cash: g.state.cash, rep: g.state.rep, x: Math.round(g.player.position.x), z: Math.round(g.player.position.z), turf: JSON.stringify(g.state.turf[z]), completed: g.state.missions.completed.slice(), hour: +g.clock.hour.toFixed(2), mode: g.mode }), before.zone);
     h.log('save', JSON.stringify({ before, after }));
-    h.assert(after.cash === before.cash && after.x === before.x && after.z === before.z, 'save round trip lost state');
+    h.assert(after.cash === before.cash, 'save round trip lost cash');
+    h.assert(before.car && Math.hypot(after.x - before.car.x, after.z - before.car.z) < 8, 'continue did not restore the position (saved while driving)');
   }
 
   if (only.includes('corrupt')) {
