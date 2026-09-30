@@ -141,6 +141,7 @@ export class City {
     // ---- landmarks (LANDMARKS module), then the horizon and the map edge
     tm = performance.now();
     await buildLandmarks(game, this, (p, label) => onProgress(0.7 + p * 0.2, label));
+    this._occludersFirst();
     lap('landmarks');
 
     onProgress(0.92, 'The horizon');
@@ -236,6 +237,9 @@ export class City {
     for (const m of meshes) {
       m.updateMatrix();
       if (m.material === mats.pool || m.material === mats.paint) m.receiveShadow = false;
+      // big occluders first: with the walls in the depth buffer, the ground / lawns / sidewalks
+      // behind them are rejected before shading (~20 % faster frames on software GL)
+      if (m.material === mats.facade && m.renderOrder === 0) m.renderOrder = -1;
       if (m.userData.lod && !horizon) this._lodAdd(m);
       this.group.add(m);
     }
@@ -255,6 +259,18 @@ export class City {
       this.group.add(l);
     }
     C.wireSegs = new Map();
+  }
+
+  /** Landmark buildings are big occluders too: draw their opaque walls before the ground. */
+  _occludersFirst() {
+    const solid = /^lm:.*:(solid|lowrise|masonry|office|slab|glass|brick|concrete|stone)$/;
+    const deck = /^lm:freeway(-piers)?$/;
+    this.group.traverse((m) => {
+      if (!m.isMesh || m.renderOrder !== 0 || !(solid.test(m.name) || deck.test(m.name))) return;
+      const mat = m.material;
+      if (Array.isArray(mat) || mat.transparent || mat.alphaTest > 0 || mat.polygonOffset) return;
+      m.renderOrder = -1;
+    });
   }
 
   /** Register a mesh for distance culling (small props, paint, fences, wires). */
