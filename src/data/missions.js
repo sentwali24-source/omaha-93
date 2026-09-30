@@ -122,7 +122,7 @@ export const STORY = [
     order: 5,
     rank: 1,
     template: 'delivery',
-    params: { dest: 'oldmarket', pickup: 'hood', item: 'a sealed envelope', contact: 'Mr. Hollis', timer: 1.6 },
+    params: { dest: 'oldmarket', pickup: 'hood', item: 'a sealed envelope', contact: 'Mr. Hollis', timer: 2.2 },
     title: 'Word Downtown',
     code: PAGER_CODES.urgent,
     reward: { cash: 120, rep: 70 },
