@@ -40,12 +40,16 @@ export default async function (page, h) {
           if (c.inBox && !was) {
             const s = g.city.signalAt(c.node);
             g.__sig.entries++;
-            if (s && (s.green !== c.axis || s.phase === 'allred')) g.__sig.onRed.push({ uid: v.uid, node: c.node, axis: c.axis, phase: s.phase, green: s.green, t: +s.t.toFixed(2), speed: +v.speed.toFixed(1) });
+            if (s && (s.green !== c.axis || s.phase === 'allred')) g.__sig.onRed.push({ uid: v.uid, node: c.node, axis: c.axis, turn: c.turn, phase: s.phase, green: s.green, t: +s.t.toFixed(2), speed: +v.speed.toFixed(1), vDes: +(ai.vDes ?? -1).toFixed(1), shift: ai.shift, rec: +ai.recoverT.toFixed(2), waitT: +ai.waitT.toFixed(1), blockT: +ai.blockT.toFixed(1), waiting: ai.waiting, prevDist: +(c._pd ?? -1).toFixed(2), claimAge: +(g.time.elapsed - c.t).toFixed(1), steer: +v.controls.steer.toFixed(2), thr: +v.controls.throttle.toFixed(2), brk: +v.controls.brake.toFixed(2) });
           }
           seen.set(c, c.inBox);
+          c._pd = c.dist;
         }
       }
     });
+    // neutral clothes so the Lakeview Bloods on the corner leave the observer alone
+    g.state.wearingColors = false;
+    g.player.applyLook();
     // camera over 24th & Lake (major × major), player parked on the corner
     const n = L.nodes.find((q) => q.ns === '24th' && q.ew === 'lake');
     g.debugApi.teleport(n.x + 14, n.z + 14);
@@ -55,7 +59,7 @@ export default async function (page, h) {
     return { id: n.id, x: n.x, z: n.z, real };
   });
   h.log('node', JSON.stringify(node));
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < (process.env.SIG_N ? +process.env.SIG_N : 6); i++) {
     await gwait(6);
     const st = await h.game(
       (g, id) => {

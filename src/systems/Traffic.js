@@ -1089,16 +1089,16 @@ export class Traffic {
     c.handbrake = false;
     if (vDes < 0.25) {
       c.throttle = 0;
-      c.brake = sp > 0.4 ? clamp(0.3 + sp * 0.07, 0, 1) : 1;
+      c.brake = sp > 0.4 ? clamp(0.5 + sp * 0.1, 0, 1) : 1;
       return;
     }
     const err = vDes - sp;
     if (err > 0) {
       c.brake = 0;
       c.throttle = clamp(0.22 + err * 0.32, 0, 1);
-    } else if (err < -0.8) {
+    } else if (err < -0.4) {
       c.throttle = 0;
-      c.brake = clamp(-err * 0.16, 0.05, 1);
+      c.brake = clamp(-err * 0.22, 0.05, 1);
     } else {
       c.throttle = 0.1;
       c.brake = 0;
@@ -1302,7 +1302,8 @@ export class Traffic {
         }
         if (!reckless && claim) {
           if (!this._mayEnter(v, ai, st, dStop, claim)) {
-            limit(0, dStop - 0.3);
+            // aim a metre short of the line: low frame rates and brake lag never overshoot into the box
+            limit(0, dStop - 1.1);
             ai.waiting = st.node;
           } else if (!game.city?.signalAt?.(st.node) && this._crossMajor(st.node, st.axis)) {
             // no signal but a major street crosses: ease through
