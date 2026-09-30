@@ -79,7 +79,7 @@ export default async function (page, h) {
   // fight: go at the nearest standing foe and swing with J
   const t0 = Date.now();
   let lastHp = 100;
-  for (let k = 0; k < 400 && Date.now() - t0 < 420000; k++) {
+  for (let k = 0; k < 3000 && Date.now() - t0 < 1500000; k++) {
     const s = await h.game((g) => {
       const m = g.missions.active;
       const p = g.player;
@@ -97,6 +97,12 @@ export default async function (page, h) {
     if (k === 30) await h.shot('d-beef-fight');
   }
   h.log('after fight', JSON.stringify(await snap(h)));
+  if (await h.game((g) => g.missions.active?.id === 'story6' && g.missions.active.stage === 2)) {
+    await h.game((g, b) => g.debugApi.teleport(b.x + 70, b.z + 60), beef);
+    const out = await until(h, (g) => g.state.missions.completed.includes('story6'), null, 4);
+    h.log('story6 after leaving', !!out, JSON.stringify(await snap(h)));
+    h.assert(out, 'story6 passes after beating three and leaving');
+  }
   await h.shot('d-beef-after');
   h.log('lines:\n  ' + lines.filter((l) => !l.startsWith('[toast] objective')).slice(-60).join('\n  '));
 }

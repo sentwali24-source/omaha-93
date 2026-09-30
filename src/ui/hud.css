@@ -749,7 +749,7 @@
   gap: 12px;
   transform: translateX(-50%);
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, bottom 0.2s ease-out;
 }
 .hud-prompt.show {
   opacity: 1;
