@@ -249,8 +249,17 @@ export class Environment {
     const fb = Math.min(1, g.fog[2] + fl);
     fog.color.setRGB(fr, fgc, fb, THREE.SRGBColorSpace);
     u.uFog.value.set(fr, fgc, fb);
+    const qFar = q.far || cam.far;
     fog.near = q.fogNear * lerp(0.35, 1, P.fog);
-    fog.far = Math.min(q.fogFar * P.fog, cam.far * 0.98);
+    fog.far = Math.min(q.fogFar * P.fog, qFar * 0.98);
+    // the draw distance follows the fog wall: past it every pixel is pure fog colour (= the clear
+    // colour), so whole city chunks there are skipped — a big saving in rain. The sky dome sits on
+    // the far plane in its own shader, so it is unaffected.
+    const wantFar = Math.min(qFar, fog.far + 25);
+    if (Math.abs(cam.far - wantFar) > 4) {
+      cam.far = wantFar;
+      cam.updateProjectionMatrix();
+    }
     game.scene.background.copy(fog.color);
 
     // ---- lights: the sun by day, the moon by night (the same shadow-casting light)

@@ -23,16 +23,17 @@ export default async function (page, h) {
   });
   h.log('audit', JSON.stringify(audit));
   const spots = process.env.CITY_SPOTS ? JSON.parse(process.env.CITY_SPOTS) : SPOTS;
-  for (const [name, x, z, yaw, hour] of spots) {
+  for (const [name, x, z, yaw, hour, weather] of spots) {
     await h.game((g, a) => {
       g.debugApi.teleport(a.x, a.z);
       g.debugApi.setHour(a.hour);
+      g.debugApi.weather?.(a.weather || 'clear');
       if (g.cameraRig) {
         g.cameraRig.yaw = a.yaw;
         g.cameraRig.pitch = 0.12;
         g.cameraRig.snap?.();
       }
-    }, { x, z, yaw, hour });
+    }, { x, z, yaw, hour, weather });
     await h.wait(3000);
     if (!process.env.NOSHOT) await h.shot(`perf-${name}`).catch((e) => h.log('shot failed', e.message.slice(0, 60)));
     const r = await h.game((g) => {
@@ -78,7 +79,7 @@ export default async function (page, h) {
         const k = (o.name || o.type).replace(/[:#-]\d+.*$/, '');
         names[k] = (names[k] || 0) + (Array.isArray(o.material) ? o.material.length : 1);
       });
-      return { full, city, fogged, names };
+      return { full, city, fogged, far: +cam.far.toFixed(0), fog: +g.scene.fog.far.toFixed(0), names };
     });
     h.log(name, JSON.stringify(r));
   }
