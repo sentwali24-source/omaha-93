@@ -354,7 +354,7 @@ export const TEMPLATES = {
           // no one to fight (NPC system could not spawn): hold the corner instead
           m.data.hold = 0;
           m.stage = 3;
-          M.objective(m, `Hold it down in ${m.tokens.zone}`);
+          M.objective(m, `Hold it down around ${m.tokens.zone}`);
         } else {
           m.data.need = Math.min(m.data.need, Math.max(1, crew.length || local.length));
           markFoes(M, m, crew.length ? crew : local.slice(0, m.data.need), SIDES[m.data.rival.side].color);
@@ -366,7 +366,7 @@ export const TEMPLATES = {
         const left = Math.max(0, Math.ceil(30 - m.data.hold));
         if (left !== m.data.holdShown) {
           m.data.holdShown = left;
-          M.objective(m, `Hold it down in ${m.tokens.zone} (${left}s)`);
+          M.objective(m, `Hold it down around ${m.tokens.zone} (${left}s)`);
         }
         if (m.data.hold >= 30) this.leave(M, m);
       } else if (m.stage === 2) {
