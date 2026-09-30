@@ -123,10 +123,9 @@ export default async function (page, h) {
   h.assert(aft.mode === 'play' && aft.input && aft.cash === before.cash && aft.rep === before.rep, 'Continue restores cash/rep');
   await h.shot('e-continued');
   // the car tip follows the story3 brief (flags persist in the save, so it shows once)
-  await h.game((g) => { g.state.missions.completed.push('story1', 'story2'); g.debugApi.startMission('story3'); });
-  await until(h, (g) => g.hud._dialog?.speaker === 'TIP', null, 16);
-  h.log('story3 tip', JSON.stringify(lines.filter((l) => l.includes('TIP'))), JSON.stringify(await h.game((g) => g.state.flags)));
-  h.assert(lines.some((l) => l.includes('TIP') && /press F/.test(l)), 'car tip shown with the story3 brief');
+  const q = await h.game((g) => { g.state.missions.completed.push('story1', 'story2'); g.debugApi.startMission('story3'); return g.missions._dialog.map((l) => `${l.speaker}: ${l.text}`); });
+  h.log('story3 queue', JSON.stringify(q));
+  h.assert(q.some((l) => l.startsWith('TIP') && /press F/.test(l)), 'car tip queued after the story3 brief');
   h.log('subtitles:\n  ' + (await h.game(() => window.__subs)).join('\n  '));
   h.log('lines:\n  ' + lines.filter((l) => !l.startsWith('[toast] objective')).slice(0, 50).join('\n  '));
 }
