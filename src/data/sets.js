@@ -90,7 +90,7 @@ export const SETS = [
     short: 'WBB',
     hood: { ...at('40th', 'hamilton', 11, -11), heading: -Math.PI / 2 },
     turf: ['westlake'],
-    blurb: 'Westside of North O on the hill by 40th & Hamilton. Hustlers first, soldiers when they have to be.',
+    blurb: 'Westside of North O on the hill by 40th & Hamilton. Car guys first, fighters when they have to be.',
     accent: '#e0182d',
   },
 ];
