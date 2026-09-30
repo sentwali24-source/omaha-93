@@ -8,6 +8,7 @@ import { startFight, fightStep, stopFight } from './npc/fight.js';
 import { gangLook, gangName } from './npc/looks.js';
 import { makeBoombox, placeProp } from './npc/props.js';
 import * as D from './npc/dialog.js';
+import { OGS } from '../data/missions.js';
 
 // Sets, hangouts, the rules of the street, homies and turf (ARCHITECTURE §18).
 //
@@ -26,6 +27,7 @@ const ACTIVATE_R = 140;
 const DEACTIVATE_R = 178;
 const SPOT_POI = { store: 1, food: 1, record: 1, barber: 1, payphone: 1, clothes: 1, garage: 1 };
 const MAX_HOMIES = 3;
+const CLAIM = 30; // control a set needs to take an unclaimed zone
 
 const FIGHT = {
   hang: { damage: 6, speed: 5.2, windup: 0.32, cooldown: [1.0, 1.7], knockback: 3, backOffAt: 0.35 },
@@ -36,11 +38,11 @@ const FIGHT = {
 };
 
 // homie formation around the player: (meters right, meters behind)
-// (kept off the line straight behind the player so the chase camera stays clear)
+// (flanking, nearly abreast: the chase camera behind the player stays clear)
 const FORMATION = [
-  [-1.5, 1.4],
-  [1.5, 1.4],
-  [2.7, 2.5],
+  [-1.9, 0.6],
+  [1.9, 0.6],
+  [-3.3, 1.5],
 ];
 
 let groupIds = 1;
@@ -85,8 +87,10 @@ export class Gangs {
   onGameStart() {
     this.clearAll();
     this.homieMode = 'follow';
+    this._fresh = true; // first manage pass may spawn in view (the hood crew must be there)
+    this._manageT = 0;
     this._beefT = 150 + Math.random() * 150;
-    this.ogName = gangName('og');
+    this.ogName = OGS[this.game.state?.player?.setId]?.name || gangName('og');
     const g = this.game;
     if (g.debugApi) {
       g.debugApi.spawnGang = (setId, x, z, n = 3, role = 'hang') => {
@@ -167,8 +171,24 @@ export class Gangs {
     if (!zone || zone.noTurf || !setById(setId)) return;
     const t = st.turf[zoneId] || (st.turf[zoneId] = { owner: null, control: 0 });
     const prev = t.owner;
-    if (t.owner === setId || t.owner === null) {
-      t.owner = setId;
+    if (t.owner === null) {
+      // unclaimed ground (the contested zones): sets race for it; t.lead is who's ahead and
+      // t.control their progress — a set only owns it once it reaches CLAIM (one tag won't do)
+      if (!t.lead || t.lead === setId || t.control <= 0) {
+        t.lead = setId;
+        t.control = Math.min(100, Math.max(0, t.control) + amount);
+      } else {
+        t.control -= amount;
+        if (t.control < 0) {
+          t.lead = setId;
+          t.control = -t.control;
+        }
+      }
+      if (t.control >= CLAIM) {
+        t.owner = t.lead;
+        t.lead = null;
+      }
+    } else if (t.owner === setId) {
       t.control = Math.min(100, t.control + amount);
     } else {
       t.control -= amount;
@@ -177,7 +197,7 @@ export class Gangs {
         t.control = Math.min(100, -t.control);
       }
     }
-    const payload = { zoneId, owner: t.owner, control: t.control, prev, setId, amount };
+    const payload = { zoneId, owner: t.owner, control: t.control, prev, setId, amount, lead: t.lead || null };
     this.game.events.emit('turf:influence', payload);
     if (t.owner !== prev) this.game.events.emit('turf:change', payload);
   }
@@ -210,6 +230,9 @@ export class Gangs {
     const set = setById(setId) || SETS[0];
     const district = game.layout.districtAt(x, z)?.id || 'north';
     const look = gangLook(set, role, district);
+    // each set's OG is a known face: the same man who pages the player (data/missions.js OGS)
+    const ogName = role === 'og' ? OGS[set.id]?.name : null;
+    if (ogName) look.female = false;
     const a = createNpc(game, {
       kind: 'gang',
       faction: set.id,
@@ -219,7 +242,7 @@ export class Gangs {
       z,
       heading,
       system: 'gangs',
-      name: gangName(role, look.female),
+      name: ogName || gangName(role, look.female),
       maxHealth: role === 'og' ? 130 : role === 'fighter' ? 115 : 100,
     });
     const b = a.brain;
@@ -319,6 +342,9 @@ export class Gangs {
       if (poi.type === 'hood') {
         const setId = String(poi.id || '').replace(/^hood-/, '');
         add({ id: `spot-${poi.id}`, type: 'hood', x: poi.x, z: poi.z, heading: poi.heading || 0, hoodSet: setById(setId) ? setId : null, size: [4, 6] });
+      } else if (poi.type === 'hangout') {
+        // housing-project courtyards (landmarks): open ground, bigger crews
+        add({ id: `spot-${poi.id}`, type: 'park', x: poi.x, z: poi.z, heading: poi.heading || 0, size: [4, 6] });
       } else if (SPOT_POI[poi.type]) {
         add({ id: `spot-${poi.id}`, type: 'store', x: poi.x, z: poi.z, heading: poi.heading || 0, size: [3, 4] });
       }
@@ -360,9 +386,27 @@ export class Gangs {
     let cx = spot.x;
     let cz = spot.z;
     if (spot.type === 'hood') {
-      // keep the spawn point itself clear: the player respawns at the hood
-      cx += r.x * 4.2;
-      cz += r.z * 4.2;
+      // keep the spawn point itself clear (the player respawns at the hood), but stay on the
+      // sidewalk: try either side along the storefront before settling closer in
+      const L = game.layout;
+      for (const k of [5.6, -5.6, 4, -4, 2.6]) {
+        const x = spot.x + r.x * k;
+        const z = spot.z + r.z * k;
+        let ok = !L.isRoad(x, z) && col.isFree(x, z, 0.5, 0.3, 1.8);
+        for (let q = 0; ok && q < 4; q++) {
+          const a = (q / 4) * Math.PI * 2;
+          ok = !L.isRoad(x + Math.cos(a) * 1.0, z + Math.sin(a) * 1.0);
+        }
+        if (ok) {
+          cx = x;
+          cz = z;
+          break;
+        }
+        if (k === 2.6) {
+          cx = x;
+          cz = z;
+        }
+      }
     }
     const g = this._newGroup(set, spot, cx, cz, face, 'hang');
     spot.group = g;
@@ -449,7 +493,7 @@ export class Gangs {
         !a.vehicle &&
         (a.userData.homie
           ? b.state !== 'fight' && distTo(a, game.player) < 1.45
-          : this.homies.length < MAX_HOMIES && b.role !== 'og' && b.state !== 'fight' && b.group?.mode !== 'fight'),
+          : !b.noRecruit && this.homies.length < MAX_HOMIES && b.role !== 'og' && b.state !== 'fight' && b.group?.mode !== 'fight'),
       priority: a.userData.homie ? -1 : 0,
       onInteract: () => (a.userData.homie ? this.dismiss(a) : this.recruit(a)),
     });
@@ -500,7 +544,8 @@ export class Gangs {
     this._manageT -= dt;
     if (this._manageT <= 0 || ctx.jumped) {
       this._manageT = 1;
-      this._manage(ctx);
+      this._manage(ctx, ctx.jumped || this._fresh);
+      if (game.mode === 'play') this._fresh = false;
     }
     if (game.mode === 'play' && game.state) {
       this._regenT -= dt;
@@ -536,7 +581,7 @@ export class Gangs {
     return Math.round((this.game.quality.maxGang || 14) * tf);
   }
 
-  _manage(ctx) {
+  _manage(ctx, jumped = ctx.jumped) {
     const game = this.game;
     const L = game.layout;
     let count = 0;
@@ -590,7 +635,7 @@ export class Gangs {
       const home = s.type === 'hood' && s.hoodSet === owner;
       const p = home ? 1 : Math.min(0.85, 0.18 + (control / 100) * 0.55);
       if (s.roll > p) continue;
-      if (!ctx.jumped && s._d2 < 65 * 65 && ctx.inView(s.x, s.z, 4)) continue; // don't pop in under the camera
+      if (!jumped && s._d2 < 65 * 65 && ctx.inView(s.x, s.z, 4)) continue; // don't pop in under the camera
       let size = s.size[0] + Math.round((control / 100) * (s.size[1] - s.size[0]) * (0.6 + Math.random() * 0.6));
       size = Math.max(3, Math.min(6, size));
       if (count + size > budget) {
@@ -1174,7 +1219,14 @@ export class Gangs {
     const tx = pp.x + r.x * sx - f.x * sb;
     const tz = pp.z + r.z * sx - f.z * sb;
     const d = Math.hypot(tx - a.position.x, tz - a.position.z);
-    if (dp > 55 && !ctx.inView(a.position.x, a.position.z) && this._teleportNear(a, player)) return;
+    if (player.vehicle) {
+      // left behind while the player drives off: hold the spot, catch up once they're on foot
+      if (dp > 20) {
+        stand(game, ctx, a, dt, headingTo(pp.x - a.position.x, pp.z - a.position.z), 3);
+        setAnim(a, 'idle');
+        return;
+      }
+    } else if (dp > 55 && !ctx.inView(a.position.x, a.position.z) && this._teleportNear(a, player)) return;
     let speed;
     if (d < 0.5) speed = 0;
     else if (d < 3) speed = Math.max(WALK, Math.min(4.2, (player.speed || 0) + 0.6));
@@ -1185,7 +1237,7 @@ export class Gangs {
     setAnim(a, a.speed > 3.6 ? 'run' : a.speed > 0.25 ? 'walk' : 'idle');
     if (b.stuck > 2.5 && dp > 12) {
       b.stuck = 0;
-      if (!ctx.inView(a.position.x, a.position.z)) this._teleportNear(a, player);
+      if (!player.vehicle && !ctx.inView(a.position.x, a.position.z)) this._teleportNear(a, player);
     }
   }
 
@@ -1371,7 +1423,7 @@ export class Gangs {
     this.beef = { group: g, zoneId: zone.id, setId: set.id, t: 0, markT: 0 };
     const mySet = setById(ps);
     const street = game.layout.describe(pt.x, pt.z).street || zone.name;
-    game.events.emit('pager', { from: `${this.ogName} (${mySet?.short || 'OG'})`, text: `911 ${set.short} ROLLIN THRU ${zone.name.toUpperCase()} BY ${street.toUpperCase()}. HANDLE IT` });
+    game.events.emit('pager', { from: OGS[ps]?.name || this.ogName, text: `911 ${set.short} ROLLIN THRU ${zone.name.toUpperCase()} BY ${street.toUpperCase()}. HANDLE IT` });
     this._markBeef();
     return true;
   }

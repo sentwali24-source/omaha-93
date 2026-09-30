@@ -720,7 +720,9 @@ export class Pedestrians {
       bd = d2;
       best = a;
     }
-    if (victim && victim.kind === 'ped' && victim.state === 'active' && !victim.brain?.report) best = victim;
+    // the victim calls it in themselves (only our own pedestrians: a carjacked driver is Traffic's
+    // virtual actor until spawnPed turns them into one of ours)
+    if (victim && victim.kind === 'ped' && victim.brain && victim.system === 'pedestrians' && victim.state === 'active' && !victim.brain.report) best = victim;
     if (!best) return;
     rc.push({ type, x, z, t: now });
     best.brain.report = { type, x, z, severity: (severity || 1) * 0.8, delay: 4 + Math.random() * 5, victim };

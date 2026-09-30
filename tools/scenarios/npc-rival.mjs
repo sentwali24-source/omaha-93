@@ -5,6 +5,7 @@ import { waitGame, collectDialog } from './npc-util.mjs';
 
 export default async function (page, h) {
   const dialogs = collectDialog(page);
+  await dialogs.ready;
   // bring two homies along from the hood
   await h.game((g) => {
     const ids = g.gangs.members.filter((a) => a.faction === 'psc' && a.brain.role !== 'og').slice(0, 2);

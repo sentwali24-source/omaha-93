@@ -4,6 +4,7 @@ import { waitGame, collectDialog } from './npc-util.mjs';
 
 export default async function (page, h) {
   const dialogs = collectDialog(page);
+  await dialogs.ready;
   await h.game((g) => {
     g.debugApi.teleport(372, 128); // 16th & Farnam
     g.debugApi.setHour(13);

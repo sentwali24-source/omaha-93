@@ -45,9 +45,9 @@ async function run(h, id, maxSkips = 8) {
     const stage = await h.game((g) => g.missions.active.stage);
     await h.game((g) => g.debugApi.completeObjective());
     // let the mission's update() see the new state (headless frames can be slow)
-    await waitFor(h, (g, stage) => !g.missions.active || g.missions.active.stage !== stage, stage, 2500);
+    await waitFor(h, (g, stage) => !g.missions.active || g.missions.active.stage !== stage, stage, 15000);
   }
-  await waitFor(h, (g, id) => window.__mlog.some((e) => e.id.includes(id) && e.type !== 'start'), id, 5000);
+  await waitFor(h, (g, id) => window.__mlog.some((e) => e.id.includes(id) && e.type !== 'start'), id, 20000);
   const res = await h.game((g, id) => window.__mlog.filter((e) => e.id.includes(id)).map((e) => e.type), id);
   const passed = res.includes('complete');
   h.assert(passed, `${id} should complete (events: ${res.join(',')})`);
@@ -85,7 +85,8 @@ export default async function (page, h) {
   await h.game((g) => {
     const id = g.missions.offer.phone.id;
     const poi = g.shops.pois.find((p) => p.id === id);
-    g.debugApi.teleport(poi.x, poi.z);
+    // stand on the sidewalk just in front of the phone (the phone prop itself is solid)
+    g.debugApi.teleport(poi.x + Math.sin(poi.heading || 0) * 0.2, poi.z + Math.cos(poi.heading || 0) * 0.2);
     g.player.faceHeading(poi.heading || 0);
     g.cameraRig.yaw = (poi.heading || 0) + 0.8;
     g.cameraRig.pitch = 0.2;
@@ -96,8 +97,8 @@ export default async function (page, h) {
   h.log('prompt at phone:', label);
   h.assert(label === 'Answer payphone', 'prompt should be "Answer payphone"');
   await h.shot('20-payphone-ringing');
-  await h.press('KeyE');
-  await h.wait(800);
+  await h.hold('KeyE', 350);
+  await waitFor(h, (g) => g.debugApi.missions.active(), null, 20000);
   const act = await h.game((g) => g.debugApi.missions.active());
   h.log('after answering:', JSON.stringify(act));
   h.assert(act && act.id === 'story1', 'story1 active after answering');
@@ -107,14 +108,16 @@ export default async function (page, h) {
 
   // walk to the OG: teleport next to the hood and use "Talk to"
   await h.game((g) => {
+    const og = g.missions.active?.data?.og;
     const hood = g.missions.hoodPoi();
-    g.debugApi.teleport(hood.x + 0.5, hood.z + 0.5);
+    const p = og?.alive ? og.position : hood;
+    g.debugApi.teleport(p.x + 1.3, p.z + 0.4);
   });
-  await h.wait(900);
+  await waitFor(h, (g) => /^Talk to/.test(g.hud.prompt || ''), null, 20000);
   const talk = await h.game((g) => g.hud.prompt);
-  h.log('prompt at hood:', talk);
-  await h.press('KeyE');
-  await h.wait(900);
+  h.log('prompt at the OG:', talk);
+  await h.hold('KeyE', 350);
+  await waitFor(h, () => window.__mlog.some((e) => e.id === 'story1' && e.type === 'complete'), null, 20000);
   const s1 = await h.game(() => window.__mlog.filter((e) => e.id === 'story1').map((e) => e.type));
   h.assert(s1.includes('complete'), 'story1 completes by talking to the OG');
   const st1 = await h.game((g) => ({ cash: g.state.cash, rep: g.state.rep, completed: g.state.missions.completed }));

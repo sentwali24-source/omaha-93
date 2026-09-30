@@ -67,9 +67,7 @@ export class Progression {
     else this.game.hud?.bigMessage?.(title, sub, opts);
   }
 
-  _toast(text, color) {
-    this.game.hud?.toast?.(text, { color, duration: 2.2 });
-  }
+  // (no reward toasts here: the HUD pops its own +$ / +REP toasts on cash:change / rep:change)
 
   _fightWon(target) {
     const game = this.game;
@@ -80,7 +78,6 @@ export class Progression {
     const mult = this._inRivalTurf(p.x, p.z) ? 1.5 : 1;
     const rep = Math.round(10 * mult);
     game.addRep(rep, 'fight');
-    this._toast(`+${rep} REP`, SIDES[game.state.player.side]?.light);
   }
 
   _ko({ target, attacker } = {}) {
@@ -90,7 +87,6 @@ export class Progression {
     if (!byPlayer) return;
     if (target.kind === 'ped') {
       game.addRep(-5, 'civilian');
-      this._toast('-5 REP', '#d4202c');
       game.police?.reportCrime?.('assault', { x: target.position.x, z: target.position.z, severity: 1, victim: target });
     } else if (target.kind === 'gang') {
       // Combat emits fight:won for these; this is the fallback when it doesn't (deduped).
@@ -103,7 +99,6 @@ export class Progression {
     if (!game.state || !p || p.byPlayer === false || p.setId !== this.playerSet) return;
     game.addRep(15, 'tag');
     game.addCash(5, 'tag');
-    this._toast('+15 REP  +$5', SIDES[game.state.player.side]?.light);
   }
 
   _turf({ zoneId, owner } = {}) {
@@ -132,7 +127,6 @@ export class Progression {
     if (!this._inRivalTurf(player.position.x, player.position.z)) return;
     this._signAt = game.time.elapsed;
     game.addRep(2, 'sign');
-    this._toast('+2 REP', SIDES[game.state.player.side]?.light);
   }
 
   _mission({ reward } = {}) {

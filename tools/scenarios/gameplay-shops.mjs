@@ -175,8 +175,9 @@ export default async function (page, h) {
     g.player.health = 20;
   });
   r = await goto(h, 'hood');
-  await h.press('KeyE');
-  await waitFor(h, (g) => g.player.health >= 100 && g.input.enabled);
+  await h.hold('KeyE', 300);
+  // the fade + save runs on game time (0.6 s), which crawls headless
+  await waitFor(h, (g) => g.player.health >= 100 && g.input.enabled, null, 45000);
   await h.wait(300);
   s = await h.game((g) => {
     const raw = JSON.parse(localStorage.getItem('omaha93.save.v1'));

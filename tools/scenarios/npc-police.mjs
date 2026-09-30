@@ -5,6 +5,7 @@ import { waitGame, collectDialog } from './npc-util.mjs';
 
 export default async function (page, h) {
   const dialogs = collectDialog(page);
+  await dialogs.ready;
   const events = [];
   await h.game((g) => {
     window.__npcEvents = [];
@@ -92,7 +93,7 @@ export default async function (page, h) {
     victim.takeDamage(12, g.player, { x: 0, z: -1 }, 2);
   });
   let reported = false;
-  for (let i = 0; i < 40 && !reported; i++) {
+  for (let i = 0; i < 80 && !reported; i++) {
     await waitGame(h, 0.5);
     reported = await h.game((g) => g.police.heat > 0);
   }

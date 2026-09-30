@@ -41,7 +41,9 @@ class NpcContext {
     this.frustum = new THREE.Frustum();
     this._m = new THREE.Matrix4();
     this._sphere = new THREE.Sphere(new THREE.Vector3(), 1.5);
-    this.combatMoves = false;
+    // the real Combat integrates actor.velocity for NPCs (ARCHITECTURE §15), so steering never
+    // applies knockback itself; the probe below only matters for a Combat that doesn't
+    this.combatMoves = !!game.combat?.update;
     this._probe = null; // { actor, x, z, vx, vz, dt }
     this._probeMisses = 0;
   }

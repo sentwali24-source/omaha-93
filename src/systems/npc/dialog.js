@@ -169,10 +169,14 @@ export function say(game, actor, text, { color, range = 18, priority = 1, speake
     if (dx * dx + dz * dz > range * range) return false;
     const b = actor.brain;
     if (b && b.saidAt !== undefined && now - b.saidAt < 3.5 && priority < 2) return false;
-    if (b) b.saidAt = now;
   }
+  // time can go backwards across games (a new Game object) — never let a stale stamp block lines
+  if (lastAt > now) lastAt = -1e9;
   const gap = now - lastAt;
   if (priority < 2 && gap < (lastPriority >= 2 ? 2.4 : 1.6)) return false;
+  // only stamp the speaker once the line actually goes out (a throttled attempt must not
+  // silence this actor for the next 3.5 s — that is what swallowed the own-set greetings)
+  if (actor?.brain) actor.brain.saidAt = now;
   lastAt = now;
   lastPriority = priority;
   const name = speaker || actor?.name || '';

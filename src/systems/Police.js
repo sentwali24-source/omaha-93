@@ -98,7 +98,7 @@ export class Police {
         bustT: +this.bustT.toFixed(2),
         sinceSeen: +(this.game.time.elapsed - this.lastSeen).toFixed(1),
         cops: this.cops.length,
-        units: this.units.map((u) => ({ id: u.id, mode: u.mode, pursuit: u.pursuit, siren: !!u.vehicle.siren, x: Math.round(u.vehicle.position.x), z: Math.round(u.vehicle.position.z), inCar: u.officers.filter((o) => o.vehicle).length, crew: u.officers.length })),
+        units: this.units.map((u) => ({ id: u.id, mode: u.mode, pursuit: u.pursuit, drive: u.traffic ? u.trMode : 'own', siren: !!u.vehicle.siren, x: Math.round(u.vehicle.position.x), z: Math.round(u.vehicle.position.z), inCar: u.officers.filter((o) => o.vehicle).length, crew: u.officers.length })),
         foot: this.cops.filter((o) => !o.vehicle).map((o) => ({ id: o.id, state: o.brain.state, alive: o.alive, x: Math.round(o.position.x), z: Math.round(o.position.z) })),
       });
     }
@@ -111,7 +111,7 @@ export class Police {
     this.busted = false;
   }
 
-  onPlayerRespawn() {
+  onPlayerRespawn(reason) {
     this._despawnAll();
     this.points = 0;
     this.busted = false;
@@ -120,6 +120,12 @@ export class Police {
     this.lastSeen = -1e9;
     this.heat = 0;
     this.game.events.emit('heat:change', { level: 0 });
+    if (reason === 'busted') {
+      // walked out the front door of Police HQ on 16th & Howard
+      const lines = ['Bail posted. You are free to go.', "Released. Don't let me see you back in here.", 'Sign here. Stay out of trouble, now.'];
+      D.say(this.game, null, D.pick(lines), { color: D.COLORS.cop, speaker: 'Desk Sergeant', priority: 2, duration: 4 });
+      this.game.hud?.toast?.('RELEASED · OMAHA POLICE HQ', { color: D.COLORS.cop, duration: 3.5 });
+    }
   }
 
   // ================================================================== heat API
@@ -406,18 +412,37 @@ export class Police {
   }
 
   _handToTraffic(u) {
+    this._trafficDrive(u, 'cruise', null);
+  }
+
+  /**
+   * Let game.traffic drive this unit: 'cruise' (patrol the lane graph) or 'chase' (A* routing,
+   * flanking / boxing in the target). target: the player (Traffic follows player.vehicle itself)
+   * or a {x, z} last-known point. Returns false when Traffic can't (then our RoadDriver drives).
+   */
+  _trafficDrive(u, mode, target) {
     const tr = this.game.traffic;
-    if (!USE_TRAFFIC_CRUISE || typeof tr?.makeAIDriver !== 'function') return;
+    if (!USE_TRAFFIC_CRUISE || typeof tr?.makeAIDriver !== 'function') return false;
+    const v = u.vehicle;
+    if (u.traffic && u.trMode === mode && u.trTarget === target && v.ai && v.ai.owner === tr) return true;
     try {
-      tr.makeAIDriver(u.vehicle, { mode: 'cruise' });
+      if (!tr.makeAIDriver(v, { mode, target })) throw new Error('no ai');
       u.traffic = true;
-    } catch (err) {
+      u.trMode = mode;
+      u.trTarget = target;
+      return true;
+    } catch {
       u.traffic = false;
-      u.vehicle.ai = u.driver;
+      u.trMode = null;
+      u.trTarget = null;
+      v.ai = u.driver;
+      return false;
     }
   }
 
   _takeFromTraffic(u) {
+    u.trMode = null;
+    u.trTarget = null;
     if (!u.traffic) return;
     try {
       this.game.traffic?.release?.(u.vehicle);
@@ -828,6 +853,7 @@ export class Police {
         this._drivePursuit(u, dt, ctx);
         break;
       case 'deployed': {
+        if (u.traffic) this._takeFromTraffic(u);
         u.driver.stop();
         const back = u.officers.length > 0 && away === 0;
         if (u.officers.length === 0) {
@@ -852,6 +878,7 @@ export class Police {
         break;
       }
       case 'block': {
+        if (u.traffic) this._takeFromTraffic(u);
         u.driver.stop();
         const f = game.focus;
         const passed = Math.hypot(f.x - u.blockX, f.z - u.blockZ) > 140 && game.time.elapsed > u.blockUntil - 30;
@@ -884,28 +911,39 @@ export class Police {
     v.siren = this.heat >= 2;
     if (!pv && seen && d < 15) {
       // suspect on foot: pull up and get out
+      this._takeFromTraffic(u);
       u.driver.stop();
       if (Math.abs(v.speed) < 2.5) this._deploy(u);
       return;
     }
     if (pv && seen && Math.abs(pv.speed) < 1.2 && d < 12) {
       // car stopped: box it in and get out
+      this._takeFromTraffic(u);
       u.driver.stop();
       if (Math.abs(v.speed) < 2) this._deploy(u);
       return;
     }
     if (!seen && d < 14) {
       // lost them at the last known spot: cruise around the area
-      u.driver.patrol(dt, 0.6);
+      if (!this._trafficDrive(u, 'cruise', null)) u.driver.patrol(dt, 0.6);
       return;
     }
     const los = d < 50 && game.collision.lineOfSight(v.position.x, 1.2, v.position.z, gx, 1.2, gz);
     if (pv && seen && this.heat >= 4 && d < 32 && los) {
       // aggressive: ram the suspect's car (aim a little ahead of it)
+      this._takeFromTraffic(u);
       const lead = clamp(d / 25, 0.2, 0.9);
       const fx = -Math.sin(pv.heading) * pv.speed * lead;
       const fz = -Math.cos(pv.heading) * pv.speed * lead;
       u.driver.steerTo(gx + fx, gz + fz, Math.abs(pv.speed) + 9, dt, 3);
+      return;
+    }
+    // the pursuit proper: Traffic's chase driver (routes over the street graph, flanks the car)
+    const lk = this._lkTarget || (this._lkTarget = { x: 0, z: 0 });
+    lk.x = this.lastKnown.x;
+    lk.z = this.lastKnown.z;
+    if (this._trafficDrive(u, 'chase', seen ? player : lk)) {
+      if (u.vehicle.ai) u.vehicle.ai.speedMul = this.heat >= 3 ? 1.15 : 1;
       return;
     }
     let speed = this.heat >= 2 ? 21 : 14;
@@ -1200,7 +1238,9 @@ export class Police {
         break;
       }
     }
-    if (near && stopped) this.bustT += dt;
+    // a suspect sprinting away can still break the grab; standing still / KO'd = cuffed in 1.5 s
+    const slip = !pv && player.state === 'active' && (player.speed || 0) > 4.5 ? 0.35 : 1;
+    if (near && stopped) this.bustT += dt * slip;
     else this.bustT = Math.max(0, this.bustT - dt * 0.8);
     if (this.bustT >= BUST_TIME) {
       this.busted = true;
