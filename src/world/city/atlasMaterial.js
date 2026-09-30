@@ -57,8 +57,11 @@ export function makeAtlasMaterial(params, key) {
         '#include <emissivemap_fragment>',
         /* glsl */ `
 #ifdef USE_EMISSIVEMAP
-  vec4 emissiveColor = textureGrad(emissiveMap, atlasUv, atlasGx, atlasGy);
-  totalEmissiveRadiance *= emissiveColor.rgb;
+  // lit windows only matter at night: skip the second atlas fetch while emissive is off
+  if (totalEmissiveRadiance.r + totalEmissiveRadiance.g + totalEmissiveRadiance.b > 0.0) {
+    vec4 emissiveColor = textureGrad(emissiveMap, atlasUv, atlasGx, atlasGy);
+    totalEmissiveRadiance *= emissiveColor.rgb;
+  }
 #endif`,
       );
   };

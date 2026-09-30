@@ -286,8 +286,9 @@ export function dressHouseLot(C, lot, info, opts = {}) {
         const p = facePoint(F, face, gd / 2, 0);
         C.tagSpot(p.x, 1.4, p.z, p.nx, p.nz, 2.4, 1.3);
       } else if (opts.alley && r() < 0.25) {
-        const p = facePoint(F, gfs.back, gw / 2 + (gw > 4 ? 1.8 : 0), 0);
-        if (gw > 4) C.tagSpot(p.x, 2.35, p.z, p.nx, p.nz, 1.2, 0.3);
+        // tags on the alley-side garage door itself (in front of the door panel)
+        const p = facePoint(F, gfs.back, gw / 2, 0.035);
+        C.tagSpot(p.x, 1.15, p.z, p.nx, p.nz, Math.min(2.2, gw - 1), 1.1);
       }
     }
   } else if (!opts.alley && r() < 0.45) {

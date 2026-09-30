@@ -113,7 +113,7 @@ export class Rain {
   constructor(game) {
     this.game = game;
     const detail = game.quality.detail ?? 1;
-    this.maxDrops = [650, 1300, 2200][detail] ?? 1300;
+    this.maxDrops = [1000, 1800, 2800][detail] ?? 1800;
     this.maxSplashes = [120, 220, 340][detail] ?? 220;
 
     this.uniforms = {
@@ -134,6 +134,7 @@ export class Rain {
       uniforms: this.uniforms,
       vertexShader: streakVS,
       fragmentShader: streakFS,
+      side: THREE.DoubleSide, // the camera-facing quad's winding flips with the view: never cull it
       transparent: true,
       depthWrite: false,
       fog: false,
@@ -188,7 +189,7 @@ export class Rain {
     const h = this.game.renderer?.domElement?.height || 720;
     u.uPixel.value = (2 * Math.tan(((camera.fov || 60) * Math.PI) / 360)) / h;
     u.uColor.value.set(color[0], color[1], color[2]);
-    u.uOpacity.value = 0.22 + 0.26 * intensity;
+    u.uOpacity.value = 0.26 + 0.3 * intensity;
     u.uLen.value = 0.55 + 0.45 * intensity;
     this.streaks.geometry.instanceCount = Math.floor(this.maxDrops * Math.min(1, intensity * 1.1));
 

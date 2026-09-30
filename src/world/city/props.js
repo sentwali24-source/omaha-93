@@ -69,7 +69,10 @@ export function buildProps(C) {
         const x = run.axis === 'z' ? run.c + side * run.off : along;
         const z = run.axis === 'z' ? along : run.c + side * run.off;
         // curb-side: only the landmark footprints themselves (no pad), parks and hoods block it
-        if (C.pointReserved(x, z, ['landmark', 'water', 'park'], 0.25, 0) || C.pointReserved(x, z, ['hood'], 0.3)) continue;
+        // (and nothing tall under the elevated freeway decks)
+        // landmark rects often reach over the sidewalk: a curb-side pole is fine unless it is
+        // clearly inside the footprint
+        if (C.pointReserved(x, z, ['landmark'], 0, -0.4) || C.pointReserved(x, z, ['water', 'park', 'freeway'], 0.25, 0) || C.pointReserved(x, z, ['hood'], 0.3)) continue;
         if (!C.isSidewalkPaved(x, z)) continue;
         const utilHere = side === util.side && utilityDistrict(x, z) && !run.street.major;
         if (utilHere) {
@@ -78,7 +81,8 @@ export function buildProps(C) {
         } else {
           const dist = districtOf(x, z);
           const dense = dist === 'downtown' || dist === 'oldmarket';
-          const want = run.street.major || dense ? side === 1 || dense : side === (Math.round(along / spacing) % 2 ? 1 : -1);
+          // downtown / Old Market and the major streets are lit from both curbs, side streets staggered
+          const want = run.street.major || dense ? true : side === (Math.round(along / spacing) % 2 ? 1 : -1);
           if (want && !(utilityDistrict(x, z) && side === util.side)) lights.push({ x, z, axis: run.axis, side, pole: 'steel', street: run.street });
         }
       }
@@ -296,7 +300,7 @@ function streetLight(C, l, r) {
     // downward-facing lens
     B.quadUV('signs', cx - ex * 0.85, h - 0.06, cz - ez * 0.85, cx + ex * 0.85, h - 0.06, cz - ez * 0.85, cx + ex * 0.85, h - 0.06, cz + ez * 0.85, cx - ex * 0.85, h - 0.06, cz + ez * 0.85, lamp[0], lamp[1], lamp[2], lamp[1], lamp[2], lamp[3], lamp[0], lamp[3]);
   }
-  C.pool(cx + dx * 0.8, cz + dz * 0.8, 9.5, '#ffa048', 1);
+  C.pool(cx + dx * 0.8, cz + dz * 0.8, 11, '#ffa048', 1);
 }
 
 function streetNameSign(C, x, z, nsLabel, ewLabel, signal) {

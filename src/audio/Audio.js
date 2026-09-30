@@ -382,6 +382,9 @@ export class Audio {
         },
       };
       if (o.rate !== undefined) voice.setRate(o.rate);
+      // a siren another module runs itself (Police drives one on its nearest cruiser): the
+      // automatic cruiser sirens below leave that car to it instead of doubling it
+      h.external = name === 'siren' && !o._internal;
       this._loops.add(h);
       this._placeLoop(h);
       return h;
@@ -423,6 +426,7 @@ export class Audio {
     });
     ev.on('actor:ko', ({ target } = {}) => this.play('ko', pos(target)));
     ev.on('vehicle:jacked', ({ vehicle } = {}) => {
+      this._jackedAt = this.ctx?.currentTime ?? 0;
       this.play('door', pos(vehicle));
       this.play('whoosh', { ...pos(vehicle), volume: 0.6, _internal: true });
     });
@@ -457,7 +461,8 @@ export class Audio {
     });
     ev.on('tag:complete', ({ spot } = {}) => this.play('tag_done', spot ? { x: spot.x, z: spot.z } : {}));
     ev.on('player:enterVehicle', ({ vehicle } = {}) => {
-      this.play('door', pos(vehicle));
+      // a carjack already slammed the door (vehicle:jacked fires just before this)
+      if ((this.ctx?.currentTime ?? 0) - (this._jackedAt ?? -9) > 1.5) this.play('door', pos(vehicle));
       setTimeout(() => this.play('engine_start', pos(vehicle)), 250);
       this.radio.setActive(true);
     });
@@ -539,9 +544,17 @@ export class Audio {
     this.radio.playTitle(game.mode === 'attract');
 
     this.ambience.update(dt, L);
-    if (game.mode !== 'play') return;
-    const p = game.player;
-    if (!p) return;
+    const p = game.mode === 'play' ? game.player : null;
+    // keep the radio in sync with the car even when no enter/exit event fired (respawn in a car,
+    // quit to title, teleports, scripted seat changes)
+    const inCar = !!p?.vehicle;
+    if (this.radio.active !== inCar) this.radio.setActive(inCar);
+    if (!p) {
+      // title screen / game over: nothing of the last session keeps running
+      if (this._engine || this._skid || this._horn) this._stopCarLoops();
+      if (this._farSiren || this._sirens[0] || this._sirens[1]) this._stopSirens();
+      return;
+    }
     if (p.vehicle) this._drive(dt, p.vehicle);
     else {
       this._stopCarLoops();
@@ -682,8 +695,11 @@ export class Audio {
     const heat = game.police?.heat ?? 0;
     const L = this.listener;
     const list = [];
+    let ext = null;
+    for (const h of this._loops) if (h.external && h.alive && h.positional) (ext || (ext = [])).push(h);
     for (const v of game.vehicles || []) {
       if (!v.isPolice || !(v.siren || heat > 0) || v === game.player?.vehicle) continue;
+      if (ext && ext.some((h) => Math.abs(h.x - v.position.x) + Math.abs(h.z - v.position.z) < 8)) continue;
       const d = Math.hypot(v.position.x - L.x, v.position.z - L.z);
       if (d < 260) list.push([d, v]);
     }
@@ -693,7 +709,7 @@ export class Audio {
       let h = this._sirens[i];
       if (entry) {
         const [d, v] = entry;
-        if (!h) h = this._sirens[i] = this.loop('siren', { x: v.position.x, z: v.position.z, volume: 1, mode: 'wail' });
+        if (!h) h = this._sirens[i] = this.loop('siren', { x: v.position.x, z: v.position.z, volume: 1, mode: 'wail', _internal: true });
         h.setPosition(v.position.x, v.position.z);
         h.setMode(d < 30 ? 'yelp' : 'wail');
       } else if (h) {
@@ -702,8 +718,8 @@ export class Audio {
       }
     }
     // no cruiser in earshot yet: sirens somewhere out there, closer (louder, brighter) with heat
-    if (heat > 0 && list.length === 0) {
-      if (!this._farSiren) this._farSiren = this.loop('siren', { volume: 0, mode: 'wail' });
+    if (heat > 0 && list.length === 0 && !ext) {
+      if (!this._farSiren) this._farSiren = this.loop('siren', { volume: 0, mode: 'wail', _internal: true });
       this._farSiren.setVolume(clamp(0.08 + heat * 0.07, 0, 0.45));
       this._farSiren.lp.frequency.setTargetAtTime(600 + heat * 700, this.ctx.currentTime, 0.3);
     } else if (this._farSiren) {

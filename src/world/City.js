@@ -28,10 +28,10 @@ const CHUNK = 300; // meters per render chunk
 // (chunk = own finer grid; lod = hidden beyond the quality's detail distance)
 const MATS = {
   surface: { tiled: true },
-  paint: { tiled: true, renderOrder: 1, chunk: 150, lod: true },
+  paint: { tiled: true, renderOrder: 1, chunk: 300, lod: true },
   facade: { tiled: true },
   detail: { tiled: true, chunk: 150, lod: true },
-  fence: { tiled: true, chunk: 150, lod: true },
+  fence: { tiled: true, chunk: 300, lod: true },
   signs: { tiled: false },
   pool: { tiled: false, renderOrder: 2 },
 };
@@ -141,6 +141,7 @@ export class City {
     // ---- landmarks (LANDMARKS module), then the horizon and the map edge
     tm = performance.now();
     await buildLandmarks(game, this, (p, label) => onProgress(0.7 + p * 0.2, label));
+    this._occludersFirst();
     lap('landmarks');
 
     onProgress(0.92, 'The horizon');
@@ -221,6 +222,7 @@ export class City {
     }
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     const mat = new THREE.MeshLambertMaterial({ map: tex.ground, vertexColors: true, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 6 });
+    this._groundMat = mat;
     const m = new THREE.Mesh(g, mat);
     m.name = 'city:base-ground';
     m.receiveShadow = true;
@@ -235,6 +237,9 @@ export class City {
     for (const m of meshes) {
       m.updateMatrix();
       if (m.material === mats.pool || m.material === mats.paint) m.receiveShadow = false;
+      // big occluders first: with the walls in the depth buffer, the ground / lawns / sidewalks
+      // behind them are rejected before shading (~20 % faster frames on software GL)
+      if (m.material === mats.facade && m.renderOrder === 0) m.renderOrder = -1;
       if (m.userData.lod && !horizon) this._lodAdd(m);
       this.group.add(m);
     }
@@ -254,6 +259,18 @@ export class City {
       this.group.add(l);
     }
     C.wireSegs = new Map();
+  }
+
+  /** Landmark buildings are big occluders too: draw their opaque walls before the ground. */
+  _occludersFirst() {
+    const solid = /^lm:.*:(solid|lowrise|masonry|office|slab|glass|brick|concrete|stone)$/;
+    const deck = /^lm:freeway(-piers)?$/;
+    this.group.traverse((m) => {
+      if (!m.isMesh || m.renderOrder !== 0 || !(solid.test(m.name) || deck.test(m.name))) return;
+      const mat = m.material;
+      if (Array.isArray(mat) || mat.transparent || mat.alphaTest > 0 || mat.polygonOffset) return;
+      m.renderOrder = -1;
+    });
   }
 
   /** Register a mesh for distance culling (small props, paint, fences, wires). */
@@ -281,6 +298,56 @@ export class City {
     }
   }
 
+  /** Debug: city colliders inside reserved areas (landmarks, parks, water, freeways) or on streets. */
+  _audit() {
+    const C = this._ctx;
+    const L = this.game.layout;
+    const out = { reserved: [], road: [], sidewalk: [], boxes: C?.boxLog?.length || 0 };
+    if (!C?.boxLog) return out;
+    for (const b of C.boxLog) {
+      if (b.tag === 'bounds') continue;
+      const sx = b.maxX - b.minX;
+      const sz = b.maxZ - b.minZ;
+      const m = b.tag === 'prop' ? 0.45 : 0.05; // thin poles may touch a footprint edge
+      const r = C.isReserved(b.minX + m, b.minZ + m, b.maxX - m, b.maxZ - m, ['landmark', 'park', 'water', 'freeway'], 0);
+      const big = sx > 1.2 || sz > 1.2;
+      // low street furniture (signals, signs, hydrants) may stand under a freeway deck
+      const underDeck = r?.kind === 'freeway' && b.maxY < 7;
+      if (r && !underDeck && (big || r.kind !== 'park')) out.reserved.push({ kind: r.kind, id: r.id, tag: b.tag, maxY: b.maxY, x: +((b.minX + b.maxX) / 2).toFixed(1), z: +((b.minZ + b.maxZ) / 2).toFixed(1), sx: +sx.toFixed(1), sz: +sz.toFixed(1) });
+      if (!big) continue;
+      // sample the footprint: solid structures should stay off the roadway and the sidewalk
+      let road = 0;
+      let walk = 0;
+      let n = 0;
+      for (let i = 0; i <= 4; i++) for (let j = 0; j <= 4; j++) {
+        const x = b.minX + 0.1 + ((sx - 0.2) * i) / 4;
+        const z = b.minZ + 0.1 + ((sz - 0.2) * j) / 4;
+        n++;
+        if (L.isRoad(x, z)) road++;
+        else if (L.isSidewalk(x, z)) walk++;
+      }
+      const e = { tag: b.tag, x: +((b.minX + b.maxX) / 2).toFixed(1), z: +((b.minZ + b.maxZ) / 2).toFixed(1), sx: +sx.toFixed(1), sz: +sz.toFixed(1), maxY: b.maxY };
+      if (road > 2) out.road.push(e);
+      else if (walk > n * 0.3) out.sidewalk.push(e);
+    }
+    return out;
+  }
+
+  /**
+   * Rain-soaked look (Environment calls this with env.wetness 0..1): asphalt, sidewalks and
+   * lawns darken, paint a little less.
+   */
+  setWetness(w) {
+    w = Math.max(0, Math.min(1, w || 0));
+    if (Math.abs(w - (this._wet ?? -1)) < 0.01) return;
+    this._wet = w;
+    const m = this.materials;
+    if (!m) return;
+    m.surface.color.setScalar(1 - 0.34 * w);
+    m.paint.color.setScalar(1 - 0.18 * w);
+    this._groundMat?.color.setScalar(1 - 0.2 * w);
+  }
+
   setNight(n) {
     n = Math.max(0, Math.min(1, n || 0));
     if (Math.abs(n - this._night) < 0.003) return;
@@ -294,7 +361,7 @@ export class City {
       m.emissiveIntensity = v * (m.userData?.nightScale ?? 1);
     }
     if (this.poolMat) {
-      this.poolMat.opacity = lamps * 0.85;
+      this.poolMat.opacity = lamps * 0.95;
       this.poolMat.visible = lamps > 0.01;
     }
     this.signals?.setNight(n);
@@ -308,6 +375,7 @@ export class City {
       api.city = () => ({ ...this.stats, poiTypes: this.pois.reduce((m, p) => ((m[p.type] = (m[p.type] || 0) + 1), m), {}) });
       api.setNight = (v) => this.setNight(v);
       api.signal = (id) => this.signalAt(id);
+      api.cityAudit = () => this._audit();
     }
     this.signals?.update(dt);
     this._updateLod(dt);

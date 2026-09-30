@@ -442,7 +442,7 @@ export function buildIndustrialBlock(C, blk, style) {
   const sides = ['n', 's', 'w', 'e'].filter((s) => p[s]);
   const front = sides.find((s) => C.streets.get(blk.frontage[s])?.major) || sides[0] || 'n';
   // grain elevator (two in the whole city)
-  if (grainElevators < 2 && bw > 50 && bd > 45 && r() < (style === 'industrial' ? 0.35 : 0.25)) {
+  if (grainElevators < 2 && bw > 50 && bd > 45 && r() < (style === 'industrial' ? 0.35 : 0.25) && !C.isReserved(x0, z0, x1, z1, ['landmark', 'water', 'park', 'freeway', 'hood'])) {
     grainElevator(C, blk, front);
     grainElevators++;
     return;
@@ -452,13 +452,15 @@ export function buildIndustrialBlock(C, blk, style) {
   const W = lot.w;
   const D = lot.d;
   const ww = Math.min(W - 2, 28 + r() * 30);
-  const wd = Math.min(D - 8, 18 + r() * 16);
+  // set back 3 m from the block edge so the loading-dock apron stays off the sidewalk
+  const SET = 3;
+  const wd = Math.min(D - 8 - SET, 18 + r() * 16);
   const uc = (r() - 0.5) * (W - ww - 2);
-  const wlot = { ...lot, w: ww, d: wd, F: new Frame(lot.F.x(uc, 0), lot.F.z(uc, 0), lot.F.fx, lot.F.fz) };
-  wlot.rect = wlot.F.rect(-ww / 2, 0, ww / 2, wd);
+  const wlot = { ...lot, w: ww, d: wd, F: new Frame(lot.F.x(uc, SET), lot.F.z(uc, SET), lot.F.fx, lot.F.fz) };
+  wlot.rect = wlot.F.rect(-ww / 2, -SET, ww / 2, wd);
   if (!C.isReserved(...wlot.rect, ['landmark', 'water', 'park', 'freeway', 'hood'])) warehouse(C, wlot, style);
   // yard behind: tanks, trailers, fence
-  const yv0 = wd + 1;
+  const yv0 = wd + SET + 1;
   const F = lot.F;
   if (D - yv0 > 8) {
     const n = 1 + Math.floor(r() * 3);
@@ -467,7 +469,7 @@ export function buildIndustrialBlock(C, blk, style) {
       const tv = yv0 + 3 + r() * (D - yv0 - 6);
       const tx = F.x(tu, tv);
       const tz = F.z(tu, tv);
-      if (C.pointReserved(tx, tz, null, 5)) continue;
+      if (C.pointReserved(tx, tz, null, 7)) continue;
       if (r() < 0.5) {
         const tr = 2.5 + r() * 2;
         const th = 5 + r() * 7;
@@ -491,7 +493,13 @@ export function buildIndustrialBlock(C, blk, style) {
       for (let k = 0; k < fy.length - 1; k++) {
         const [ua, va] = fy[k];
         const [ub, vb] = fy[k + 1];
-        fenceRun(C, F.x(ua, va), F.z(ua, va), F.x(ub, vb), F.z(ub, vb), 2.4, 'wire');
+        const ax = F.x(ua, va);
+        const az = F.z(ua, va);
+        const bx = F.x(ub, vb);
+        const bz = F.z(ub, vb);
+        // blocks cut by a landmark (Eppley, rail yards...): no yard fence into its footprint
+        if (C.isReserved(Math.min(ax, bx), Math.min(az, bz), Math.max(ax, bx), Math.max(az, bz), ['landmark', 'water', 'park', 'freeway', 'hood'], 0)) continue;
+        fenceRun(C, ax, az, bx, bz, 2.4, 'wire');
       }
     }
   }
@@ -682,6 +690,19 @@ export function buildRiverfrontBlock(C, blk) {
     if (!C.isReserved(...rect, ['landmark', 'water', 'park', 'freeway', 'hood'])) {
       const lot = rectLot(rect, side, blk);
       lot.street = blk.frontage[side];
+      buildStorefront(C, lot, BUSINESSES.riverfront[0], { stories: 1, depth: 11 });
+      C.riverStore = true;
+    }
+  }
+  // only 10th St is paved along the riverfront blocks: face it, set back behind a gravel lot so
+  // the shop door (and its POI) sit inside the riverfront zone (x >= 575)
+  if (!C.riverStore && p.w && z1 - z0 > 26 && x1 - x0 > 30) {
+    const fx = Math.max(x0 + 6, 577.5);
+    const rect = [fx, z0 + 6, fx + 12, z0 + 20];
+    if (!C.isReserved(x0, rect[1], rect[2], rect[3], ['landmark', 'water', 'park', 'freeway', 'hood'])) {
+      groundAvoid(C, x0, rect[1] - 1, fx, rect[3] + 1, Y.lot, C.s('gravel', '#d8d0c0'));
+      const lot = rectLot(rect, 'w', blk);
+      lot.street = blk.frontage.w;
       buildStorefront(C, lot, BUSINESSES.riverfront[0], { stories: 1, depth: 11 });
       C.riverStore = true;
     }

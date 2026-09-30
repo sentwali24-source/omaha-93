@@ -21,6 +21,9 @@ const TARGETS = {
   thunderstorm: { cover: 1.0, dark: 0.86, rain: 1.0, fog: 0.42, sun: 0.06, storm: 1 },
 };
 
+// names other modules may use (Missions asks for 'storm')
+const ALIASES = { storm: 'thunderstorm', thunder: 'thunderstorm', sunny: 'clear', cloudy: 'overcast', rainy: 'rain' };
+
 // Markov chain: next kind weights + how long (real seconds) each kind lasts.
 const NEXT = {
   clear: [['overcast', 0.78], ['rain', 0.22]],
@@ -66,6 +69,7 @@ export class Weather {
 
   /** Change weather. { immediate } snaps the look, { lock } stops the scheduler. */
   set(kind, { immediate = false, lock = null, duration = null } = {}) {
+    kind = ALIASES[kind] || kind;
     if (!TARGETS[kind]) return false;
     const changed = kind !== this.kind;
     this.kind = kind;
