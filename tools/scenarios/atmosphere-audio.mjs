@@ -20,7 +20,11 @@ export default async function (page, h) {
       return r1 || r2;
     }, name);
     h.assert(ok, `play(${name}) scheduled`);
-    await h.wait(60);
+    // let voices drain below the cap (16 on 'low') so the next sound is not dropped by design
+    for (let i = 0; i < 10; i++) {
+      await h.wait(150);
+      if ((await h.game((g) => g.debugApi.audio().voices)) < 8) break;
+    }
   }
   // loops with every handle method
   for (const name of LOOPS) {
