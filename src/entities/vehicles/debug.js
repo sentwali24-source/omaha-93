@@ -9,7 +9,8 @@ import { headingTo } from '../../core/math.js';
 //   freeCam(pos | null, look)      override the camera after the rig ({x,y,z} or [x,y,z])
 //   spawnCar(opts)                 traffic.spawnCar
 //   driveCar(model, opts)          spawn a car on the nearest lane and put the player in it
-//   spawnDummy(x, z)               a standing civilian to run over
+//   spawnCivDummy(x, z)            a standing civilian to run over (spawnDummy/dummies come from
+//                                  character/debug.js; they are only defined here if missing)
 //   trafficReport()                stuck / overlapping / off-road diagnostics
 //   playerCar()                    state of the player's car
 //   hop()                          lowrider hop for the player's car
@@ -152,7 +153,7 @@ export function installVehicleDebug(game, traffic) {
 
   api.hop = () => game.player?.vehicle?.hop(1.2) ?? false;
 
-  api.spawnDummy = (x, z, heading = 0) => {
+  api.spawnCivDummy = (x, z, heading = 0) => {
     const ch = new Character({ skin: '#8d5a3b', shirt: '#c8a060', pants: '#2a2a33', outfit: 'civilian', hat: 'none' });
     const a = new Actor(game, { kind: 'ped', faction: 'civ', character: ch, x, z, heading, name: 'Dummy' });
     a.system = 'debug';
@@ -161,7 +162,8 @@ export function installVehicleDebug(game, traffic) {
     return { id: a.id };
   };
 
-  api.dummies = () => traffic.dummies.map((a) => ({ id: a.id, health: a.health, state: a.state, x: +a.position.x.toFixed(2), z: +a.position.z.toFixed(2) }));
+  if (!api.spawnDummy) api.spawnDummy = (x, z) => api.spawnCivDummy(x, z).id;
+  api.civDummies = () => traffic.dummies.map((a) => ({ id: a.id, health: a.health, state: a.state, x: +a.position.x.toFixed(2), z: +a.position.z.toFixed(2) }));
 
   api.trafficReport = () => traffic.report();
 }

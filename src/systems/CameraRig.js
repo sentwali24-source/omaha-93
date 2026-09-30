@@ -198,6 +198,8 @@ export class CameraRig {
     const sprint = player._sprinting && player.speed > 5 ? 0.5 : 0;
     const want = (down ? 6.2 : PRESETS[this.presetIndex] + this.touchBonus) + sprint;
     this.distance = snap ? want : damp(this.distance, want, 3, dt);
+    // back against a wall: swing toward the most open side instead of staring down at the head
+    if (!looking && !this._lookBehind && (snap || this._lookIdle > 1.0)) this._avoidWalls(dt, this.distance, snap);
     const yaw = this.yaw + (this._lookBehind ? Math.PI : 0);
     this._place(dt, yaw, this.pitch, this.distance, snap);
     this._fov = damp(this._fov, BASE_FOV + (sprint ? 4 : 0), 3, dt);
@@ -235,6 +237,43 @@ export class CameraRig {
     this._place(dt, this.yaw, this.pitch, this.distance, snap);
     this._fov = damp(this._fov, BASE_FOV + Math.min(14, sp * 0.45), 2, dt);
     this._finish(dt);
+  }
+
+  /** Free distance from the target along (yaw, pitch), capped at dist. */
+  _rayDist(yaw, pitch, dist) {
+    const col = this.game.collision;
+    if (!col) return dist;
+    const cp = Math.cos(pitch);
+    const t = this._aim;
+    const hit = col.raycast(t.x, t.y, t.z, Math.sin(yaw) * cp, Math.sin(pitch), Math.cos(yaw) * cp, dist + WALL_GAP, camFilter);
+    return hit < Infinity ? Math.max(0, hit - WALL_GAP) : dist;
+  }
+
+  _avoidWalls(dt, dist, snap) {
+    const here = this._rayDist(this.yaw, this.pitch, dist);
+    if (here > dist * 0.55) return;
+    let best = 0;
+    let bestScore = here;
+    for (const off of [0.45, -0.45, 0.9, -0.9, 1.4, -1.4, 1.9, -1.9]) {
+      const d = this._rayDist(this.yaw + off, this.pitch, dist);
+      const score = d - Math.abs(off) * 0.35;
+      if (score > bestScore + 0.6) {
+        bestScore = score;
+        best = off;
+      }
+    }
+    if (best) {
+      this.yaw += snap ? best : best * (1 - Math.exp(-dt * 2.2));
+      return;
+    }
+    // boxed in on every side (narrow gap between buildings): crane up over the shoulder instead
+    for (const pitch of [0.7, 1.05]) {
+      if (pitch <= this.pitch + 0.05) continue;
+      if (this._rayDist(this.yaw, pitch, dist) > here + 0.8) {
+        this.pitch = snap ? pitch : damp(this.pitch, pitch, 2.5, dt);
+        return;
+      }
+    }
   }
 
   /** Orbit position around the target with wall pull-in. */
@@ -333,8 +372,8 @@ export class CameraRig {
       [x30, 9, -380, x30, 6, n30.z - 50, 7],
       [x30, 8, -470, x30, 6, zl - 10, 6.5],
       [x30, 8.5, zl + 30, x30 + 60, 6, zl - 5, 6.5],
-      [x30 + 35, 9, zl, x24 - 40, 6, zl, 7],
-      [80, 8, zl, x24, 6, zl - 5, 6.5],
+      [x30 + 35, 9, zl, x24 - 20, 12, zl, 7],
+      [80, 8, zl, x24, 8, zl - 5, 6.5],
       [125, 7.5, zl - 1, x24 + 10, 6, zl + 30, 6],
     ];
     const pts = K.map((k) => new THREE.Vector3(k[0], k[1], k[2]));
@@ -397,10 +436,11 @@ export class CameraRig {
         need = Math.max(need, bx.maxY + (bx.tag === 'tree' ? 3 : 5));
       }
     }
-    // elevated freeway decks have no colliders: pass over them
+    // elevated freeway decks have no colliders: pass well over them (cobra-head light poles and
+    // guide-sign gantries stand ~11 m above the deck)
     for (const f of FREEWAYS) {
       const c = f.corridor;
-      if (x > c.x0 - 6 && x < c.x1 + 6 && z > c.z0 - 6 && z < c.z1 + 6) need = Math.max(need, (f.deckY || 8) + 5);
+      if (x > c.x0 - 8 && x < c.x1 + 8 && z > c.z0 - 8 && z < c.z1 + 8) need = Math.max(need, (f.deckY || 8) + 14);
     }
     return need;
   }

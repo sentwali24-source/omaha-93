@@ -7,8 +7,21 @@ export default async function (page, h) {
     g.debugApi.setHour(15);
     const v = g.vehicles[0];
     const p = g.player;
+    // real city: park it on the nearest lane (lot stalls face walls), clear run ahead
+    const L = g.layout;
+    const ne = L.nearestEdge(p.position.x, p.position.z);
+    const e = ne.edge;
+    const a = L.nodes[e.a];
+    const b = L.nodes[e.b];
+    const t = 0.3;
+    const d = L.edgeDir(e, e.a);
+    const off = L.laneOffset(e, 0);
+    v.position.set(a.x + (b.x - a.x) * t - d.z * off, 0, a.z + (b.z - a.z) * t + d.x * off);
+    v.heading = Math.atan2(-d.x, -d.z);
+    v.velocity.set(0, 0, 0);
+    g.debugApi.freezeTraffic?.(true);
     // stand 2.5 m beside the car
-    p.position.set(v.position.x - 2.2, 0, v.position.z + 1.2);
+    p.position.set(v.position.x - Math.cos(v.heading) * 2.4, 0, v.position.z + Math.sin(v.heading) * 2.4);
     p._last.copy(p.position);
     g.cameraRig.snap();
     g.__ev = [];

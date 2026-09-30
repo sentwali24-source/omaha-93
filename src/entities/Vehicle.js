@@ -258,6 +258,11 @@ export class Vehicle {
     this.body.geometry = getBodyGeometry(this.model, this.totaled ? burntScheme(this.scheme) : this.scheme);
   }
 
+  /** Alias used by the body shop (Shops): new main paint color. */
+  setColor(hex) {
+    this.respray(hex || null);
+  }
+
   _total() {
     if (this.totaled) return;
     this.totaled = true;

@@ -88,7 +88,11 @@ export class Traffic {
     this._buildGraphInfo();
     this._buildSpots();
     const ev = game.events;
-    ev.on('vehicle:jacked', ({ vehicle, from, by }) => this._onJacked(vehicle, from, by));
+    ev.on('vehicle:jacked', (e) => {
+      const ped = this._onJacked(e.vehicle, e.from, e.by);
+      // later listeners (Police crime report, Audio) see the real pedestrian as the victim
+      if (ped) e.from = ped;
+    });
     ev.on('player:enterVehicle', ({ vehicle }) => {
       if (!vehicle) return;
       this.release(vehicle);
@@ -442,8 +446,8 @@ export class Traffic {
     while (n < max && budget-- > 0) {
       const wantBus = this._busCount < this._maxBuses() && Math.random() < 0.14;
       const spot = wantBus
-        ? this._findLaneSpot(focus, initial ? 40 : 70, 240, initial, true)
-        : this._findLaneSpot(focus, initial ? 28 : 60, initial ? 230 : 250, initial);
+        ? this._findLaneSpot(focus, initial ? 40 : 70, 200, initial, true)
+        : this._findLaneSpot(focus, initial ? 28 : 60, initial ? 180 : 190, initial);
       if (!spot) continue;
       let model = 'bus';
       let variant = null;
@@ -502,7 +506,7 @@ export class Traffic {
     }
     for (let i = this.parked.length - 1; i >= 0; i--) {
       const v = this.parked[i];
-      if (v.driver) continue;
+      if (v.driver || this._kept(v)) continue;
       const d2 = (v.position.x - f.x) ** 2 + (v.position.z - f.z) ** 2;
       if (d2 > 215 * 215 || (d2 > 180 * 180 && hidden(v)) || (force && d2 > 180 * 180)) kill(v, this.parked, i);
     }
@@ -513,9 +517,22 @@ export class Traffic {
         continue;
       }
       const d2 = (v.position.x - f.x) ** 2 + (v.position.z - f.z) ** 2;
+      if (this._kept(v)) continue;
       const tooMany = this.abandoned.length > 6 && i === 0;
       if ((d2 > 260 * 260 || tooMany) && hidden(v)) kill(v, this.abandoned, i);
     }
+  }
+
+  /** Cars someone else still cares about (a mission target, userData.keep) are never recycled. */
+  _kept(v) {
+    if (v.userData.keep) return true;
+    const data = this.game.missions?.active?.data;
+    if (!data) return false;
+    for (const k in data) {
+      const x = data[k];
+      if (x === v || (Array.isArray(x) && x.includes(v))) return true;
+    }
+    return false;
   }
 
   _clearOwn() {
@@ -583,13 +600,17 @@ export class Traffic {
     this._removeFrom(this.abandoned, vehicle);
     if (from && from.isVirtual) {
       from.vehicle = null;
+      // the seat-filler object leaves the world; the pedestrian below takes its place
+      from.state = 'removed';
+      from.alive = false;
       const exit = vehicle.getExitPoint();
       try {
-        this.game.pedestrians?.spawnPed?.({ x: exit.x, z: exit.z, flee: by || this.game.player, look: from.look });
+        return this.game.pedestrians?.spawnPed?.({ x: exit.x, z: exit.z, flee: by || this.game.player, look: from.look }) || null;
       } catch (err) {
         console.error('[traffic] spawnPed failed', err);
       }
     }
+    return null;
   }
 
   _ensureCarNearPlayer() {
@@ -617,18 +638,24 @@ export class Traffic {
     const game = this.game;
     const L = game.layout;
     const rng = createRng((game.seed || 1993) ^ 0x9a4c);
-    const add = (x, z, heading, src) => {
-      const s = { x, z, heading, v: null, fill: rng.next() < 0.5, seed: hash(Math.round(x * 10), Math.round(z * 10)), src };
+    const add = (x, z, heading, src, fill) => {
+      const s = { x, z, heading, v: null, fill: rng.next() < fill, seed: hash(Math.round(x * 10), Math.round(z * 10)), src };
       this.spots.push(s);
       const k = this._cellKey(x, z, 64);
       let list = this._spotCells.get(k);
       if (!list) this._spotCells.set(k, (list = []));
       list.push(s);
     };
-    for (const s of game.city?.parkingSpots || []) {
-      if (Number.isFinite(s.x) && Number.isFinite(s.z)) add(s.x, s.z, s.heading || 0, 'city');
-    }
-    // curbside spots derived from the lane layout (only streets wide enough for a parking lane)
+    const citySpots = (game.city?.parkingSpots || []).filter((s) => Number.isFinite(s.x) && Number.isFinite(s.z));
+    // the real city already thins its curbside spots (~1/3 used) and avoids hoods / landmarks:
+    // most of its spots get a car; the stub city has none and relies on derived spots below
+    for (const s of citySpots) add(s.x, s.z, s.heading || 0, 'city', 0.82);
+    const realCity = citySpots.length >= 150;
+    // POIs nobody should park in front of (bus stops, hangouts, garage doors)
+    const keepClear = (game.city?.pois || []).filter((p) => p.type === 'bus' || p.type === 'hood' || p.type === 'garage');
+    const cityCell = new Set(citySpots.map((s) => this._cellKey(s.x, s.z, 24)));
+    // curbside spots derived from the lane layout (only streets wide enough for a parking lane; with
+    // the real city only on stretches where it placed no spots of its own)
     for (const e of L.edges) {
       const outer = L.laneOffset(e, e.lanesPerDir - 1);
       const off = e.width / 2 - 1.15;
@@ -645,7 +672,12 @@ export class Traffic {
           const x = a.x + dir.x * s - dir.z * off;
           const z = a.z + dir.z * s + dir.x * off;
           if (L.isWater?.(x, z)) continue;
-          add(x, z, heading, 'curb');
+          if (realCity) {
+            if (cityCell.has(this._cellKey(x, z, 24))) continue;
+            if (keepClear.some((p) => (p.x - x) ** 2 + (p.z - z) ** 2 < 10 * 10)) continue;
+            if (L.landmarkAt?.(x, z)) continue;
+          }
+          add(x, z, heading, 'curb', realCity ? 0.35 : 0.5);
         }
       }
     }
@@ -699,10 +731,46 @@ export class Traffic {
         v.userData.spot = null;
       }
     }
-    let n = this.parked.length;
-    if (n >= max) return;
     const f = game.focus;
-    const minD = initial ? 8 : 45;
+    // teleports / respawns: refill around the new spot right away (the view is jumping anyway)
+    const lf = this._lastParkFocus || (this._lastParkFocus = { x: f.x, z: f.z });
+    const jumped = (f.x - lf.x) ** 2 + (f.z - lf.z) ** 2 > 70 * 70;
+    lf.x = f.x;
+    lf.z = f.z;
+    if (jumped && !initial) {
+      for (let i = this.parked.length - 1; i >= 0; i--) {
+        const v = this.parked[i];
+        if (v.driver || this._kept(v) || (v.position.x - f.x) ** 2 + (v.position.z - f.z) ** 2 < 150 * 150) continue;
+        this.parked.splice(i, 1);
+        this.release(v);
+        game.removeVehicle(v);
+      }
+      initial = true;
+    }
+    let n = this.parked.length;
+    if (n >= max && !initial) {
+      // at the cap: recycle the farthest hidden car behind us so the street ahead gets cars
+      let far = null;
+      let fd = 120 * 120;
+      for (const v of this.parked) {
+        if (v.driver || this._kept(v)) continue;
+        const d2 = (v.position.x - f.x) ** 2 + (v.position.z - f.z) ** 2;
+        if (d2 > fd && !this._visible(v.position.x, v.position.z, v.radius + 2)) {
+          fd = d2;
+          far = v;
+        }
+      }
+      if (far) {
+        this._removeFrom(this.parked, far);
+        this.release(far);
+        game.removeVehicle(far);
+        n--;
+      }
+    }
+    if (n >= max) return;
+    // hidden spots (behind the camera / around a corner) may fill fairly close; spots in view only
+    // far away so cars never pop in on screen
+    const minD = initial ? 8 : 12;
     const cands = [];
     this._forSpotsNear(f.x, f.z, 170, (s) => {
       if (s.v || !s.fill) return;
@@ -716,7 +784,7 @@ export class Traffic {
     for (const s of cands) {
       if (n >= max || budget <= 0) break;
       const d = Math.hypot(s.x - f.x, s.z - f.z);
-      if (!initial && d < 115 && this._visible(s.x, s.z, 3)) continue;
+      if (!initial && d < 115 && this._visible(s.x, s.z, 3.5)) continue;
       if (this._vehicleNear(s.x, s.z, 4.2)) continue;
       if (!game.collision.isFree(s.x, s.z, 1.05, 0.3, 1.5)) continue;
       this._spawnParkedAt(s);
@@ -1042,16 +1110,16 @@ export class Traffic {
     c.handbrake = false;
     if (vDes < 0.25) {
       c.throttle = 0;
-      c.brake = sp > 0.4 ? clamp(0.3 + sp * 0.07, 0, 1) : 1;
+      c.brake = sp > 0.4 ? clamp(0.5 + sp * 0.1, 0, 1) : 1;
       return;
     }
     const err = vDes - sp;
     if (err > 0) {
       c.brake = 0;
       c.throttle = clamp(0.22 + err * 0.32, 0, 1);
-    } else if (err < -0.8) {
+    } else if (err < -0.4) {
       c.throttle = 0;
-      c.brake = clamp(-err * 0.16, 0.05, 1);
+      c.brake = clamp(-err * 0.22, 0.05, 1);
     } else {
       c.throttle = 0.1;
       c.brake = 0;
@@ -1128,6 +1196,14 @@ export class Traffic {
       v.turnSignal = 0;
       this._unclaim(v, ai);
       if (!ai.deadT) ai.deadT = 0.01;
+      return;
+    }
+    // the player is pulling the door open: stand on the brakes
+    if (game.player?._enter?.v === v) {
+      c.throttle = 0;
+      c.brake = 1;
+      c.steer = 0;
+      c.handbrake = false;
       return;
     }
     // stuck recovery: back up with opposite lock, then replan
@@ -1247,7 +1323,8 @@ export class Traffic {
         }
         if (!reckless && claim) {
           if (!this._mayEnter(v, ai, st, dStop, claim)) {
-            limit(0, dStop - 0.3);
+            // aim a metre short of the line: low frame rates and brake lag never overshoot into the box
+            limit(0, dStop - 1.1);
             ai.waiting = st.node;
           } else if (!game.city?.signalAt?.(st.node) && this._crossMajor(st.node, st.axis)) {
             // no signal but a major street crosses: ease through

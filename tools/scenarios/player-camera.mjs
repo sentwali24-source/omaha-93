@@ -19,7 +19,8 @@ export default async function (page, h) {
   await h.shot('cam-backwall');
   h.log('back wall cam', JSON.stringify(c1));
   h.assert(c1.z <= -590.25, `camera stays in front of the wall (z=${c1.z})`);
-  h.assert(c1.distance < 1.2, `camera pulled in (${c1.distance})`);
+  // either pulled in behind the head, or (since the wall-avoid swing) orbited to the open side
+  h.assert(c1.distance < 1.2 || Math.abs(c1.yaw) > 0.4, `camera pulled in or swung clear (d ${c1.distance}, yaw ${c1.yaw})`);
 
   // wall to the side: orbit the camera to the east, a wall 1.5 m east of the player
   await h.game((g) => {
