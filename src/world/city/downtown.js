@@ -442,7 +442,7 @@ export function buildIndustrialBlock(C, blk, style) {
   const sides = ['n', 's', 'w', 'e'].filter((s) => p[s]);
   const front = sides.find((s) => C.streets.get(blk.frontage[s])?.major) || sides[0] || 'n';
   // grain elevator (two in the whole city)
-  if (grainElevators < 2 && bw > 50 && bd > 45 && r() < (style === 'industrial' ? 0.35 : 0.25)) {
+  if (grainElevators < 2 && bw > 50 && bd > 45 && r() < (style === 'industrial' ? 0.35 : 0.25) && !C.isReserved(x0, z0, x1, z1, ['landmark', 'water', 'park', 'freeway', 'hood'])) {
     grainElevator(C, blk, front);
     grainElevators++;
     return;
@@ -469,7 +469,7 @@ export function buildIndustrialBlock(C, blk, style) {
       const tv = yv0 + 3 + r() * (D - yv0 - 6);
       const tx = F.x(tu, tv);
       const tz = F.z(tu, tv);
-      if (C.pointReserved(tx, tz, null, 5)) continue;
+      if (C.pointReserved(tx, tz, null, 7)) continue;
       if (r() < 0.5) {
         const tr = 2.5 + r() * 2;
         const th = 5 + r() * 7;
@@ -493,7 +493,13 @@ export function buildIndustrialBlock(C, blk, style) {
       for (let k = 0; k < fy.length - 1; k++) {
         const [ua, va] = fy[k];
         const [ub, vb] = fy[k + 1];
-        fenceRun(C, F.x(ua, va), F.z(ua, va), F.x(ub, vb), F.z(ub, vb), 2.4, 'wire');
+        const ax = F.x(ua, va);
+        const az = F.z(ua, va);
+        const bx = F.x(ub, vb);
+        const bz = F.z(ub, vb);
+        // blocks cut by a landmark (Eppley, rail yards...): no yard fence into its footprint
+        if (C.isReserved(Math.min(ax, bx), Math.min(az, bz), Math.max(ax, bx), Math.max(az, bz), ['landmark', 'water', 'park', 'freeway', 'hood'], 0)) continue;
+        fenceRun(C, ax, az, bx, bz, 2.4, 'wire');
       }
     }
   }
