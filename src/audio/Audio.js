@@ -426,6 +426,7 @@ export class Audio {
     });
     ev.on('actor:ko', ({ target } = {}) => this.play('ko', pos(target)));
     ev.on('vehicle:jacked', ({ vehicle } = {}) => {
+      this._jackedAt = this.ctx?.currentTime ?? 0;
       this.play('door', pos(vehicle));
       this.play('whoosh', { ...pos(vehicle), volume: 0.6, _internal: true });
     });
@@ -460,7 +461,8 @@ export class Audio {
     });
     ev.on('tag:complete', ({ spot } = {}) => this.play('tag_done', spot ? { x: spot.x, z: spot.z } : {}));
     ev.on('player:enterVehicle', ({ vehicle } = {}) => {
-      this.play('door', pos(vehicle));
+      // a carjack already slammed the door (vehicle:jacked fires just before this)
+      if ((this.ctx?.currentTime ?? 0) - (this._jackedAt ?? -9) > 1.5) this.play('door', pos(vehicle));
       setTimeout(() => this.play('engine_start', pos(vehicle)), 250);
       this.radio.setActive(true);
     });
