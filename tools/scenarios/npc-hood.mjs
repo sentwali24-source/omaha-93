@@ -1,11 +1,10 @@
 // NPC scenario: stroll through your own hood (PSC, Kountze Park) — greetings, recruit homies
 // with E ("Roll with me"), follow / wait with G, homies riding in the car.
+import { collectDialog, waitGame } from './npc-util.mjs';
+
 export default async function (page, h) {
-  const dialogs = [];
-  page.on('console', (m) => {
-    const t = m.text();
-    if (t.startsWith('[dialog]') || t.startsWith('[toast]') || t.startsWith('[pager]')) dialogs.push(t);
-  });
+  const dialogs = collectDialog(page);
+  await dialogs.ready;
   await h.wait(1500);
   const info = await h.game((g) => g.debugApi.gangs());
   h.log('groups', JSON.stringify(info.groups));
@@ -29,13 +28,14 @@ export default async function (page, h) {
   await h.game((g) => {
     for (const q of g.gangs.groups) q.greetCd = 0;
   });
-  await h.wait(2500);
+  await waitGame(h, 3);
   await h.shot('01-greet');
+  h.assert(dialogs.some((d) => d.startsWith('[dialog]') && /crackin|in the house|all day|There go|head up|proud|Handle your business|squad cars/i.test(d)), 'own-set greeting line was shown');
   const prompt = await h.game((g) => ({ prompt: g.hud.prompt, cur: g.interactions.current?.id || null }));
   h.log('prompt', JSON.stringify(prompt));
   h.assert(prompt.prompt === 'Roll with me', 'recruit prompt shows next to an own-set member');
-  await h.press('KeyE');
-  await h.wait(800);
+  await h.hold('KeyE', 350);
+  await waitGame(h, 0.5);
   let homies = await h.game((g) => g.gangs.homies.map((a) => ({ id: a.id, homie: a.userData.homie, state: a.brain.state })));
   h.log('homies after E', JSON.stringify(homies));
   h.assert(homies.length === 1 && homies[0].homie, 'recruited one homie with E');
@@ -91,5 +91,4 @@ export default async function (page, h) {
   h.assert(out.every((r) => !r.riding && r.inActors && r.visible), 'homies climb out with the player');
   await h.shot('03-out-of-car');
   h.log('dialog lines:\n  ' + dialogs.slice(0, 20).join('\n  '));
-  h.assert(dialogs.some((d) => d.startsWith('[dialog]') && /crackin|in the house|all day|There go|head up|proud|Handle your business|squad cars/i.test(d)), 'own-set greeting line was shown');
 }

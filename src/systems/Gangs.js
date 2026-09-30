@@ -361,8 +361,8 @@ export class Gangs {
     let cz = spot.z;
     if (spot.type === 'hood') {
       // keep the spawn point itself clear: the player respawns at the hood
-      cx += r.x * 4.2;
-      cz += r.z * 4.2;
+      cx += r.x * 5.6;
+      cz += r.z * 5.6;
     }
     const g = this._newGroup(set, spot, cx, cz, face, 'hang');
     spot.group = g;
