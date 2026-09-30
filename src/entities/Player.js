@@ -450,15 +450,30 @@ export class Player extends Actor {
   _nearestVehicle() {
     const p = this.position;
     let best = null;
-    let bestD = ENTER_RANGE;
+    let bestScore = Infinity;
+    const door = this._doorScratch || (this._doorScratch = { x: 0, z: 0 });
     for (const v of this.game.vehicles) {
       if (!v || v.health <= 0) continue;
-      const d = Math.hypot(v.position.x - p.x, v.position.z - p.z);
-      if (d > bestD) continue;
+      const dx = p.x - v.position.x;
+      const dz = p.z - v.position.z;
+      if (dx * dx + dz * dz > (ENTER_RANGE + (v.length || 5) / 2) ** 2) continue;
+      // distance to the body outline, so long vehicles (vans, the bus) can be entered at the door
+      const h = v.heading || 0;
+      const lf = dx * -Math.sin(h) + dz * -Math.cos(h);
+      const lx = dx * Math.cos(h) + dz * -Math.sin(h);
+      const ox = Math.max(0, Math.abs(lx) - (v.width || 1.9) / 2);
+      const of = Math.max(0, Math.abs(lf) - (v.length || 4.8) / 2);
+      const d = Math.hypot(ox, of) + 0.9;
+      if (d > ENTER_RANGE) continue;
       const occupied = v.driver && v.driver !== this;
       if (occupied && Math.abs(v.speed || 0) > 5) continue; // too fast to grab the door
-      bestD = d;
-      best = v;
+      // between two parked cars: prefer the one whose driver door is right here
+      this._doorPoint(v, door);
+      const score = d + 0.5 * Math.hypot(door.x - p.x, door.z - p.z);
+      if (score < bestScore) {
+        bestScore = score;
+        best = v;
+      }
     }
     return best;
   }
@@ -471,6 +486,13 @@ export class Player extends Actor {
     const fx = -Math.sin(h);
     const fz = -Math.cos(h);
     const side = (v.width || 1.9) / 2 + 0.38;
+    if (v.model === 'bus') {
+      // MAT bus: front door on the right, by the driver
+      const f = (v.length || 12) / 2 - 1.2;
+      out.x = v.position.x + rx * side + fx * f;
+      out.z = v.position.z + rz * side + fz * f;
+      return out;
+    }
     out.x = v.position.x - rx * side + fx * 0.35;
     out.z = v.position.z - rz * side + fz * 0.35;
     return out;
