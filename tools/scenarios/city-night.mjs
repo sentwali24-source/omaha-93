@@ -9,6 +9,7 @@ export default async function (page, h) {
   const out = path.resolve(process.argv[process.argv.indexOf('--out') + 1]);
   const shot = (n) => page.screenshot({ path: path.join(out, `${n}.png`), timeout: 120000 }).catch((e) => h.log('shot failed', e.message.slice(0, 60)));
   const only = process.env.VIEWS ? process.env.VIEWS.split(',') : null;
+  if (process.env.VIEWS_JSON) VIEWS.splice(0, VIEWS.length, ...JSON.parse(process.env.VIEWS_JSON));
   await h.game((g) => {
     g.cameraRig.update = () => {};
     g.debugApi.weather('clear');
