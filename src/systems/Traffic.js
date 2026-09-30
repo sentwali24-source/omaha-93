@@ -446,8 +446,8 @@ export class Traffic {
     while (n < max && budget-- > 0) {
       const wantBus = this._busCount < this._maxBuses() && Math.random() < 0.14;
       const spot = wantBus
-        ? this._findLaneSpot(focus, initial ? 40 : 70, 240, initial, true)
-        : this._findLaneSpot(focus, initial ? 28 : 60, initial ? 230 : 250, initial);
+        ? this._findLaneSpot(focus, initial ? 40 : 70, 200, initial, true)
+        : this._findLaneSpot(focus, initial ? 28 : 60, initial ? 180 : 190, initial);
       if (!spot) continue;
       let model = 'bus';
       let variant = null;
