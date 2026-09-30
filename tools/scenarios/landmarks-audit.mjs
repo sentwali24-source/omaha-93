@@ -53,6 +53,23 @@ export default async function (page, h) {
         out.deckHits.push({ tag: b.tag, x: +((b.minX + b.maxX) / 2).toFixed(1), z: +((b.minZ + b.maxZ) / 2).toFixed(1), maxY: +b.maxY.toFixed(1), deckY: +p.y.toFixed(1) });
       }
     }
+    // any collider whose centre or corners stand in a roadway (curb to curb, graph edges and
+    // intersections only: layout.isRoad also counts streets through parks where no road is drawn)
+    const edgeRects = L.edges.map((e) => {
+      const a = L.nodes[e.a];
+      const b = L.nodes[e.b];
+      const hw = e.width / 2;
+      return e.axis === 'z' ? [a.x - hw, Math.min(a.z, b.z) - hw, a.x + hw, Math.max(a.z, b.z) + hw] : [Math.min(a.x, b.x) - hw, a.z - hw, Math.max(a.x, b.x) + hw, a.z + hw];
+    });
+    const onRoad = (x, z) => edgeRects.some((r) => x > r[0] && x < r[2] && z > r[1] && z < r[3]);
+    out.inRoad = boxes
+      .filter((b) => b.tag !== 'bounds' && b.tag !== 'water' && b.minY < 3)
+      .filter((b) => {
+        const i = 0.3;
+        const pts = [[(b.minX + b.maxX) / 2, (b.minZ + b.maxZ) / 2], [b.minX + i, b.minZ + i], [b.maxX - i, b.minZ + i], [b.minX + i, b.maxZ - i], [b.maxX - i, b.maxZ - i]];
+        return pts.some(([x, z]) => onRoad(x, z));
+      })
+      .map((b) => ({ tag: b.tag, x: +((b.minX + b.maxX) / 2).toFixed(1), z: +((b.minZ + b.maxZ) / 2).toFixed(1), w: +(b.maxX - b.minX).toFixed(1), d: +(b.maxZ - b.minZ).toFixed(1), y: +b.maxY.toFixed(1) }));
     // city objects standing on the levee slope (x 689..700)
     out.levee = boxes
       .filter((b) => b.maxX > 689.5 && b.minX < 700 && b.tag !== 'landmark' && b.tag !== 'water' && b.tag !== 'bounds')
@@ -69,6 +86,7 @@ export default async function (page, h) {
   h.log('intruders', report.intruders.length, JSON.stringify(report.intruders.slice(0, 40)));
   h.log('pillarsInRoad', report.pillarsInRoad.length, JSON.stringify(report.pillarsInRoad.slice(0, 40)));
   h.log('water', JSON.stringify(report.water));
+  h.log('inRoad', report.inRoad.length, JSON.stringify(report.inRoad.slice(0, 40)));
   h.log('levee', report.levee.length, JSON.stringify(report.levee.slice(0, 30)));
   h.log('deckHits', report.deckHits.length, JSON.stringify(report.deckHits.slice(0, 40)));
   h.log('meshCount', report.meshCount, 'top', JSON.stringify(report.meshes));
