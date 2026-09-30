@@ -28,10 +28,10 @@ const CHUNK = 300; // meters per render chunk
 // (chunk = own finer grid; lod = hidden beyond the quality's detail distance)
 const MATS = {
   surface: { tiled: true },
-  paint: { tiled: true, renderOrder: 1, chunk: 150, lod: true },
+  paint: { tiled: true, renderOrder: 1, chunk: 300, lod: true },
   facade: { tiled: true },
   detail: { tiled: true, chunk: 150, lod: true },
-  fence: { tiled: true, chunk: 150, lod: true },
+  fence: { tiled: true, chunk: 300, lod: true },
   signs: { tiled: false },
   pool: { tiled: false, renderOrder: 2 },
 };
