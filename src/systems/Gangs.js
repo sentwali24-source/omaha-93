@@ -27,6 +27,7 @@ const ACTIVATE_R = 140;
 const DEACTIVATE_R = 178;
 const SPOT_POI = { store: 1, food: 1, record: 1, barber: 1, payphone: 1, clothes: 1, garage: 1 };
 const MAX_HOMIES = 3;
+const CLAIM = 30; // control a set needs to take an unclaimed zone
 
 const FIGHT = {
   hang: { damage: 6, speed: 5.2, windup: 0.32, cooldown: [1.0, 1.7], knockback: 3, backOffAt: 0.35 },
@@ -170,8 +171,24 @@ export class Gangs {
     if (!zone || zone.noTurf || !setById(setId)) return;
     const t = st.turf[zoneId] || (st.turf[zoneId] = { owner: null, control: 0 });
     const prev = t.owner;
-    if (t.owner === setId || t.owner === null) {
-      t.owner = setId;
+    if (t.owner === null) {
+      // unclaimed ground (the contested zones): sets race for it; t.lead is who's ahead and
+      // t.control their progress — a set only owns it once it reaches CLAIM (one tag won't do)
+      if (!t.lead || t.lead === setId || t.control <= 0) {
+        t.lead = setId;
+        t.control = Math.min(100, Math.max(0, t.control) + amount);
+      } else {
+        t.control -= amount;
+        if (t.control < 0) {
+          t.lead = setId;
+          t.control = -t.control;
+        }
+      }
+      if (t.control >= CLAIM) {
+        t.owner = t.lead;
+        t.lead = null;
+      }
+    } else if (t.owner === setId) {
       t.control = Math.min(100, t.control + amount);
     } else {
       t.control -= amount;
@@ -180,7 +197,7 @@ export class Gangs {
         t.control = Math.min(100, -t.control);
       }
     }
-    const payload = { zoneId, owner: t.owner, control: t.control, prev, setId, amount };
+    const payload = { zoneId, owner: t.owner, control: t.control, prev, setId, amount, lead: t.lead || null };
     this.game.events.emit('turf:influence', payload);
     if (t.owner !== prev) this.game.events.emit('turf:change', payload);
   }
