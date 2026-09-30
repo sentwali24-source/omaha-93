@@ -244,6 +244,9 @@ export class Game {
 
   _beginPlay(isNew) {
     const st = this.state;
+    // a KO / bust from the previous session must not respawn (and charge) the new one
+    this._respawnTimer = null;
+    this._autosave = 0;
     this.clock.hour = st.clock?.hour ?? 18.25;
     this.clock.day = st.clock?.day ?? 1;
     const spawn = st.position || this.hoodSpawn();
@@ -295,6 +298,7 @@ export class Game {
     }
     this.player = null;
     this.systems.player = null;
+    this._respawnTimer = null;
     this.mode = 'attract';
     this.paused = false;
     this.input.exitPointerLock();
