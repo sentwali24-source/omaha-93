@@ -70,6 +70,15 @@ export default async function (page, h) {
         return pts.some(([x, z]) => onRoad(x, z));
       })
       .map((b) => ({ tag: b.tag, x: +((b.minX + b.maxX) / 2).toFixed(1), z: +((b.minZ + b.maxZ) / 2).toFixed(1), w: +(b.maxX - b.minX).toFixed(1), d: +(b.maxZ - b.minZ).toFixed(1), y: +b.maxY.toFixed(1) }));
+    // landmark colliders that overlap generic city buildings anywhere (interpenetration)
+    out.overlap = [];
+    for (const a of boxes) {
+      if (a.tag !== 'landmark') continue;
+      for (const b of col.query(a.minX + 0.3, a.minZ + 0.3, a.maxX - 0.3, a.maxZ - 0.3)) {
+        if (b.tag !== 'building' && b.tag !== 'house') continue;
+        out.overlap.push({ lm: [+a.minX.toFixed(1), +a.minZ.toFixed(1), +a.maxX.toFixed(1), +a.maxZ.toFixed(1)], city: [+b.minX.toFixed(1), +b.minZ.toFixed(1), +b.maxX.toFixed(1), +b.maxZ.toFixed(1)], tag: b.tag });
+      }
+    }
     // city objects standing on the levee slope (x 689..700)
     out.levee = boxes
       .filter((b) => b.maxX > 689.5 && b.minX < 700 && b.tag !== 'landmark' && b.tag !== 'water' && b.tag !== 'bounds')
@@ -87,6 +96,7 @@ export default async function (page, h) {
   h.log('pillarsInRoad', report.pillarsInRoad.length, JSON.stringify(report.pillarsInRoad.slice(0, 40)));
   h.log('water', JSON.stringify(report.water));
   h.log('inRoad', report.inRoad.length, JSON.stringify(report.inRoad.slice(0, 40)));
+  h.log('overlap', report.overlap.length, JSON.stringify(report.overlap.slice(0, 30)));
   h.log('levee', report.levee.length, JSON.stringify(report.levee.slice(0, 30)));
   h.log('deckHits', report.deckHits.length, JSON.stringify(report.deckHits.slice(0, 40)));
   h.log('meshCount', report.meshCount, 'top', JSON.stringify(report.meshes));

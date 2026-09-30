@@ -52,7 +52,7 @@ function backdrop(ctx) {
     rad = L.rad;
     const ridge = (th) => {
       const k = 1 - Math.pow(Math.min(1, Math.abs(th) / (80 * deg)), 3) * 0.7;
-      const e = 1.55 + 0.55 * Math.sin(3.1 * th + L.seed) + 0.32 * Math.sin(7.7 * th + 1.1 + L.seed) + 0.16 * Math.sin(17 * th + L.seed * 3);
+      const e = 1.45 + 0.75 * Math.sin(2.3 * th + L.seed) + 0.45 * Math.sin(6.1 * th + 1.1 + L.seed) + 0.22 * Math.sin(14.5 * th + L.seed * 3) + 0.1 * Math.sin(31 * th + L.seed);
       return (e * L.amp * k + L.lift) * deg;
     };
     const mid = L.tone.map((c) => Math.min(1, c * 1.06));

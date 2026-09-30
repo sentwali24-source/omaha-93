@@ -74,6 +74,7 @@ function createContext(game, city) {
   const roads = roadRects(layout);
   const byId = Object.fromEntries(LANDMARKS.map((l) => [l.id, l]));
   const glowData = { pos: [], col: [], size: [] };
+  const poolData = [];
   const blinkData = { pos: [], col: [], size: [] };
   const tmp = new THREE.Color();
   const push = (data, x, y, z, color, size) => {
@@ -110,6 +111,9 @@ function createContext(game, city) {
     box: (x0, z0, x1, z1, maxY, tag = 'landmark', minY = 0) => game.collision.addBox(x0, z0, x1, z1, maxY, minY, tag),
     /** Static night glow sprite (lamp heads, floodlights, runway lights). */
     glow: (x, y, z, color, size = 3) => push(glowData, x, y, z, color, size),
+    /** Pool of lamp light on the ground at night (additive, merged into one mesh). */
+    pool: (x, z, r, color = '#ffd9a0', k = 1, y = 0.14) => poolData.push({ x, z, r, color, k, y }),
+    poolData,
     /** Blinking glow (aircraft beacons, barricade lamps). */
     blink: (x, y, z, color = '#ff2a1a', size = 4) => push(blinkData, x, y, z, color, size),
     /** Red aircraft-warning beacon: a small blinking lamp plus a blinking glow. */
@@ -180,6 +184,7 @@ function finish(ctx) {
     blink.name = 'lm:blink';
     ctx.group.add(blink);
   }
+  const pools = buildPools(ctx);
   const updaters = ctx.updaters;
   const state = { night: 0, t: 0 };
   ctx.state = state;
@@ -193,6 +198,10 @@ function finish(ctx) {
     M.lights.visible = night > 0.25;
     glowMat.opacity = Math.min(1, Math.max(0, (night - 0.2) / 0.5));
     if (glow) glow.visible = night > 0.2;
+    if (pools) {
+      pools.visible = night > 0.2;
+      pools.material.opacity = Math.min(1, Math.max(0, (night - 0.2) / 0.4)) * 0.8;
+    }
     // aircraft beacons: ~1 s on / 1 s off; the glow halo is faint by day
     const on = state.t % 1.8 < 0.9;
     M.beacon.visible = on;
@@ -265,6 +274,50 @@ function installDebug(ctx) {
       return { t: +j.t.toFixed(1), phase: j.phase, x: +j.x.toFixed(1), y: +j.y.toFixed(1), z: +j.z.toFixed(1) };
     },
   };
+}
+
+/** Ground light pools under lamps and floodlights: one additive mesh, faded by the fog to black. */
+function buildPools(ctx) {
+  const list = ctx.poolData;
+  if (!list.length) return null;
+  const pos = new Float32Array(list.length * 18);
+  const uv = new Float32Array(list.length * 12);
+  const col = new Float32Array(list.length * 18);
+  const c = new THREE.Color();
+  list.forEach((p, i) => {
+    const { x, z, r, y } = p;
+    const q = [[x - r, z + r, 0, 0], [x + r, z + r, 1, 0], [x + r, z - r, 1, 1], [x - r, z + r, 0, 0], [x + r, z - r, 1, 1], [x - r, z - r, 0, 1]];
+    c.set(p.color).multiplyScalar(p.k);
+    q.forEach(([px, pz, u, v], k) => {
+      pos.set([px, y, pz], i * 18 + k * 3);
+      uv.set([u, v], i * 12 + k * 2);
+      col.set([c.r, c.g, c.b], i * 18 + k * 3);
+    });
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  g.computeBoundingSphere();
+  const m = new THREE.MeshBasicMaterial({ map: ctx.T.glow, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -10 });
+  m.onBeforeCompile = (sh) => {
+    sh.fragmentShader = sh.fragmentShader.replace(
+      '#include <fog_fragment>',
+      `#ifdef USE_FOG
+  float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );
+  gl_FragColor.rgb *= ( 1.0 - fogFactor );
+#endif`,
+    );
+  };
+  m.customProgramCacheKey = () => 'lm-pool';
+  const mesh = new THREE.Mesh(g, m);
+  mesh.name = 'lm:pools';
+  mesh.frustumCulled = false;
+  mesh.matrixAutoUpdate = false;
+  mesh.renderOrder = 1;
+  mesh.visible = false;
+  ctx.group.add(mesh);
+  return mesh;
 }
 
 function smooth(a, b, x) {

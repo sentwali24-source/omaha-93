@@ -173,6 +173,13 @@ export function lamp(P, x, z, opts = {}) {
     ctx.glow(x, y0 + h + 0.4, z, opts.light || '#ffe2a8', opts.glow || 3.5);
   }
   if (!y0 && opts.collide !== false) ctx.col.addBox(x - 0.15, z - 0.15, x + 0.15, z + 0.15, h, 0, 'prop');
+  // pool of light on the ground under the head
+  if (!y0 && ctx.pool && opts.pool !== false) {
+    if (style === 'cobra') {
+      const [ax, az] = rotPt(x, z, 0, -1.8, rot);
+      ctx.pool(ax, az, h * 0.75, opts.light || '#ffcf82', 0.9);
+    } else ctx.pool(x, z, 3.6, opts.light || '#ffe2a8', 0.75);
+  }
 }
 
 /**

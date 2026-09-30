@@ -56,6 +56,9 @@ function floodlight(P, x, z, rot, h = 9) {
     obox(L, fx, fz, 0.66, 0.05, h - 0.1, h + 0.35, rot, C('#fff4d6'));
     ctx.glow(fx, h + 0.1, fz, '#fff1cf', 7);
   }
+  // the lamps throw their light out over the court in front of the pole
+  const [px, pz] = rotPt(x, z, 0, -8, rot);
+  ctx.pool(px, pz, 11, '#fff0d0', 0.85);
   ctx.col.addBox(x - 0.18, z - 0.18, x + 0.18, z + 0.18, h, 0, 'prop');
 }
 
