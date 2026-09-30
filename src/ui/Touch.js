@@ -4,6 +4,7 @@
 //   left ~42%    floating joystick: appears where the thumb lands → input.setVirtualMove
 //   right side   drag to look → input.addLook
 //   bottom-right PUNCH, JUMP, SPRINT (hold), CAR, ACTION (shows the prompt, supports hold), SIGN, MAP
+//                HOMIES (follow / wait, under PAUSE) only while homies roll with you
 //                in a car: BRAKE (handbrake), HORN, RADIO, EXIT, MAP
 //   top-right    PAUSE → game.menu.showPause()
 //
@@ -28,6 +29,7 @@ const BUTTONS = [
   { id: 'action', action: 'interact', label: 'ACTION', icon: 'hand', mode: 'foot' },
   { id: 'sign', action: 'sign', label: 'SIGN', icon: 'sign', mode: 'foot' },
   { id: 'map', tap: 'map', label: 'MAP', icon: 'map', mode: 'both' },
+  { id: 'homies', action: 'homies', label: 'HOMIES', icon: 'crew', mode: 'foot' }, // shown with homies only
   { id: 'brake', action: 'jump', label: 'BRAKE', icon: 'brake', mode: 'car' }, // 'jump' also raises 'handbrake'
   { id: 'horn', action: 'horn', label: 'HORN', icon: 'horn', mode: 'car' },
   { id: 'radio', action: 'radio', label: 'RADIO', icon: 'tape', mode: 'car' },
@@ -425,6 +427,11 @@ export class Touch {
       if (c.near !== near) {
         c.near = near;
         this.buttons.car.el.classList.toggle('glow', near);
+      }
+      const homies = (g.gangs?.homies?.length || 0) > 0;
+      if (c.homies !== homies) {
+        c.homies = homies;
+        this.el.classList.toggle('has-homies', homies);
       }
     }
   }
