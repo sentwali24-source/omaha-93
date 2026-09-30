@@ -1310,10 +1310,10 @@
   100% { opacity: 0.3; }
 }
 
-/* short landscape phones: the radio name drops in at the top center (like on desktop) instead of
+/* touch in landscape: the radio name drops in at the top center (like on desktop) instead of
    under the stats, where it collided with the +REP / +$ toasts; the objective card it covers for a
    moment steps aside while it shows */
-@media (orientation: landscape) and (max-height: 520px) {
+@media (orientation: landscape) {
   .hud-root.touch .hud-radio {
     top: calc(var(--st) + 8px);
     left: 50%;
