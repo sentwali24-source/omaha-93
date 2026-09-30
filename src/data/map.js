@@ -213,6 +213,8 @@ export const FREEWAYS = [
   { id: 'northfreeway', name: 'North Freeway (US-75)', corridor: { x0: -8, x1: 14, z0: -1050, z1: -86 }, deckY: 7.5, axis: 'z' },
   { id: 'i480', name: 'I-480', corridor: { x0: -8, x1: 575, z0: -114, z1: -92 }, deckY: 8, axis: 'x' },
   { id: 'i480-bridge', name: 'I-480 Missouri River Bridge', corridor: { x0: 575, x1: 1000, z0: 26, z1: 52 }, deckY: 12, axis: 'x' },
+  // reserve-only: the elevated swing from the I-480 leg down to the bridge (decks built by the LANDMARKS module)
+  { id: 'i480-swing', name: 'I-480', corridor: { x0: 568, x1: 592, z0: -114, z1: 52 }, deckY: 10, axis: 'z', reserveOnly: true },
 ];
 
 // Parks (lawns + trees). Landmark parks above are listed here too so layout.parkAt finds them.
