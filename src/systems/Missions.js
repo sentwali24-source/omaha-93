@@ -316,21 +316,25 @@ export class Missions {
   setStorm(on, restoreAfter = 0) {
     const env = this.game.environment;
     if (!env?.setWeather) return;
-    const apply = (w) => {
+    // Environment knows 'thunderstorm' (and returns false for kinds it doesn't know); lock it so
+    // the random weather cycle can't clear the sky in the middle of the finale
+    const apply = (w, opts) => {
       try {
-        env.setWeather(w);
-        return true;
+        return env.setWeather(w, opts) !== false;
       } catch {
         return false;
       }
     };
     if (on) {
-      this._prevWeather = env.weather || 'overcast';
-      if (!apply('storm')) apply('rain');
+      if (!this._stormOn) this._prevWeather = env.weather || 'overcast';
+      this._stormOn = true;
+      if (!apply('thunderstorm', { lock: true }) && !apply('storm', { lock: true })) apply('rain', { lock: true });
     } else {
-      const prev = this._prevWeather === 'storm' ? 'rain' : this._prevWeather || 'overcast';
-      if (restoreAfter > 0) this.later(restoreAfter, () => apply(prev));
-      else apply(prev);
+      if (!this._stormOn) return;
+      this._stormOn = false;
+      const prev = this._prevWeather === 'thunderstorm' || this._prevWeather === 'storm' ? 'rain' : this._prevWeather || 'overcast';
+      if (restoreAfter > 0) this.later(restoreAfter, () => apply(prev, { lock: false }));
+      else apply(prev, { lock: false });
     }
   }
 
