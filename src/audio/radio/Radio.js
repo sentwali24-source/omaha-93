@@ -142,7 +142,10 @@ class Program {
   _talkSegment(seed) {
     const r = prng(seed);
     const pick = (list) => list[Math.floor(r() * list.length)];
-    const items = [weatherReport, pick(HEADLINES), pick(HEADLINES), pick(COMMUNITY), pick(HEADLINES)];
+    // three different headlines per break (drawn without replacement)
+    const news = [...HEADLINES];
+    const take = () => news.splice(Math.floor(r() * news.length), 1)[0];
+    const items = [weatherReport, take(), take(), pick(COMMUNITY), take()];
     const speaker = this.radio.speaker;
     // with no speech engine this is a short instrumental interlude
     const est = speaker.available ? items.reduce((s, it) => s + (typeof it === 'string' ? it.split(/\s+/).length * 0.37 + 1.6 : 9), 0) : 20;
