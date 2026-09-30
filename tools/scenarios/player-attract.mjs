@@ -30,13 +30,26 @@ export default async function (page, h) {
         minClear = Math.min(minClear, d);
       }
     }
-    return { total: P.total, n: P.N, inside, minClear, maxY, minY, mode: g.mode };
+    // freeway decks have no colliders (deck + ~11 m light poles / sign gantries)
+    const FW = [
+      { x0: -8, x1: 14, z0: -1050, z1: -86, deckY: 7.5 },
+      { x0: -8, x1: 575, z0: -114, z1: -92, deckY: 8 },
+      { x0: 575, x1: 1000, z0: 26, z1: 52, deckY: 12 },
+    ];
+    let fwMin = Infinity;
+    for (let i = 0; i <= P.N; i++) {
+      const pt = P.path.getPoint(P.u[i]);
+      const y = Math.max(pt.y, P.lift[i]);
+      for (const f of FW) if (pt.x > f.x0 - 4 && pt.x < f.x1 + 4 && pt.z > f.z0 - 4 && pt.z < f.z1 + 4) fwMin = Math.min(fwMin, y - f.deckY);
+    }
+    return { total: P.total, n: P.N, inside, minClear, maxY, minY, fwMin, mode: g.mode };
   });
   h.log('attract path', JSON.stringify(check));
   h.assert(check.mode === 'attract', 'title screen (attract mode)');
   h.assert(check.inside === 0, 'flyover never enters a collision box');
   h.assert(check.minClear > 2, `flyover keeps clearance (${check.minClear.toFixed(2)} m)`);
   h.assert(check.minY < 12, `starts near street level (${check.minY.toFixed(1)} m)`);
+  h.assert(check.fwMin > 12, `clears freeway light poles (${check.fwMin.toFixed(1)} m above the deck)`);
 
   const shots = [
     ['attract-0-lake24', 0.0],

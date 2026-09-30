@@ -1177,6 +1177,14 @@ export class Traffic {
       if (!ai.deadT) ai.deadT = 0.01;
       return;
     }
+    // the player is pulling the door open: stand on the brakes
+    if (game.player?._enter?.v === v) {
+      c.throttle = 0;
+      c.brake = 1;
+      c.steer = 0;
+      c.handbrake = false;
+      return;
+    }
     // stuck recovery: back up with opposite lock, then replan
     if (ai.recoverT > 0) {
       ai.recoverT -= dt;

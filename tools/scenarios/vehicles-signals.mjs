@@ -1,5 +1,5 @@
-// Traffic at signalized intersections. The stub City has no signals, so this scenario overrides
-// g.city.signalAt with the documented cycle (14 s green, 3 s yellow, 1 s all-red per axis) on every
+// Traffic at signalized intersections, using the real City's signalAt (the stub City had no signals;
+// then this scenario overrides g.city.signalAt with the documented cycle (14 s green, 3 s yellow, 1 s all-red per axis) on every
 // node that involves a major street, then counts cars that enter an intersection box on red.
 //   node tools/smoke.mjs --port 5205 --no-server --out tools/out/vehicles-signals --script tools/scenarios/vehicles-signals.mjs
 export default async function (page, h) {
@@ -15,7 +15,9 @@ export default async function (page, h) {
   const node = await h.game((g) => {
     const L = g.layout;
     const major = new Set([...L.nsStreets, ...L.ewStreets].filter((s) => s.major).map((s) => s.id));
-    g.city.signalAt = (id) => {
+    const n0 = L.nodes.find((q) => q.ns === '24th' && q.ew === 'lake');
+    const real = !!g.city.signalAt(n0.id);
+    if (!real) g.city.signalAt = (id) => {
       const n = L.nodes[id];
       if (!major.has(n.ns) && !major.has(n.ew)) return null;
       const t = (g.time.elapsed + id * 7.3) % 36;
@@ -50,7 +52,7 @@ export default async function (page, h) {
     g.traffic._nearEdgesAt.x = 1e9; // re-sample spawn edges around the new focus
     g.traffic.onPlayerRespawn();
     g.debugApi.freeCam({ x: n.x + 26, y: 30, z: n.z + 34 }, { x: n.x, y: 0, z: n.z });
-    return { id: n.id, x: n.x, z: n.z };
+    return { id: n.id, x: n.x, z: n.z, real };
   });
   h.log('node', JSON.stringify(node));
   for (let i = 0; i < 6; i++) {
