@@ -327,8 +327,10 @@ export class Game {
     const p = this.player;
     st.clock = { hour: this.clock.hour, day: this.clock.day };
     st.health = p.health;
-    if (!p.vehicle && p.alive) st.position = { x: p.position.x, z: p.position.z, heading: p.heading };
-    else if (p.vehicle && p.alive) {
+    // no position while knocked out / busted (the pending respawn moves the player anyway)
+    const free = p.alive && !this._respawnTimer;
+    if (!p.vehicle && free) st.position = { x: p.position.x, z: p.position.z, heading: p.heading };
+    else if (p.vehicle && free) {
       // driving: continue on foot beside the car, not back where the player got in
       let e = null;
       try {

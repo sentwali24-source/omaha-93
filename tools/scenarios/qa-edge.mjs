@@ -45,6 +45,23 @@ export default async function (page, h) {
     h.assert(c.ko === 1 && c.dHood < 6 && c2.ko === 1 && c2.cash === c.cash, 'KO before quitting not honored exactly once on Continue');
   }
 
+  if (only.includes('bustsave')) {
+    // a save during the bust countdown (tab hidden) must not record the bust spot
+    const r = await h.game((g) => {
+      g.debugApi.teleport(372, 118);
+      g.save();
+      g.debugApi.teleport(420, 150);
+      g.events.emit('player:busted', {});
+      g.save();
+      const pos = g.state.position;
+      return { x: Math.round(pos.x), z: Math.round(pos.z), timer: !!g._respawnTimer };
+    });
+    await waitGame(h, 4.5, 60000);
+    const r2 = await h.game((g) => ({ x: Math.round(g.state.position.x), z: Math.round(g.state.position.z), busted: g.state.stats.busted }));
+    h.log('bust-save', JSON.stringify({ r, r2 }));
+    h.assert(r.x === 372 && r.z === 118, 'save during bust countdown recorded the bust spot');
+  }
+
   if (only.includes('bust')) {
     // 2. busted during a mission (Police emits player:busted)
     const st = await h.game((g) => {
