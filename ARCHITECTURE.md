@@ -306,8 +306,9 @@ env.update(dt)          sky, sun/moon position from game.clock.hour, light color
                         calls game.city.setNight(n), moves the shadow camera with game.focus
 env.night               0 (day) .. 1 (full night)
 env.sun                 THREE.DirectionalLight (shadow caster when quality.shadows)
-env.weather             'clear' | 'overcast' | 'rain' (summer 1993 was the Great Flood: rain happens)
-env.setWeather(kind)
+env.weather             'clear' | 'overcast' | 'rain' | 'thunderstorm' (summer 1993 was the Great Flood)
+env.raining             true while rain actually falls (rain or thunderstorm)
+env.setWeather(kind) → bool   ('storm' is accepted as an alias of 'thunderstorm'; false for unknown kinds)
 ```
 
 ## 11. Audio (`game.audio`, ATMOSPHERE agent)

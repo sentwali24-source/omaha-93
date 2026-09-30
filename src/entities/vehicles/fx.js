@@ -419,7 +419,7 @@ export class VehicleFx {
     const n = game.environment?.night;
     this.night = typeof n === 'number' && Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0;
     const weather = game.environment?.weather;
-    this.gloom = weather === 'rain' ? 0.45 : weather === 'overcast' ? 0.2 : 0;
+    this.gloom = weather === 'rain' || weather === 'thunderstorm' ? 0.45 : weather === 'overcast' ? 0.2 : 0;
     updateMaterialsForNight(this.night);
     this.smokeMat.uniforms.uLight.value = 1 - 0.7 * this.night;
     const cam = game.camera;

@@ -605,7 +605,7 @@ export class Traffic {
       from.alive = false;
       const exit = vehicle.getExitPoint();
       try {
-        return this.game.pedestrians?.spawnPed?.({ x: exit.x, z: exit.z, flee: by || this.game.player, look: from.look }) || null;
+        return this.game.pedestrians?.spawnPed?.({ x: exit.x, z: exit.z, flee: by || this.game.player, look: from.look, vehicle }) || null;
       } catch (err) {
         console.error('[traffic] spawnPed failed', err);
       }

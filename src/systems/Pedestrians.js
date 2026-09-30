@@ -86,9 +86,9 @@ export class Pedestrians {
 
   // ------------------------------------------------------------------ public
   /** Spawn a civilian at (x, z). opts.flee = Actor to run from (carjacked drivers). */
-  spawnPed({ x, z, flee = null, look = null, arche = null, heading = 0 } = {}) {
-    // a carjacked police cruiser ejects its officer, not a civilian
-    const cop = this.game.police?.ejectedOfficerNear?.(x, z);
+  spawnPed({ x, z, flee = null, look = null, arche = null, heading = 0, vehicle = null } = {}) {
+    // a carjacked police cruiser ejects its officer, not a civilian (only when the jacked car is one)
+    const cop = !vehicle || vehicle.isPolice ? this.game.police?.ejectedOfficerNear?.(x, z) : null;
     if (cop) return cop;
     const game = this.game;
     const district = game.layout.districtAt(x, z)?.id || 'north';
@@ -167,7 +167,7 @@ export class Pedestrians {
     const f = g.focus;
     const dist = g.layout.districtAt(f.x, f.z)?.id;
     const df = DISTRICT_DENSITY[dist] ?? 0.8;
-    const wet = g.environment?.weather === 'rain' ? 0.6 : 1;
+    const wet = g.environment?.raining ? 0.6 : 1;
     return Math.round((g.quality.maxPeds || 16) * tf * df * wet);
   }
 

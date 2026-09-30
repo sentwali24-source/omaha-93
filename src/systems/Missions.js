@@ -477,8 +477,7 @@ export class Missions {
     }
     if (this.active !== m) return true; // passed / failed immediately
     if (def.brief) for (const [who, text] of def.brief) this.say(who, text, m);
-    game.events.emit('mission:start', { mission: m });
-    game.hud?.toast?.(m.title.toUpperCase(), { color: '#f2b632', duration: 3 });
+    game.events.emit('mission:start', { mission: m }); // the HUD shows the title card
     return true;
   }
 

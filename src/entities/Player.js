@@ -298,8 +298,13 @@ export class Player extends Actor {
     if (this.grounded && game.state?.stats) game.state.stats.distance = (game.state.stats.distance || 0) + moved;
     this._last.copy(p);
     const idleAnim = this.inCombat > 0 && this.speed < 0.6 ? 'fight' : 'idle';
-    if (this.character.anim !== idleAnim && (this.character.anim === 'idle' || this.character.anim === 'fight')) this.character.setAnim(idleAnim);
-    if (this.character.anim !== 'idle' && this.character.anim !== 'fight') this.character.setAnim('idle');
+    if (this.animOverride) {
+      // another system owns the pose for now (e.g. Tagging's 'spray' while E is held)
+      if (this.character.anim !== this.animOverride) this.character.setAnim(this.animOverride);
+    } else {
+      if (this.character.anim !== idleAnim && (this.character.anim === 'idle' || this.character.anim === 'fight')) this.character.setAnim(idleAnim);
+      if (this.character.anim !== 'idle' && this.character.anim !== 'fight') this.character.setAnim('idle');
+    }
     this.character.update(dt, this.grounded ? this.speed : Math.min(this.speed, 1));
   }
 
