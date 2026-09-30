@@ -223,8 +223,8 @@ export class HUD {
       this._amountToast('rep', amt, (n) => `${n > 0 ? '+' : ''}${n} REP`, amt > 0 ? 'rep' : 'repLoss', 'rep');
     });
     ev.on('rank:up', (e) => {
+      // the rank bar glows; progression shows the big RANK UP card and the OG's page
       this._rankFlashT = 2.8;
-      if (e?.rank?.name) this.toast(`RANK UP: ${e.rank.name.toUpperCase()}`, { color: '#ffc23a', icon: 'star', duration: 3.4 });
     });
     ev.on('heat:change', () => {
       this._heatFlashT = 1.8;

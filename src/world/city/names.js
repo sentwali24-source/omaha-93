@@ -118,7 +118,7 @@ export const BILLBOARDS = [
   { id: 'rent', lines: ['RENT TO OWN'], sub: 'TV · VCR · STEREO · NO CREDIT CHECK', bg: '#1a55b8', fg: '#ffffff', art: 'stripes' },
   { id: 'cars', lines: ["BIG JIM'S AUTO"], sub: 'WE TOTE THE NOTE · 72ND & DODGE', bg: '#ffe23a', fg: '#b3141b', art: 'car' },
   { id: 'stayschool', lines: ['STAY IN SCHOOL'], sub: 'YOUR FUTURE STARTS TODAY', bg: '#2a7fc4', fg: '#ffffff', art: 'sun' },
-  { id: 'cws', lines: ['COLLEGE WORLD SERIES'], sub: 'JUNE 4-12 · ROSENBLATT STADIUM', bg: '#0f3b1f', fg: '#ffffff', art: 'ball' },
+  { id: 'cws', lines: ['COLLEGE WORLD SERIES'], sub: '1993 CHAMPS: LSU · ROSENBLATT STADIUM', bg: '#0f3b1f', fg: '#ffffff', art: 'ball' },
 ];
 
 export const CHURCHES = [

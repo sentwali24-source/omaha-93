@@ -56,6 +56,7 @@ export class Tagging {
     this.usingFallback = citySpots.length === 0;
     const src = this.usingFallback ? generateFallbackSpots(game) : citySpots;
     for (const s of src) {
+      if (onProtectedWall(game, s)) continue;
       const zoneId = s.zoneId ?? game.layout.zoneAt(s.x, s.z)?.id ?? null;
       const spot = {
         ...s,
@@ -497,6 +498,22 @@ export class Tagging {
 }
 
 // ------------------------------------------------------------------ fallback wall spots
+// Real places people care about (schools, churches, museums, North 24th's historic buildings) never
+// take gang tags, whatever the city or landmark generators offered.
+const PROTECTED_LANDMARKS = new Set([
+  'omahastar', 'jewell', 'skeets', 'fairdeal', 'gpbhm', 'osbn', 'malcolmx', 'centralhigh', 'northhigh',
+  'joslyn', 'creighton', 'courthouse', 'library', 'unionstation', 'orpheum', 'fortomaha', 'cityhall',
+]);
+
+function onProtectedWall(game, s) {
+  const L = game.layout;
+  const nx = s.nx || 0;
+  const nz = s.nz || 0;
+  const behind = L.landmarkAt(s.x - nx * 1.0, s.z - nz * 1.0);
+  const at = L.landmarkAt(s.x, s.z);
+  return (behind && PROTECTED_LANDMARKS.has(behind.id)) || (at && PROTECTED_LANDMARKS.has(at.id));
+}
+
 // Only used when the city provides no tagSpots (stub city): raycast from the sidewalk into each
 // block and keep flat, tall-enough wall faces, a few per turf zone.
 function generateFallbackSpots(game) {
